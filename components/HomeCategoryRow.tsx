@@ -12,6 +12,7 @@ const HomeCategoryRow = () => {
     const { slug } = useParams();
     const { t, imageSettings, updateImageSetting } = useConfig();
     const [mounted, setMounted] = useState(false);
+    const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         setMounted(true);
@@ -31,9 +32,25 @@ const HomeCategoryRow = () => {
         return () => window.removeEventListener('storage', handleStorage);
     }, []);
 
+    // Auto-scroll to active category when mounted or slug changes
+    useEffect(() => {
+        if (mounted && slug && scrollContainerRef.current) {
+            const activeEl = scrollContainerRef.current.querySelector('[data-active="true"]');
+            if (activeEl) {
+                // Use setTimeout to ensure the DOM has painted
+                setTimeout(() => {
+                    activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                }, 100);
+            }
+        }
+    }, [mounted, slug]);
+
     return (
         <div className="w-full h-full">
-            <div className="flex justify-between items-center gap-1 sm:gap-2 md:gap-4 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4 sm:mx-0 sm:px-0">
+            <div 
+                ref={scrollContainerRef}
+                className="flex justify-between items-center gap-1 sm:gap-2 md:gap-4 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4 sm:mx-0 sm:px-0"
+            >
                 {categories.map((category) => {
                     const isActive = slug === category.slug;
                     const isAnyActive = !!slug;
@@ -46,6 +63,8 @@ const HomeCategoryRow = () => {
                         <Link 
                             key={category.slug} 
                             href={`/category/${category.slug}`}
+                            data-active={isActive}
+                            scroll={true}
                             className="flex flex-col items-center group flex-shrink-0 sm:flex-1 min-w-[70px] sm:min-w-0"
                         >
                             <div className={`relative aspect-square w-full max-w-[80px] md:max-w-[100px] overflow-hidden rounded-md border transition-all duration-700 mb-3 ${isActive ? 'border-gold shadow-[0_0_20px_rgba(201,165,106,0.3)]' : 'border-gold/10 group-hover:border-gold/50'}`}>
