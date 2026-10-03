@@ -10,7 +10,7 @@ import { ConfigProvider } from "@/components/ConfigProvider";
 import { AuthProvider } from "@/components/AuthProvider";
 import LunchBreakPopup from "@/components/LunchBreakPopup";
 
-// import { getProducts } from "@/lib/products-server";
+import { getProducts } from "@/lib/products-server";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const serif = Cormorant_Garamond({ weight: ['400', '500', '600', '700'], subsets: ["latin"], variable: "--font-serif" });
@@ -70,12 +70,12 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // const initialProducts = getProducts();
+  const initialProducts = getProducts();
 
   return (
     <html lang="hu">
       <body className={`${inter.variable} ${serif.variable} ${script.variable} ${elegant.variable} ${bodoni.variable} font-sans antialiased text-ivory bg-deep-brown`}>
-        <ConfigProvider>
+        <ConfigProvider initialProducts={initialProducts}>
           <AuthProvider>
             <CartProvider>
               <SearchProvider>

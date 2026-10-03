@@ -73,13 +73,13 @@ const Navbar = () => {
                                 </div>
                             ) : (
                                 <>
-                                    <h1 className="text-base sm:text-lg md:text-2xl font-serif tracking-[0.2em] sm:tracking-[0.3em] md:tracking-[0.5em] uppercase gold-text group-hover:scale-105 transition-transform duration-500 truncate max-w-full">
+                                    <h1 className="text-[12px] sm:text-base md:text-2xl font-serif tracking-[0.1em] sm:tracking-[0.2em] md:tracking-[0.5em] uppercase gold-text group-hover:scale-105 transition-transform duration-500 truncate max-w-full">
                                         MAGYARÉKSZER
                                     </h1>
                                     <span className="hidden sm:block text-[9px] md:text-[11px] uppercase tracking-[0.3em] text-gold/60 mt-0.5 group-hover:text-gold/80 transition-colors font-bold">
                                         {t('tradition')}
                                     </span>
-                                    <div className="w-6 md:w-8 h-[1px] bg-gold/40 mt-1 group-hover:w-12 transition-all duration-500"></div>
+                                    <div className="w-4 md:w-8 h-[1px] bg-gold/40 mt-1 group-hover:w-12 transition-all duration-500"></div>
                                 </>
                             )}
                         </Link>
