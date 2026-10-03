@@ -77,7 +77,7 @@ const HomeCategoryRow = () => {
                                 <div className={`absolute inset-0 bg-deep-brown transition-all duration-700 ${isDimmed ? 'opacity-40' : 'opacity-0 group-hover:opacity-0'}`}></div>
                             </div>
                             <div className="flex flex-col items-center gap-1.5 h-8">
-                                <span className={`text-[8px] md:text-[10px] uppercase tracking-[0.2em] text-center font-bold leading-tight transition-all duration-500 ${isActive ? 'text-gold scale-110' : (isDimmed ? 'text-ivory/20 group-hover:text-gold' : 'text-ivory/80 group-hover:text-gold')}`}>
+                                <span className={`text-xs md:text-sm uppercase tracking-[0.1em] text-center font-bold leading-tight transition-all duration-500 ${isActive ? 'text-gold scale-110' : (isDimmed ? 'text-ivory/20 group-hover:text-gold' : 'text-ivory/80 group-hover:text-gold')}`}>
                                     {t(`cat_${category.slug}`)}
                                 </span>
                                 {isActive && (

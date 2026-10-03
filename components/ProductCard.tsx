@@ -62,10 +62,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             {/* Product Info */}
             <div className="flex-1 flex flex-col">
                 <div className="flex justify-between items-center mb-2">
-                    <span className="text-[10px] text-gold/60 font-bold tracking-wider md:tracking-[0.3em] uppercase truncate max-w-[70%]">
+                    <span className="text-xs text-gold/60 font-bold tracking-wider md:tracking-[0.1em] uppercase truncate max-w-[70%]">
                         {t(`cat_${product.category}`)}
                     </span>
-                    <span className="text-[9px] text-ivory/80 font-black uppercase tracking-widest border border-ivory/30 px-2 py-0.5 rounded">
+                    <span className="text-xs text-ivory/80 font-black uppercase tracking-widest border border-ivory/30 px-2 py-0.5 rounded">
                         Ezüst 925
                     </span>
                 </div>
@@ -77,7 +77,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 </Link>
                 
                 {product.isGoldOnly || product.isGoldEngagementRing ? (
-                    <p className="text-[11px] md:text-sm font-bold gold-text mb-6 mt-1 uppercase tracking-wider md:tracking-widest text-gold/80 leading-snug">
+                    <p className="text-sm font-bold gold-text mb-6 mt-1 uppercase tracking-wider md:tracking-widest text-gold/80 leading-snug">
                         {t('quote_only')}
                     </p>
                 ) : (
@@ -90,7 +90,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                     onClick={handleAddToCart}
                     disabled={isAdded}
                     className={`
-                        mt-auto w-full py-3 rounded-md text-[10px] md:text-[11px] font-bold uppercase tracking-[0.05em] md:tracking-[0.2em] transition-all flex items-center justify-center gap-2
+                        mt-auto w-full py-3 rounded-md text-xs md:text-sm font-bold uppercase tracking-[0.05em] md:tracking-[0.1em] transition-all flex items-center justify-center gap-2
                         ${isAdded 
                             ? "bg-gold text-deep-brown" 
                             : "bg-ivory/5 border border-gold/30 text-gold hover:bg-gold hover:text-deep-brown"}

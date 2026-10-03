@@ -28,7 +28,7 @@ const Navbar = () => {
         <>
             <header className="glass-nav fixed w-full top-0 z-50">
                 {vacationMode?.isActive && (
-                    <div className="w-full bg-red-950/90 text-ivory/90 text-center py-2 text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-black shadow-lg border-b border-red-500/20">
+                    <div className="w-full bg-red-950/90 text-ivory/90 text-center py-2 text-xs sm:text-sm uppercase tracking-[0.1em] font-black shadow-lg border-b border-red-500/20">
                         {t('vacation_banner_text').replace('{date}', vacationMode.returnDate || '')}
                     </div>
                 )}
@@ -43,7 +43,7 @@ const Navbar = () => {
                             {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
                         </button>
                         
-                        <div className="hidden md:flex items-center gap-8 text-xs uppercase tracking-[0.2em] font-medium">
+                        <div className="hidden md:flex items-center gap-8 text-sm uppercase tracking-[0.1em] font-medium">
                             <div className="flex items-center gap-2 group cursor-pointer">
                                 <Globe className="h-3.5 w-3.5 text-gold opacity-60 group-hover:opacity-100 transition-opacity" />
                                 <select 
@@ -76,7 +76,7 @@ const Navbar = () => {
                                     <h1 className="text-[12px] sm:text-base md:text-2xl font-serif tracking-[0.1em] sm:tracking-[0.2em] md:tracking-[0.5em] uppercase gold-text group-hover:scale-105 transition-transform duration-500 truncate max-w-full">
                                         MAGYARÉKSZER
                                     </h1>
-                                    <span className="hidden sm:block text-[9px] md:text-[11px] uppercase tracking-[0.3em] text-gold/60 mt-0.5 group-hover:text-gold/80 transition-colors font-bold">
+                                    <span className="hidden sm:block text-xs md:text-sm uppercase tracking-[0.2em] text-gold/60 mt-0.5 group-hover:text-gold/80 transition-colors font-bold">
                                         {t('tradition')}
                                     </span>
                                     <div className="w-4 md:w-8 h-[1px] bg-gold/40 mt-1 group-hover:w-12 transition-all duration-500"></div>
@@ -93,7 +93,7 @@ const Navbar = () => {
                             aria-label="Search"
                         >
                             <Search className="h-4 w-4 text-gold/80 group-hover:text-gold transition-colors shrink-0" />
-                            <span className="hidden md:block text-[11px] uppercase tracking-[0.2em] font-black text-gold/60 group-hover:text-gold transition-colors">
+                            <span className="hidden md:block text-sm uppercase tracking-[0.1em] font-black text-gold/60 group-hover:text-gold transition-colors">
                                 {t('search_label')}
                             </span>
                         </button>
@@ -110,7 +110,7 @@ const Navbar = () => {
                                         initial={{ scale: 0, opacity: 0 }}
                                         animate={{ scale: 1, opacity: 1 }}
                                         exit={{ scale: 0, opacity: 0 }}
-                                        className="absolute -top-1 -right-1 bg-gold text-deep-brown text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-lg"
+                                        className="absolute -top-1 -right-1 bg-gold text-deep-brown text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-lg"
                                     >
                                         {cartCount}
                                     </motion.span>

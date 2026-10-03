@@ -35,7 +35,7 @@ export default function CategoryClient({ slug }: CategoryClientProps) {
     return (
         <main className="min-h-screen bg-[#150e03] text-[#fdfdf3]">
             <div className="bg-[#0d0902] py-4 border-b border-[#c9a56a]/5">
-                <div className="max-w-[1400px] mx-auto px-4 flex items-center text-[9px] uppercase tracking-[0.2em] text-[#666666] font-bold">
+                <div className="max-w-[1400px] mx-auto px-4 flex items-center text-xs uppercase tracking-[0.1em] text-[#666666] font-bold">
                     <Link href="/" className="hover:text-[#c9a56a] transition-colors font-black">{t('home')}</Link>
                     <ChevronRight className="h-2 w-2 mx-3 text-[#3d2b1f]" />
                     <span className="text-[#c9a56a] font-black">{t(`cat_${slug}`)}</span>
@@ -51,12 +51,12 @@ export default function CategoryClient({ slug }: CategoryClientProps) {
                     <div className="flex-1">
                         <div className="flex justify-end mb-8 border-b border-[#c9a56a]/10 pb-4">
                             <div className="flex items-center gap-4">
-                                <span className="text-[9px] uppercase tracking-[0.2em] text-[#666666] font-black">{t('sorting')}</span>
+                                <span className="text-xs uppercase tracking-[0.1em] text-[#666666] font-black">{t('sorting')}</span>
                                 <div className="relative group">
                                     <select 
                                         value={sortBy}
                                         onChange={(e) => setSortBy(e.target.value as any)}
-                                        className="bg-[#0d0902] border border-[#c9a56a]/20 text-[#fdfdf3] py-2 px-6 pr-12 text-[10px] uppercase tracking-[0.1em] font-black outline-none focus:border-[#c9a56a] cursor-pointer appearance-none hover:bg-[#150e03] transition-colors"
+                                        className="bg-[#0d0902] border border-[#c9a56a]/20 text-[#fdfdf3] py-2 px-6 pr-12 text-sm uppercase tracking-[0.1em] font-black outline-none focus:border-[#c9a56a] cursor-pointer appearance-none hover:bg-[#150e03] transition-colors"
                                     >
                                         <option value="none">{t('default_sort')}</option>
                                         <option value="asc">{t('price_asc')}</option>

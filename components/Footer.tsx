@@ -35,23 +35,23 @@ const Footer = () => {
 
                     {/* Quick Links */}
                     <div className="space-y-8">
-                        <h3 className="text-[10px] uppercase tracking-[0.5em] font-black text-gold/80">{t('about')}</h3>
+                        <h3 className="text-xs uppercase tracking-[0.2em] font-black text-gold/80">{t('about')}</h3>
                         <ul className="space-y-4">
-                            <li><Link href="/about" className="text-[11px] uppercase tracking-[0.2em] text-ivory/40 hover:text-gold transition-colors font-bold">{t('about')}</Link></li>
-                            <li><Link href="/mission" className="text-[11px] uppercase tracking-[0.2em] text-ivory/40 hover:text-gold transition-colors font-bold">{t('mission')}</Link></li>
-                            <li><Link href="/contact" className="text-[11px] uppercase tracking-[0.2em] text-ivory/40 hover:text-gold transition-colors font-bold">{t('contact')}</Link></li>
-                            <li><Link href="/gallery" className="text-[11px] uppercase tracking-[0.2em] text-ivory/40 hover:text-gold transition-colors font-bold">{t('gallery')}</Link></li>
-                            <li><Link href="/reference" className="text-[11px] uppercase tracking-[0.2em] text-ivory/40 hover:text-gold transition-colors font-bold">{t('reference')}</Link></li>
+                            <li><Link href="/about" className="text-sm uppercase tracking-[0.1em] text-ivory/40 hover:text-gold transition-colors font-bold">{t('about')}</Link></li>
+                            <li><Link href="/mission" className="text-sm uppercase tracking-[0.1em] text-ivory/40 hover:text-gold transition-colors font-bold">{t('mission')}</Link></li>
+                            <li><Link href="/contact" className="text-sm uppercase tracking-[0.1em] text-ivory/40 hover:text-gold transition-colors font-bold">{t('contact')}</Link></li>
+                            <li><Link href="/gallery" className="text-sm uppercase tracking-[0.1em] text-ivory/40 hover:text-gold transition-colors font-bold">{t('gallery')}</Link></li>
+                            <li><Link href="/reference" className="text-sm uppercase tracking-[0.1em] text-ivory/40 hover:text-gold transition-colors font-bold">{t('reference')}</Link></li>
                         </ul>
                     </div>
 
                     {/* Legal & Terms */}
                     <div className="space-y-8">
-                        <h3 className="text-[10px] uppercase tracking-[0.5em] font-black text-gold/80">{t('terms')}</h3>
+                        <h3 className="text-xs uppercase tracking-[0.2em] font-black text-gold/80">{t('terms')}</h3>
                         <ul className="space-y-4">
-                            <li><Link href="/privacy" className="text-[11px] uppercase tracking-[0.2em] text-ivory/40 hover:text-gold transition-colors font-bold">{t('privacy')}</Link></li>
-                            <li><Link href="/shipping" className="text-[11px] uppercase tracking-[0.2em] text-ivory/40 hover:text-gold transition-colors font-bold">{t('shipping')}</Link></li>
-                            <li><Link href="/terms" className="text-[11px] uppercase tracking-[0.2em] text-ivory/40 hover:text-gold transition-colors font-bold">{t('terms')}</Link></li>
+                            <li><Link href="/privacy" className="text-sm uppercase tracking-[0.1em] text-ivory/40 hover:text-gold transition-colors font-bold">{t('privacy')}</Link></li>
+                            <li><Link href="/shipping" className="text-sm uppercase tracking-[0.1em] text-ivory/40 hover:text-gold transition-colors font-bold">{t('shipping')}</Link></li>
+                            <li><Link href="/terms" className="text-sm uppercase tracking-[0.1em] text-ivory/40 hover:text-gold transition-colors font-bold">{t('terms')}</Link></li>
                         </ul>
                     </div>
 
@@ -59,7 +59,7 @@ const Footer = () => {
                     <div className="space-y-8 p-8 bg-ivory/5 border border-gold/5 rounded-xl shadow-inner relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-full h-[1px] bg-gold/20"></div>
                         <Link href="/contact" className="group/link block">
-                            <h3 className="text-[10px] uppercase tracking-[0.5em] font-black text-gold group-hover/link:translate-x-1 transition-transform">{t('contact')}</h3>
+                            <h3 className="text-xs uppercase tracking-[0.2em] font-black text-gold group-hover/link:translate-x-1 transition-transform">{t('contact')}</h3>
                         </Link>
                         <div className="flex items-start gap-4 pt-4">
                             <MapPin className="h-4 w-4 text-gold/40 flex-shrink-0" />
@@ -93,12 +93,12 @@ const Footer = () => {
                     </div>
                     
                     <div className="pt-8 border-t border-gold/5 flex flex-col md:flex-row items-center justify-between gap-8">
-                        <p className="text-[10px] text-[#333333] tracking-[0.5em] font-black uppercase">
+                        <p className="text-xs text-[#555555] tracking-[0.2em] font-black uppercase">
                             MAGYAR ÉKSZER &copy; 2024 • TRADÍCIONÁLIS ÖTVÖSMŰVÉSZET
                         </p>
                         <div className="flex items-center gap-4 opacity-30 grayscale hover:grayscale-0 transition-all cursor-pointer">
                             <ShieldCheck className="h-4 w-4 text-gold" />
-                            <span className="text-[10px] font-black uppercase tracking-widest">{t('workshop_security')}</span>
+                            <span className="text-xs font-black uppercase tracking-widest">{t('workshop_security')}</span>
                         </div>
                     </div>
                 </div>

@@ -24,7 +24,7 @@ const InfoTabs = ({ transparent = false }: { transparent?: boolean }) => {
                         <li key={tab.name} className="whitespace-nowrap">
                              <Link 
                                  href={tab.href}
-                                 className="text-[10px] sm:text-[11px] md:text-[12px] uppercase tracking-[0.1em] sm:tracking-[0.15em] text-[#c9a56a]/80 hover:text-[#c9a56a] transition-colors font-bold"
+                                 className="text-xs sm:text-sm md:text-base uppercase tracking-[0.1em] text-[#c9a56a]/80 hover:text-[#c9a56a] transition-colors font-bold"
                              >
                                  {tab.name}
                              </Link>
