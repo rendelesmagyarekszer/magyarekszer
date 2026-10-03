@@ -62,12 +62,12 @@ const Navbar = () => {
                     <div className="absolute left-1/2 -translate-x-1/2 max-w-[50%] flex justify-center">
                         <Link href="/" className="group flex flex-col items-center text-center">
                             {pathname === '/' ? (
-                                <div className="relative w-12 h-12 md:w-16 md:h-16 opacity-90 group-hover:opacity-100 transition-opacity rounded-full overflow-hidden flex items-center justify-center border border-gold/30 shadow-md bg-[#150e03]">
+                                <div className="relative w-16 h-16 md:w-20 md:h-20 -my-2 opacity-80 group-hover:opacity-100 transition-opacity bg-deep-brown rounded-lg overflow-hidden flex items-center justify-center">
                                     <Image 
                                         src="/logo.jpg" 
                                         alt="MagyarÉkszer Logo" 
                                         fill 
-                                        className="object-cover" 
+                                        className="object-contain invert grayscale contrast-200 mix-blend-screen" 
                                         priority 
                                     />
                                 </div>
