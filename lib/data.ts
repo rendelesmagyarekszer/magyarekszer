@@ -101,6 +101,11 @@ export const categories: Category[] = [
         name: "Modern ékszerek",
         slug: "modern-ekszerek",
         image: "/categories/modern_ekszerek.jpg"
+    },
+    {
+        name: "Vallásos ékszerek",
+        slug: "vallasos-ekszerek",
+        image: "/categories/vallasoseKszerek.jpg"
     }
 ];
 
