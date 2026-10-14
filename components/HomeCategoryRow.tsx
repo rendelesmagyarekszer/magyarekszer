@@ -49,7 +49,7 @@ const HomeCategoryRow = () => {
         <div className="w-full h-full">
             <div 
                 ref={scrollContainerRef}
-                className="flex justify-between items-center gap-1 sm:gap-2 md:gap-4 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4 sm:mx-0 sm:px-0"
+                className="flex items-start gap-3 sm:gap-4 md:gap-6 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4 sm:mx-0 sm:px-0"
             >
                 {categories.map((category) => {
                     const isActive = slug === category.slug;
@@ -65,9 +65,9 @@ const HomeCategoryRow = () => {
                             href={`/category/${category.slug}`}
                             data-active={isActive}
                             scroll={true}
-                            className="flex flex-col items-center group flex-shrink-0 sm:flex-1 min-w-[70px] sm:min-w-0"
+                            className="flex flex-col items-center group flex-shrink-0 w-[72px] sm:w-[80px] md:flex-1 md:w-auto"
                         >
-                            <div className={`relative aspect-square w-full max-w-[80px] md:max-w-[100px] overflow-hidden rounded-md border transition-all duration-700 mb-3 ${isActive ? 'border-gold shadow-[0_0_20px_rgba(201,165,106,0.3)]' : 'border-gold/10 group-hover:border-gold/50'}`}>
+                            <div className={`relative aspect-square w-full overflow-hidden rounded-md border transition-all duration-700 mb-2 ${isActive ? 'border-gold shadow-[0_0_20px_rgba(201,165,106,0.3)]' : 'border-gold/10 group-hover:border-gold/50'}`}>
                                 <img
                                     src={finalImage}
                                     alt={t(`cat_${category.slug}`)}
