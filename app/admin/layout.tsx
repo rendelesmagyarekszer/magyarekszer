@@ -49,7 +49,7 @@ export default function AdminLayout({
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
-        if (passwordInput === 'admin123') {
+        if (passwordInput === 'GabMar5048') {
             setIsAuthenticated(true);
             sessionStorage.setItem('magyarekszer_admin_auth', 'true');
             setError(false);
