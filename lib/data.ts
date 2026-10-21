@@ -58,14 +58,14 @@ export const categories: Category[] = [
         image: "/categories/medalok_talizmanok.jpg"
     },
     {
-        name: "Női láncok és bőrök",
-        slug: "noi-lancok",
-        image: "/categories/noi_lancok.jpg"
-    },
-    {
         name: "Fülbevalók",
         slug: "fulbevalok",
         image: "/categories/fulbevalok.jpg"
+    },
+    {
+        name: "Női láncok és bőrök",
+        slug: "noi-lancok",
+        image: "/categories/noi_lancok.jpg"
     },
     {
         name: "Karkötők",
@@ -93,9 +93,9 @@ export const categories: Category[] = [
         image: "/categories/eljegyzesi_gyuruk.jpg"
     },
     {
-        name: "Szobrok és dísztárgyak",
-        slug: "szobrok-es-disztargyak",
-        image: "/categories/szobrok.jpg"
+        name: "Vallásos ékszerek",
+        slug: "vallasos-ekszerek",
+        image: "/categories/vallasoseKszerek.jpg"
     },
     {
         name: "Modern ékszerek",
@@ -103,9 +103,9 @@ export const categories: Category[] = [
         image: "/categories/modern_ekszerek.jpg"
     },
     {
-        name: "Vallásos ékszerek",
-        slug: "vallasos-ekszerek",
-        image: "/categories/vallasoseKszerek.jpg"
+        name: "Szobrok és dísztárgyak",
+        slug: "szobrok-es-disztargyak",
+        image: "/categories/szobrok.jpg"
     }
 ];
 
