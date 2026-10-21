@@ -19,7 +19,7 @@ export default function ProductClient({ product: serverProduct, initialCollectio
     const { 
         products, collections, language, t, formatPrice, currency,
         ankerPrices, barbaraPrices, vacationMode,
-        availableStones, stonePrices, imageSettings, globalEnamelColors
+        availableStones, allStonesMaster, stonePrices, imageSettings, globalEnamelColors
     } = useConfig();
     
     // Find enriched version from config (localStorage) or fallback to server prop
@@ -79,7 +79,8 @@ export default function ProductClient({ product: serverProduct, initialCollectio
     const [labDiamondSize, setLabDiamondSize] = useState('0.50ct');
     const [goldColor, setGoldColor] = useState('gold_white');
 
-    const stoneOptions = availableStones || [];
+    const stoneOptions = (availableStones && availableStones.length > 0) ? availableStones : [];
+    const effectiveStoneOptions = (stoneOptions.length > 0) ? stoneOptions : allStonesMaster || [];
     const isNecklaceOrMedallion = product ? (product.category === 'nyaklancok' || product.category === 'medallok' || product.category === 'noi-lancok' || product.category === 'medalok-es-talizmanok') : false;
     const isKolie = product ? (product.isKolie || product.name.toLowerCase().includes('kolié') || product.name.toLowerCase().includes('kolie')) : false;
 
@@ -454,12 +455,8 @@ export default function ProductClient({ product: serverProduct, initialCollectio
                                         </div>
                                     )}
 
-                                    {/* Necklace & Medallion Logic */}
-                                    {displayDescription && (
-                                        <p className="text-ivory/60 leading-relaxed text-sm lg:text-base font-light text-justify">
-                                            {displayDescription}
-                                        </p>
-                                    )}
+
+                                    {/* Description moved to bottom section to avoid duplication */}
 
                                     {isNecklaceOrMedallion && (
                                         <div className="space-y-4">
@@ -553,7 +550,7 @@ export default function ProductClient({ product: serverProduct, initialCollectio
                                         <div className="space-y-4">
                                             <label className="flex items-center text-[10px] uppercase tracking-[0.4em] font-black text-gold">{t('stone_selection')}</label>
                                             <div className="flex flex-wrap gap-2">
-                                                {stoneOptions.map((stoneKey) => {
+                                                {effectiveStoneOptions.map((stoneKey) => {
                                                     const price = stonePrices[stoneKey] || 0;
                                                     return (
                                                         <button key={stoneKey} onClick={() => setSelectedStone(stoneKey)} className={`px-4 py-3 rounded-xl text-[10px] uppercase font-black border transition-all flex flex-col items-center gap-1 min-w-[80px] ${selectedStone === stoneKey ? 'bg-gold border-gold text-deep-brown shadow-lg' : 'border-gold/30 text-gold/80 bg-gold/5 hover:border-gold/50'}`}>
@@ -630,18 +627,28 @@ export default function ProductClient({ product: serverProduct, initialCollectio
                         </div>
                     </div>
 
-                    {/* History */}
                     <div className="lg:col-span-7 order-3 lg:mt-16">
-                        {(displayHistory || displayDescription) && (
+                        {(displayDescription || displayHistory) && (
                             <div className="pt-8 border-t border-gold/10">
                                 <div className="space-y-8">
-                                    <div className="flex items-center gap-4">
-                                        <h3 className="text-xs uppercase tracking-[0.4em] font-black text-gold">{t('history_title')}</h3>
-                                        <div className="h-[1px] flex-1 bg-gold/10"></div>
-                                    </div>
-                                    <div className="text-ivory/95 leading-relaxed text-base font-serif bg-white/[0.02] p-10 rounded-[2rem] border border-white/[0.05] shadow-inner text-justify">
-                                        {displayHistory || displayDescription || "Nincs elérhető történelmi háttér."}
-                                    </div>
+                                    {/* Description */}
+                                    {displayDescription && (
+                                        <p className="text-ivory/70 leading-relaxed text-base font-serif text-justify">
+                                            {displayDescription}
+                                        </p>
+                                    )}
+                                    {/* History – only show if different from description */}
+                                    {displayHistory && displayHistory !== displayDescription && (
+                                        <>
+                                            <div className="flex items-center gap-4">
+                                                <h3 className="text-xs uppercase tracking-[0.4em] font-black text-gold">{t('history_title')}</h3>
+                                                <div className="h-[1px] flex-1 bg-gold/10"></div>
+                                            </div>
+                                            <div className="text-ivory/95 leading-relaxed text-base font-serif bg-white/[0.02] p-10 rounded-[2rem] border border-white/[0.05] shadow-inner text-justify">
+                                                {displayHistory}
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         )}

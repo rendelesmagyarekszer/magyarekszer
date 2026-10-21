@@ -94,7 +94,7 @@ const Footer = () => {
                     
                     <div className="pt-8 border-t border-gold/5 flex flex-col md:flex-row items-center justify-between gap-8">
                         <p className="text-xs text-[#555555] tracking-[0.2em] font-black uppercase">
-                            MAGYAR ÉKSZER &copy; 2024 • TRADÍCIONÁLIS ÖTVÖSMŰVÉSZET
+                            MAGYAR ÉKSZER &copy; 2002 • TRADÍCIONÁLIS ÖTVÖSMŰVÉSZET
                         </p>
                         <div className="flex items-center gap-4 opacity-30 grayscale hover:grayscale-0 transition-all cursor-pointer">
                             <ShieldCheck className="h-4 w-4 text-gold" />
