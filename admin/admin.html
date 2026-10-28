@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tie the Gifts - Kezelőfelület</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-container {
+            max-width: 600px;
+            margin: 100px auto;
+            background: white;
+            padding: 40px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+        .login-box {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .dashboard {
+            display: none;
+            max-width: 1000px;
+            margin: 40px auto;
+            text-align: left;
+        }
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+        .gift-manager-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            background: white;
+        }
+        .gift-manager-item img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            margin-right: 20px;
+            border-radius: 4px;
+        }
+        .gift-manager-info { flex-grow: 1; }
+        .gift-manager-actions { display: flex; gap: 10px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="login-section" class="admin-container">
+        <div class="lang-selector-wrap" style="position: static; margin-bottom: 20px; display: inline-flex; justify-content: center; width: auto;">
+             <span class="lang-icon">🌐</span>
+             <select id="lang-select-top">
+                 <option value="hu">HUN 🇭🇺</option>
+                 <option value="en">ENG 🇺🇸</option>
+                 <option value="de">GER 🇩🇪</option>
+                 <option value="es">ESP 🇪🇸</option>
+             </select>
+        </div>
+        <div id="auth-tabs" style="display: flex; gap: 20px; justify-content: center; margin-bottom: 20px;">
+            <button id="show-login" class="btn" style="background: none; border: none; font-weight: bold; border-bottom: 2px solid var(--accent-color);">Bejelentkezés</button>
+            <button id="show-register" class="btn" style="background: none; border: none; color: #888;">Regisztráció</button>
+        </div>
+
+        <h1 id="auth-title" class="names" style="font-size: 2.5rem;">Tie the Gifts 💍</h1>
+        <p id="auth-subtitle" class="subtitle" style="margin-bottom: 30px;">Lépj be a kezelőfelületre</p>
+        
+        <form id="login-form" class="login-box">
+            <div class="form-group">
+                <label for="email">E-mail cím</label>
+                <input type="email" id="email" required placeholder="minta@email.hu">
+            </div>
+            <div class="form-group">
+                <label for="password">Jelszó</label>
+                <input type="password" id="password" required placeholder="••••••••">
+            </div>
+            <div id="activation-group" class="form-group hidden">
+                <label for="activation-code" style="color: var(--accent-color); font-weight: bold;">Etsy Rendelésszám / Aktiváló kód</label>
+                <input type="text" id="activation-code" placeholder="Például: 123456789 VAGY Kuponkód" style="border: 2px solid var(--accent-color);">
+                <small style="color: #888;">Ez a kód szükséges a fiók létrehozásához.</small>
+            </div>
+            <button type="submit" id="auth-submit-btn" class="btn btn-primary w-100">Bejelentkezés</button>
+        </form>
+    </div>
+
+    <!-- Dashboard Area -->
+    <div id="dashboard-section" class="container dashboard">
+        <div class="lang-selector-wrap" style="float: right; position: relative; top: 0; right: 0; margin-bottom: 20px;">
+            <span class="lang-icon">🌐</span>
+            <select id="lang-select-top-dashboard">
+                <option value="hu">HUN 🇭🇺</option>
+                <option value="en">ENG 🇺🇸</option>
+                <option value="de">GER 🇩🇪</option>
+                <option value="es">ESP 🇪🇸</option>
+            </select>
+        </div>
+        <div class="admin-header">
+            <div>
+                <h1 id="user-display-name">Kezelőfelület</h1>
+                <p id="total-registrations-info" style="font-size: 0.8rem; color: #888; font-style: italic; margin-top: 4px;"></p>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <div id="public-link-box" style="display: flex; align-items: center; gap: 10px; background: #f0f4ec; padding: 10px 15px; border-radius: 4px; font-size: 0.85rem; border: 1px solid var(--border-color);">
+                    <div><strong>A te publikus linked:</strong> <span id="my-public-link" style="color: var(--accent-hover);">Betöltés...</span></div>
+                    <button id="copy-link-btn" class="btn" style="padding: 5px 10px; font-size: 0.7rem; background: white; border: 1px solid #ccc;">Másolás 📋</button>
+                </div>
+                <button id="logout-btn" class="btn" style="background: #fdf2f2; color: #cc3333; font-size: 0.8rem;">Kijelentkezés</button>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div style="display: flex; gap: 0; border-bottom: 2px solid var(--border-color); margin-bottom: 30px;">
+            <button class="admin-tab" id="tab-btn-gifts" onclick="switchTab('tab-gifts')" style="padding: 14px 28px; background: none; border: none; border-bottom: 3px solid var(--accent-color); margin-bottom: -2px; font-family: var(--font-body); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; color: var(--accent-color); font-weight: 600; transition: all 0.2s;">🎁 Ajándékok</button>
+            <button class="admin-tab" id="tab-btn-website" onclick="switchTab('tab-website')" style="padding: 14px 28px; background: none; border: none; border-bottom: 3px solid transparent; margin-bottom: -2px; font-family: var(--font-body); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; color: #999; font-weight: 400; transition: all 0.2s;">⚙️ Weboldal</button>
+            <button class="admin-tab" id="tab-btn-paypal" onclick="switchTab('tab-paypal')" style="padding: 14px 28px; background: none; border: none; border-bottom: 3px solid transparent; margin-bottom: -2px; font-family: var(--font-body); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; color: #999; font-weight: 400; transition: all 0.2s;">💳 PayPal</button>
+            <button class="admin-tab hidden" id="tab-btn-superadmin" onclick="switchTab('tab-superadmin')" style="padding: 14px 28px; background: none; border: none; border-bottom: 3px solid transparent; margin-bottom: -2px; font-family: var(--font-body); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; color: #999; font-weight: 400; transition: all 0.2s;">🗝️ Admin Eszközök</button>
+            <button class="admin-tab" id="tab-btn-categories" onclick="switchTab('tab-categories')" style="padding: 14px 28px; background: none; border: none; border-bottom: solid transparent; margin-bottom: -2px; font-family: var(--font-body); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; color: #999; font-weight: 400; transition: all 0.2s;">📂 Kategóriák</button>
+        </div>
+
+        <div id="tab-gifts">
+            <section class="admin-card">
+                <button class="btn btn-primary w-100" style="margin-bottom: 20px;" id="open-add-gift-modal">+ Új ajándék hozzáadása</button>
+                <button class="btn btn-secondary w-100" style="margin-bottom: 20px;" id="migrate-gifts-btn">⚙️ Régi ajándékok migrálása</button>
+                <h2>Aktuális Ajándékaid</h2>
+                <div id="admin-gifts-list">
+                    <!-- Gifts loaded here -->
+                </div>
+            </section>
+        </div>
+
+        <div id="tab-website" style="display:none;">
+            <form id="profile-settings-form">
+
+                <!-- Identity card -->
+                <div style="background: linear-gradient(135deg, #fdf9f5, #faf4ee); border: 1px solid #e8ddd0; border-radius: 16px; padding: 32px; margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
+                        <div style="width: 38px; height: 38px; background: linear-gradient(135deg, #c9a96e, #a67c52); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1.1rem;">💍</div>
+                        <div>
+                            <h3 style="margin: 0; font-family: var(--font-heading); font-size: 1.25rem; font-style: italic; color: #5c4033;">Az esküvőtök adatai</h3>
+                            <p style="margin: 0; font-size: 0.8rem; color: #a08060;">Ezek jelennek meg az oldal tetején</p>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group" style="margin: 0;">
+                            <label for="reg-name" style="color: #7a5c40;">Jegyespár neve</label>
+                            <input type="text" id="reg-name" placeholder="Borbála és Benedek" style="border-color: #d4b896;">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label for="reg-date" style="color: #7a5c40;">Az esküvő dátuma</label>
+                            <input type="text" id="reg-date" placeholder="2026. 07. 11." style="border-color: #d4b896;">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label for="reg-subtitle" style="color: #7a5c40;">Alcím (opcionális)</label>
+                            <input type="text" id="reg-subtitle" placeholder="pl. Nászajándék" style="border-color: #d4b896;">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label for="reg-slug" style="color: #7a5c40;">Egyedi link neve</label>
+                            <input type="text" id="reg-slug" placeholder="boribeni" style="border-color: #d4b896;">
+                            <small style="color: #b09070;">tiethegifts.com/?s=<b>boribeni</b></small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Welcome message card -->
+                <div style="background: linear-gradient(135deg, #f5f9f5, #eef5ec); border: 1px solid #ccdfc8; border-radius: 16px; padding: 32px; margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
+                        <div style="width: 38px; height: 38px; background: linear-gradient(135deg, #8fa082, #6b8260); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1.1rem;">💌</div>
+                        <div>
+                            <h3 style="margin: 0; font-family: var(--font-heading); font-size: 1.25rem; font-style: italic; color: #3a5a30;">Üdvözlő üzenet</h3>
+                            <p style="margin: 0; font-size: 0.8rem; color: #6a8a60;">Ez jelenik meg a nevek alatt a vendégek számára</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-welcome-title" style="color: #4a6a40;">Üdvözlő cím</label>
+                        <input type="text" id="reg-welcome-title" placeholder="Kedves Családunk és Barátaink!" style="border-color: #b8d4b0;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="reg-welcome-text" style="color: #4a6a40;">Üdvözlő szöveg</label>
+                        <textarea id="reg-welcome-text" rows="3" style="border-color: #b8d4b0; resize: vertical;"></textarea>
+                    </div>
+                </div>
+
+                <!-- Appearance card -->
+                <div style="background: linear-gradient(135deg, #f7f5fc, #f0ecf8); border: 1px solid #d4c8ea; border-radius: 16px; padding: 32px; margin-bottom: 24px;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
+                        <div style="width: 38px; height: 38px; background: linear-gradient(135deg, #9b8ec4, #7b6ea4); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1.1rem;">🎨</div>
+                        <div>
+                            <h3 style="margin: 0; font-family: var(--font-heading); font-size: 1.25rem; font-style: italic; color: #4a3a6a;">Megjelenés</h3>
+                            <p style="margin: 0; font-size: 0.8rem; color: #7a6a9a;">Betűtípusok, háttérkép és pénznem</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-theme" style="color: #5a4a7a;">Betűtípus téma</label>
+                        <select id="reg-theme" style="width:100%;padding:11px 14px;border-radius:8px;border:1px solid #c8b8e4;background:white;font-family:var(--font-body);font-size:0.95rem;cursor:pointer;">
+                            <option value="classic">✨ Classic — Playfair &amp; Lato</option>
+                            <option value="chic">🥂 Chic — Cormorant &amp; Montserrat (Elegáns)</option>
+                            <option value="dreamy">🌸 Dreamy — Lora &amp; Quicksand (Álomszerű)</option>
+                            <option value="modern">◼ Modern — Montserrat</option>
+                            <option value="vintage">🕰 Vintage — EB Garamond &amp; Nunito</option>
+                            <option value="luxury">👑 Luxury — Cinzel &amp; Raleway</option>
+                            <option value="romantic">🌹 Romantic — Great Vibes &amp; Roboto</option>
+                            <option value="minimal">◽ Minimal — Outfit</option>
+                            <option value="artdeco">🏛 Art Deco — Prata &amp; Open Sans</option>
+                            <option value="timeless">📜 Timeless — Libre Baskerville &amp; Work Sans</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-hero-image" style="color: #5a4a7a;">Háttérkép (Hero kép)</label>
+                        <input type="url" id="reg-hero-image" placeholder="https://kep-link..." style="border-color: #c8b8e4; border-radius: 8px;">
+                        <small style="color: #9a8aba;">Másolj ki egy képet az internetről és illeszd be ide a linket.</small>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0px;">
+                        <label for="reg-color" style="color: #5a4a7a;">Gombok és főbb elemek színe (Akcentszín)</label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="color" id="reg-color" value="#9cae8d" style="width: 40px; height: 40px; border: none; border-radius: 8px; cursor: pointer; background: none; padding: 0;">
+                            <small style="color: #9a8aba;">Válassz a témához illő színt!</small>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0; margin-top: 15px;">
+                        <label for="reg-currency" style="color: #5a4a7a;">Pénznem</label>
+                        <select id="reg-currency" style="width:100%;padding:11px 14px;border-radius:8px;border:1px solid #c8b8e4;background:white;font-family:var(--font-body);font-size:0.95rem;cursor:pointer;">
+                            <option value="HUF">HUF – Magyar Forint 🇭🇺</option>
+                            <option value="EUR">EUR – Euro 🇪🇺</option>
+                            <option value="USD">USD – US Dollar 🇺🇸</option>
+                            <option value="GBP">GBP – Brit Font 🇬🇧</option>
+                            <option value="CHF">CHF – Svájci Frank 🇨🇭</option>
+                            <option value="PLN">PLN – Lengyel Zloty 🇵🇱</option>
+                            <option value="CZK">CZK – Cseh Korona 🇨🇿</option>
+                            <option value="RON">RON – Román Lej 🇷🇴</option>
+                            <option value="HRK">HRK – Horvát Kuna 🇭🇷</option>
+                            <option value="SEK">SEK – Svéd Korona 🇸🇪</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" style="width:100%;background:linear-gradient(135deg,var(--accent-color),var(--accent-hover));color:white;border:none;border-radius:10px;padding:16px 24px;font-size:1rem;font-family:var(--font-body);letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-weight:600;box-shadow:0 4px 20px rgba(143,160,130,0.35);transition:all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'"><
+                💾 &nbsp; Beállítások mentése</button>
+            </form>
+        </div>
+
+        <!-- PAYPAL TAB -->
+
+        <div id="tab-paypal" style="display:none;">
+            <section style="margin-top: 40px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); border-radius: 16px; padding: 40px; color: white; position: relative; overflow: hidden;">
+                <!-- Decorative circles -->
+                <div style="position: absolute; top: -40px; right: -40px; width: 180px; height: 180px; border-radius: 50%; background: rgba(255,255,255,0.04); pointer-events: none;"></div>
+                <div style="position: absolute; bottom: -60px; left: -30px; width: 240px; height: 240px; border-radius: 50%; background: rgba(255,255,255,0.03); pointer-events: none;"></div>
+                <div style="position: relative; z-index: 1;">
+                    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 8px;">
+                        <div style="background: #009cde; border-radius: 8px; padding: 8px 14px; font-weight: 900; font-size: 1.1rem; letter-spacing: -0.5px; color: white; font-family: sans-serif;">Pay<span style="color: #001c64;">Pal</span></div>
+                        <h2 style="color: white; font-family: var(--font-heading); font-size: 1.6rem; font-weight: 400; font-style: italic; margin: 0;">Fizetési Integráció</h2>
+                    </div>
+                    <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem; margin-bottom: 30px; max-width: 480px;">A vendégek hozzájárulásait közvetlenül a PayPal.me fiókodra irányítjuk. Egyszerű, biztonságos, azonnali.</p>
+
+                    <form id="integration-settings-form">
+                        <div style="background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 20px 24px; margin-bottom: 20px;">
+                            <label style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: rgba(255,255,255,0.5); margin-bottom: 12px;">PayPal.me felhasználónév</label>
+                            <div style="display: flex; align-items: center; gap: 0;">
+                                <span style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-right: none; padding: 12px 16px; border-radius: 8px 0 0 8px; color: rgba(255,255,255,0.5); font-size: 0.9rem; white-space: nowrap;">paypal.me/</span>
+                                <input type="text" id="reg-paypal" placeholder="boriesbeni"
+                                    style="flex: 1; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 0 8px 8px 0; padding: 12px 16px; color: white; font-size: 1rem; font-family: var(--font-body); outline: none; transition: border-color 0.3s;"
+                                    onfocus="this.style.borderColor='rgba(0,156,222,0.8)'"
+                                    onblur="this.style.borderColor='rgba(255,255,255,0.2)'"
+                                    oninput="document.getElementById('paypal-preview').textContent = this.value ? 'https://paypal.me/' + this.value : '—'">
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 12px; display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 0.75rem; color: rgba(255,255,255,0.4);">Előnézet:</span>
+                            <span id="paypal-preview" style="font-size: 0.8rem; color: #009cde; font-family: monospace;">—</span>
+                        </div>
+                    </form>
+
+                    <button type="submit" style="width: 100%; background: linear-gradient(135deg, #009cde, #003087); color: white; border: none; border-radius: 8px; padding: 14px 24px; font-size: 0.9rem; font-family: var(--font-body); letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; transition: opacity 0.3s; font-weight: 600;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+                        💳 &nbsp; Fizetési adatok mentése
+                    </button>
+                </div>
+            </section>
+        </div>
+        <!-- Categories Tab -->
+        <div id="tab-categories" style="display:none;">
+            <section style="margin-top: 40px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); border-radius: 16px; padding: 40px; color: white; position: relative; overflow: hidden;">
+                <div style="position: absolute; top: -40px; right: -40px; width: 180px; height: 180px; border-radius: 50%; background: rgba(255,255,255,0.04); pointer-events: none;"></div>
+                <div style="position: absolute; bottom: -60px; left: -30px; width: 240px; height: 240px; border-radius: 50%; background: rgba(255,255,255,0.03); pointer-events: none;"></div>
+                <div style="position: relative; z-index: 1;">
+                    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 8px;">
+                        <div style="background: #009cde; border-radius: 8px; padding: 8px 14px; font-weight: 900; font-size: 1.1rem; letter-spacing: -0.5px; color: white; font-family: sans-serif;">📂 Kategóriák</div>
+                        <h2 style="color: white; font-family: var(--font-heading); font-size: 1.6rem; font-weight: 400; font-style: italic; margin: 0;">Kategóriakezelés</h2>
+                    </div>
+                    <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem; margin-bottom: 30px; max-width: 480px;">
+                        Itt hozhatsz létre, szerkeszthetsz, törölhetsz és újrarendezheted a kategóriákat. A zománc színek globális beállítása itt is elérhető.
+                    </p>
+                    <button id="open-add-category-modal" style="background: linear-gradient(135deg, #009cde, #003087); color: white; border: none; border-radius: 8px; padding: 12px 24px; font-size: 0.9rem; font-family: var(--font-body); letter-spacing: 1px; cursor: pointer; transition: opacity 0.3s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">➕ Új kategória</button>
+                    <button id="open-enamel-colors-modal" style="background: linear-gradient(135deg, #6a0dad, #4b0082); color: white; border: none; border-radius: 8px; padding: 12px 24px; font-size: 0.9rem; font-family: var(--font-body); margin-left: 12px; letter-spacing: 1px; cursor: pointer; transition: opacity 0.3s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">🎨 Zománc színek</button>
+                    <div id="categories-list" style="margin-top: 20px;"></div>
+                </div>
+            </section>
+        </div>
+        <!-- Add/Edit Category Modal -->
+        <div class="modal-overlay" id="category-modal" style="display:none;">
+            <div class="modal">
+                <button class="close-btn" id="close-category-modal">&times;</button>
+                <h2 id="category-modal-title" style="font-size: 2rem;">Új kategória</h2>
+                <form id="category-form">
+                    <div class="form-group">
+                        <label for="category-name">Név</label>
+                        <input type="text" id="category-name" required placeholder="Pl. Medálok">
+                    </div>
+                    <div class="form-group">
+                        <label for="category-order">Sorrend (0‑n)</label>
+                        <input type="number" id="category-order" required min="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="category-icon">Ikon (URL vagy SVG data)</label>
+                        <input type="text" id="category-icon" placeholder="https://.../icon.svg">
+                    </div>
+                    <button type="submit" style="background: linear-gradient(135deg, #009cde, #003087); color: white; border: none; border-radius: 8px; padding: 12px 24px; font-size: 0.9rem; cursor: pointer; margin-top: 12px;">Mentés</button>
+                </form>
+            </div>
+        </div>
+        <!-- Enamel Colors Modal -->
+        <div class="modal-overlay" id="enamel-colors-modal" style="display:none;">
+            <div class="modal">
+                <button class="close-btn" id="close-enamel-modal">&times;</button>
+                <h2 style="font-size: 2rem;">Globális zománc színek</h2>
+                <div id="enamel-colors-list" style="margin-top: 12px;"></div>
+                <div class="form-group" style="margin-top: 12px;">
+                    <label for="new-enamel-color">Új szín (hex)</label>
+                    <input type="text" id="new-enamel-color" placeholder="#ff5733">
+                    <button id="add-enamel-color-btn" style="background: linear-gradient(135deg, #ff8c00, #ff4500); color: white; border: none; border-radius: 4px; padding: 6px 12px; margin-left: 8px; cursor: pointer;">Hozzáad</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Gift Modal -->
+        <div class="modal-overlay" id="add-gift-modal">
+            <div class="modal">
+                <button class="close-btn" id="close-add-modal">&times;</button>
+                <h2 class="names" style="font-size: 2rem;">Új ajándék</h2>
+                <form id="add-gift-form">
+                    <div class="form-group">
+                        <label for="gift-title">Ajándék / Alap neve</label>
+                        <input type="text" id="gift-title" required placeholder="Pl. Nászút Alap vagy KitchenAid">
+                    </div>
+                    <div class="form-group">
+                        <label for="gift-type">Típus</label>
+                        <select id="gift-type" class="form-control" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid var(--border-color); background: white;" onchange="toggleGiftLinkField(this.value)">
+                            <option value="physical">Tárgyi Ajándék (Az alsó szekcióba kerül)</option>
+                            <option value="fund">Pénzbeli Alap/Cél (A felső \"Közös Célok\" közé kerül)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="gift-price" id="gift-price-label">Teljes ár / Célösszeg</label>
+                        <input type="number" id="gift-price" required placeholder="50000">
+                    </div>
+                    <div class="form-group">
+                        <label for="gift-image">Kép linkje (URL)</label>
+                        <input type="url" id="gift-image" placeholder="https://kep-link.hu" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid var(--border-color); background: white;">
+                        <small style="color: #888; display: block; margin-top: 5px;">Csak illeszd be a képet valahonnan (pl. IKEA). Igy teljesen ingyenes!</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="gift-description">Leírás (miert szeretnétek ezt az ajándékot?)</label>
+                        <textarea id="gift-description" rows="2" placeholder="Pl. Rég álmodunk erről, nagyon használnánk a közös konyhánkban!"></textarea>
+                        <div class="form-group" id="gift-category-checkboxes">
+                            <label>Kategóriák</label>
+                            <div id="category-checkboxes-container" style="display:flex;flex-direction:column;gap:4px;margin-top:4px;">
+                                <!-- Checkboxes will be injected here -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group" id="gift-link-group">
+                        <label for="gift-link">Vásárlási link (opcionális)</label>
+                        <input type="url" id="gift-link" placeholder="https://ikea.hu/...">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Hozzáadás a listához</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Firebase SDKs -->
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
+        <!-- Super Admin Tab Content -->
+        <div id="tab-superadmin" style="display:none; padding: 20px;">
+            <section class="admin-card">
+                <h2 style="font-family: var(--font-heading); color: var(--accent-color);">Admin Eszközök (Tulajdonos)</h2>
+                <div style="margin-bottom: 30px; background: #fafafa; padding: 20px; border-radius: 12px; border: 1px solid #ddd;">
+                    <h3 style="font-size: 1.1rem; margin-bottom: 12px;">🆕 Új Etsy Kód Hozzáadása</h3>
+                    <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">Ide írd be az eladott Etsy rendelésszámokat, hogy a vevőid be tudjanak regisztrálni.</p>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="new-etsy-code" placeholder="Pl. 123456789" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                        <button class="btn btn-primary" onclick="window.addEtsyCode()" style="padding: 10px 20px;">Hozzáadás</button>
+                    </div>
+                </div>
+                
+                <h3 style="margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;">Regisztrált Felhasználók</h3>
+                <div id="superadmin-user-list" style="display: flex; flex-direction: column; gap: 12px;">
+                    <p style="color: #888; font-style: italic;">Betöltés...</p>
+                </div>
+            </section>
+        </div>
+
+        <script>
+        window.switchTab = (tabId) => {
+            const tabs = ['tab-gifts', 'tab-website', 'tab-paypal', 'tab-superadmin'];
+            const btns = ['tab-btn-gifts', 'tab-btn-website', 'tab-btn-paypal', 'tab-btn-superadmin'];
+            
+            tabs.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = id === tabId ? 'block' : 'none';
+            });
+            
+            btns.forEach(id => {
+                const btn = document.getElementById(id);
+                if (!btn) return;
+                const isActive = id === 'tab-btn-' + tabId.replace('tab-','');
+                btn.style.borderBottomColor = isActive ? 'var(--accent-color)' : 'transparent';
+                btn.style.color = isActive ? 'var(--accent-color)' : '#999';
+                btn.style.fontWeight = isActive ? '600' : '400';
+            });
+        };
+        </script>
+        <script src="admin.js"></script>
+    </body>
+</html>
