@@ -18,7 +18,7 @@
   flex-wrap: wrap !important;
   justify-content: center !important;
   gap: 24px !important; /* increased spacing between category boxes */
-  margin-top: 4px !important;
+  margin-top: 24px !important;
 }
 
 .category-badge-wrapper {
@@ -63,8 +63,8 @@
 .lang-selector-wrap {
   display: inline-flex !important;
   align-items: center !important;
-  gap: 4px !important;
-  margin: 8px !important;
+  gap: 12px !important; /* increased gap between icon and selector */
+  margin: 24px !important; /* increased margin around language selector */
 }
 
 .lang-selector-wrap select {
