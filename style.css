@@ -1,4 +1,4 @@
-/* Global style for category badges */
+/* Existing category styles (unchanged) */
 .category-badge {
   display: inline-flex;
   align-items: center;
@@ -13,16 +13,14 @@
   overflow: hidden;
 }
 
-/* Layout for the container of all category badges */
 .category-badges {
   display: flex !important;
   flex-wrap: wrap !important;
   justify-content: center !important;
-  gap: 12px !important;
+  gap: 24px !important; /* increased spacing between category boxes */
   margin-top: 4px !important;
 }
 
-/* Wrapper for each individual category badge */
 .category-badge-wrapper {
   width: 110px !important;               /* fixed width */
   flex: 0 0 110px !important;           /* prevent shrinking/growing */
@@ -33,7 +31,6 @@
   justify-content: flex-start !important;
 }
 
-/* Icon container */
 .category-icon {
   width: 48px !important;
   height: 48px !important;
@@ -45,14 +42,12 @@
   flex-shrink: 0;
 }
 
-/* Icon image */
 .category-icon img {
   width: 100% !important;
   height: 100% !important;
   object-fit: contain !important;
 }
 
-/* Category name styling */
 .category-name {
   text-align: center !important;
   margin-top: 4px !important;
@@ -61,4 +56,23 @@
   word-break: break-word !important;
   hyphens: auto !important;
   overflow-wrap: break-word !important;
+}
+
+/* New: language selector styling to restore original appearance */
+.lang-selector-wrap {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  margin: 8px !important;
+}
+
+.lang-selector-wrap select {
+  padding: 4px 8px;
+  font-size: 0.9rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.lang-icon {
+  font-size: 1rem;
 }
