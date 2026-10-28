@@ -321,7 +321,12 @@ const renderAdminGifts = (gifts) => {
                 <div class="category-badges" style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap;">
                     ${gift.categoryIds && gift.categoryIds.map(catId => {
                         const cat = allCategories[String(catId)];
-                        return cat ? `<span class="category-badge" style="background:#333;color:#fff;padding:2px 6px;border-radius:4px;font-size:0.75rem;">${cat.name}</span>` : '';
+                        return cat ? `<div class="category-badge-wrapper" style="display:flex;flex-direction:column;align-items:center;">
+    <div class="category-icon" style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        ${cat.icon ? `<img src="${cat.icon}" style="width:100%!important;height:100%!important;object-fit:contain!important;">` : ''}
+    </div>
+    <span class="category-name" style="margin-top:4px;font-size:0.75rem;color:#fff;">${cat.name}</span>
+</div>` : '';
                     }).join('')}
                 </div>
                 <small>Összegyűlt: <strong id="funded-display-${gift.id}">${formatAdminCurrency(gift.funded || 0, currency)}</strong></small>
