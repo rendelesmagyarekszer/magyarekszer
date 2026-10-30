@@ -20,7 +20,8 @@ export default function CategoryClient({ slug }: CategoryClientProps) {
             if (slug === 'zomanc') {
                 return product.isEnamel === true;
             }
-            return product.category === slug;
+            // Support multi-category products
+            return product.categories && product.categories.includes(slug);
         });
         
         if (sortBy === 'asc') {

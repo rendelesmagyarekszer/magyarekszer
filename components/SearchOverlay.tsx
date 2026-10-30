@@ -99,7 +99,7 @@ const SearchOverlay = () => {
                                     >
                                         <Link 
                                             href={`/product/${product.id}`}
-                                            onClick={() => setIsSearchOpen(false)}
+                                            onClick={() => { setIsSearchOpen(false); setSearchQuery(''); }}
                                             className="group flex items-center space-x-4 p-3 rounded-lg bg-[#1e1405]/40 border border-[#c9a56a]/10 hover:border-[#c9a56a]/40 transition-all hover:bg-[#1e1405]"
                                         >
                                             <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-md border border-[#c9a56a]/20">

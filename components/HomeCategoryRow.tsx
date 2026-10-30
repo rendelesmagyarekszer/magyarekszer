@@ -1,3 +1,8 @@
+// === Permanent Rule for HomeCategoryRow ===
+// 1. Data & Display Separation: Category names and images must be loaded dynamically from admin UI / database / JSON configuration.
+// 2. No Code Modifications Allowed: The visual structure, CSS grid, gold borders, motion-dot animation, and image frame layout must never be altered in code.
+// 3. Admin Driven Updates: Any new category name or image set via admin should automatically appear within the stable October 2 design without code changes.
+// === End of Rule ===
 "use client";
 
 import React, { useState, useEffect } from 'react';
