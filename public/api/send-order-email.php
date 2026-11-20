@@ -292,8 +292,54 @@ if (!empty($customerEmail) && filter_var($customerEmail, FILTER_VALIDATE_EMAIL))
     $customerSent = dispatch_order_email($customerEmail, $customerSubject, $customerEmailHtml, $GMAIL_USER, $GMAIL_APP_PASSWORD, "MagyarÉkszer");
 }
 
+// 3. Save order record to persistent orders.json
+$ordersFile = __DIR__ . '/orders.json';
+$existingOrders = [];
+if (file_exists($ordersFile)) {
+    $content = @file_get_contents($ordersFile);
+    if (!empty($content)) {
+        $existingOrders = json_decode($content, true) ?: [];
+    }
+}
+
+$orderId = !empty($order['id']) ? $order['id'] : ('ORD-' . date('Ymd-His') . '-' . rand(100, 999));
+$orderRecord = [
+    'id' => $orderId,
+    'date' => date('c'),
+    'items' => $order['items'] ?? [],
+    'total' => (float)($order['total'] ?? 0),
+    'status' => 'pending', // pending, shipped, delivered
+    'paymentMethod' => $paymentMethod,
+    'paymentStatus' => $isBankTransfer ? 'pending' : 'cash_on_delivery', // pending, paid, cash_on_delivery
+    'paidAt' => null,
+    'paidVia' => null,
+    'customerInfo' => [
+        'fullName' => $fullName,
+        'email' => $customerEmail,
+        'phone' => $customerPhone
+    ],
+    'shippingInfo' => [
+        'address' => $shippingAddress,
+        'method' => $shippingMethod,
+        'postcode' => $order['shippingInfo']['postcode'] ?? $order['shipping']['postcode'] ?? '',
+        'city' => $order['shippingInfo']['city'] ?? $order['shipping']['city'] ?? ''
+    ],
+    'billingInfo' => $order['billingInfo'] ?? $order['billing'] ?? [
+        'name' => $fullName,
+        'address' => $shippingAddress,
+        'isCompany' => false
+    ],
+    'comment' => $orderComment,
+    'premiumBox' => !empty($order['premiumBox']),
+    'premiumBoxPrice' => $order['premiumBoxPrice'] ?? 1500
+];
+
+array_unshift($existingOrders, $orderRecord);
+@file_put_contents($ordersFile, json_encode($existingOrders, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), LOCK_EX);
+
 echo json_encode([
     'success' => true,
+    'orderId' => $orderId,
     'storeSent' => $storeSent,
     'customerSent' => $customerSent
 ]);

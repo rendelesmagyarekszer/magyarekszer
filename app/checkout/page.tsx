@@ -223,7 +223,9 @@ export default function CheckoutPage() {
         };
 
         // Prepare detailed order data
+        const generatedOrderId = `ORD-${Date.now()}`;
         const orderData = {
+            id: generatedOrderId,
             items: cartItems.map(item => ({
                 id: item.id,
                 name: item.name,

@@ -1,9 +1,17 @@
+# Biztonsági védelem: az orders.json fájl közvetlen letöltésének tiltása
+<Files "orders.json">
+  Order allow,deny
+  Deny from all
+</Files>
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
 
-  # API email végpont átirányítása a PHP küldő szkriptre
+  # API végpontok átirányítása a megfelelő PHP szkriptekre
   RewriteRule ^api/send-order-email/?$ api/send-order-email.php [L]
+  RewriteRule ^api/orders/?$ api/orders.php [L]
+  RewriteRule ^api/check-kh-emails/?$ api/check-kh-emails.php [L]
 
   # 1. Ha a kért fájl vagy mappa létezik, közvetlenül azt szolgáljuk ki
   RewriteCond %{REQUEST_FILENAME} -f [OR]

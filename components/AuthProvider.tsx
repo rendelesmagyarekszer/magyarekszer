@@ -41,6 +41,9 @@ export interface Order {
         taxNumber?: string;
     };
     paymentMethod: string;
+    paymentStatus?: 'pending' | 'paid' | 'cash_on_delivery';
+    paidAt?: string | null;
+    paidVia?: string | null;
     premiumBox?: boolean;
     marketingConsent?: boolean;
 }
@@ -142,6 +145,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             userId: user?.email || orderData.customerInfo.email || 'guest',
             date: new Date().toISOString(),
             status: 'pending',
+            paymentStatus: (orderData.paymentMethod || '').toLowerCase().includes('utal') ? 'pending' : 'cash_on_delivery',
+            paidAt: null,
+            paidVia: null,
             viewed: false
         };
         
