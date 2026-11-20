@@ -3,7 +3,7 @@ export const dynamic = 'force-static';
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 
-const STORE_EMAIL = 'rendeles.magyarekszer@gmail.com';
+const STORE_EMAIL = 'magyarekszer@gmail.com';
 
 function formatPrice(n: number) {
     return `${n.toLocaleString('hu-HU')} Ft`;
@@ -64,7 +64,7 @@ function buildStoreEmail(order: any): string {
             ${order.comment ? `<div style="background:#1a1005;border:1px solid #c9a56a22;padding:20px;border-radius:4px;"><p style="color:#c9a56a;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;margin:0 0 12px;">Megjegyzés</p><p style="margin:4px 0;font-size:13px;font-style:italic;">${order.comment}</p></div>` : ''}
         </div>
     </div>
-    <p style="text-align:center;color:#555;font-size:10px;margin-top:24px;letter-spacing:0.2em;text-transform:uppercase;">MagyarÉkszer • rendeles.magyarekszer@gmail.com</p>
+    <p style="text-align:center;color:#555;font-size:10px;margin-top:24px;letter-spacing:0.2em;text-transform:uppercase;">MagyarÉkszer • magyarekszer@gmail.com</p>
 </div>
 </body>
 </html>`;

@@ -24,7 +24,7 @@ if (!$order) {
     exit;
 }
 
-$STORE_EMAIL = 'rendeles.magyarekszer@gmail.com';
+$STORE_EMAIL = 'magyarekszer@gmail.com';
 $GMAIL_USER = 'rendeles.magyarekszer@gmail.com';
 $GMAIL_APP_PASSWORD = 'kiiyjnpypmogievh';
 
