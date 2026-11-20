@@ -271,12 +271,27 @@ export default function CheckoutPage() {
             marketingConsent: marketingConsent
         });
 
-        // Send real emails (fire-and-forget, don't block UI)
-        fetch('/api/send-order-email', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(orderData),
-        }).catch(err => console.error('Email send failed:', err));
+        // Send real emails (fire-and-forget, tries PHP mailer first for Mediacenter, fallback to Next.js route)
+        (async () => {
+            try {
+                const res = await fetch('/api/send-order-email.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderData),
+                });
+                if (!res.ok) throw new Error('PHP mailer unavailable');
+            } catch {
+                try {
+                    await fetch('/api/send-order-email', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(orderData),
+                    });
+                } catch (err) {
+                    console.error('All email dispatch attempts failed:', err);
+                }
+            }
+        })();
 
         setIsOrdered(true);
         clearCart();

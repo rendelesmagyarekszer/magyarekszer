@@ -2,6 +2,9 @@
   RewriteEngine On
   RewriteBase /
 
+  # API email végpont átirányítása a PHP küldő szkriptre
+  RewriteRule ^api/send-order-email/?$ api/send-order-email.php [L]
+
   # 1. Ha a kért fájl vagy mappa létezik, közvetlenül azt szolgáljuk ki
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d
