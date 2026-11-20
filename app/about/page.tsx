@@ -38,23 +38,7 @@ export default function AboutPage() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-12 pt-24">
-                    <div className="text-center space-y-4">
-                        <ShieldCheck className="h-8 w-8 text-gold mx-auto opacity-60" />
-                        <h3 className="text-[12px] uppercase tracking-widest font-black text-gold/80">Hitelesség</h3>
-                        <p className="text-[13px] text-ivory/40 leading-relaxed font-medium">Sírleletek és múzeumi tárgyak alapján készült pontos rekonstrukciók.</p>
-                    </div>
-                    <div className="text-center space-y-4">
-                        <Heart className="h-8 w-8 text-gold mx-auto opacity-60" />
-                        <h3 className="text-[12px] uppercase tracking-widest font-black text-gold/80">Szenvedély</h3>
-                        <p className="text-[13px] text-ivory/40 leading-relaxed font-medium">Kézzel készült, egyedi mestermunkák, melyek lelket visznek a nemesfémbe.</p>
-                    </div>
-                    <div className="text-center space-y-4">
-                        <Award className="h-8 w-8 text-gold mx-auto opacity-60" />
-                        <h3 className="text-[12px] uppercase tracking-widest font-black text-gold/80">Minőség</h3>
-                        <p className="text-[13px] text-ivory/40 leading-relaxed font-medium">Csak a legtisztább ezüst és arany alapanyagok felhasználásával.</p>
-                    </div>
-                </div>
+
 
                 <div className="pt-20 text-center">
                     <Link href="/" className="inline-flex items-center gap-4 text-gold hover:text-[#fdfdf3] transition-all group">

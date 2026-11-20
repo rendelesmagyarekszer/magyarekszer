@@ -8,6 +8,15 @@ import { useConfig } from './ConfigProvider';
 import Link from 'next/link';
 import Image from 'next/image';
 
+// Ekezetmentesito es kisbetusito fuggveny
+const normalizeText = (text: string = '') => {
+    return text
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim();
+};
+
 const SearchOverlay = () => {
     const { searchQuery, setSearchQuery, isSearchOpen, setIsSearchOpen } = useSearch();
     const { t, formatPrice, products, collections } = useConfig();
@@ -32,19 +41,47 @@ const SearchOverlay = () => {
         return () => window.removeEventListener('keydown', handleEsc);
     }, [setIsSearchOpen]);
 
-    const filteredProducts = searchQuery.trim() === "" 
-        ? [] 
-        : products.filter(p => {
-            const nameMatch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
-            const descMatch = p.description.toLowerCase().includes(searchQuery.toLowerCase());
-            const skuMatch = p.sku?.toLowerCase().includes(searchQuery.toLowerCase());
-            
-            // Check collection name match
-            const collection = collections.find(c => c.id === p.collectionId);
-            const collectionMatch = collection?.name.toLowerCase().includes(searchQuery.toLowerCase());
-            
-            return nameMatch || descMatch || skuMatch || collectionMatch;
-        }).slice(0, 6);
+    const filteredProducts = React.useMemo(() => {
+        const raw = searchQuery.trim();
+        if (!raw) return [];
+
+        const normalizedQuery = normalizeText(raw);
+        const queryTerms = normalizedQuery.split(/\s+/).filter(Boolean);
+
+        // Kivalogatjuk azokat a termekeket, ahol a nevben vagy cikkszamaban benne van a keresett szo
+        // Eloszor a nevben es cikkszamaban egyezo termekeket rangsoroljuk elore!
+        const scoredProducts = products.map(p => {
+            const normName = normalizeText(p.name);
+            const normSku = normalizeText(p.sku);
+            const normDesc = normalizeText(p.description);
+
+            // Nev egyezes pontossaga
+            const nameMatchesAllTerms = queryTerms.every(term => normName.includes(term));
+            const skuMatches = normSku.includes(normalizedQuery);
+            const nameContainsExactPhrase = normName.includes(normalizedQuery);
+
+            let score = 0;
+            if (nameContainsExactPhrase) score += 100;
+            if (skuMatches) score += 80;
+            if (nameMatchesAllTerms) score += 50;
+            // Ha a nevben csak nehany szo van benne
+            const matchedTermsInName = queryTerms.filter(t => normName.includes(t)).length;
+            if (matchedTermsInName > 0) score += matchedTermsInName * 10;
+
+            // Ha a nevben egyaltalan nincs, csak a leirasban
+            if (score === 0 && normDesc.includes(normalizedQuery)) {
+                score = 5;
+            }
+
+            return { product: p, score };
+        });
+
+        return scoredProducts
+            .filter(item => item.score > 0)
+            .sort((a, b) => b.score - a.score)
+            .map(item => item.product)
+            .slice(0, 24); // Több találat megjelenítése (6 helyett 24)
+    }, [searchQuery, products]);
 
     return (
         <AnimatePresence>
