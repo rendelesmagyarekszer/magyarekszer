@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useCart } from '@/components/CartProvider';
 import { useConfig } from '@/components/ConfigProvider';
-import { Truck, MapPin, Wallet, CheckCircle2, ArrowLeft, Ticket, X, Star, Eye, Building2 } from 'lucide-react';
+import { Truck, MapPin, Wallet, CheckCircle2, ArrowLeft, Ticket, X, Star, Eye, Building2, Info, Sparkles, Gift } from 'lucide-react';
 import ImagePreviewModal from '@/components/ImagePreviewModal';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
@@ -88,15 +88,57 @@ export default function CheckoutPage() {
 
     const shippingOptions = baseShippingOptions;
 
-    const paymentOptions = [
-        { id: 'transfer', name: t('payment_transfer'), icon: Building2, description: t('payment_transfer_desc') },
-        { id: 'cod', name: t('payment_cod'), icon: Wallet, description: t('payment_cod_desc') },
-        { id: 'inperson', name: t('payment_inperson') || 'Személyes fizetés (üzletben)', icon: MapPin, description: t('payment_inperson_desc') || 'Az üzletünkben személyesen fizet átvételkor.' },
-    ];
-
     const [selectedShippingId, setSelectedShippingId] = useState(shippingOptions[0]?.id || 'mpl-delivery');
     const shipping = shippingOptions.find(opt => opt.id === selectedShippingId) || shippingOptions[0] || { id: 'mpl-delivery', name: '', price: 0, originalPrice: 0, icon: Truck, description: '' };
+
+    const isDeliveryAdvanceOnly = shippingSettings?.deliveryAdvancePaymentOnly !== false;
+    const isLocalPickup = shipping.id === 'local-pickup';
+
+    const paymentOptions = useMemo(() => {
+        if (!isLocalPickup && isDeliveryAdvanceOnly) {
+            // Kiszállítás esetén ideiglenesen nincs utánvét, csak biztonságos banki előreutalás
+            return [
+                { 
+                    id: 'transfer', 
+                    name: t('payment_transfer') || 'Banki Előreutalás', 
+                    icon: Building2, 
+                    description: t('payment_transfer_desc') || 'Kényelmes és biztonságos közvetlen banki átutalás.' 
+                }
+            ];
+        }
+
+        if (isLocalPickup) {
+            // Személyes átvétel esetén készpénzes/kártyás utánvét a helyszínen vagy előreutalás
+            return [
+                { 
+                    id: 'inperson', 
+                    name: 'Utánvét / Személyes fizetés átvételkor', 
+                    icon: Wallet, 
+                    description: 'Fizetés a műhelyben átvételkor (készpénzzel vagy bankkártyával).' 
+                },
+                { 
+                    id: 'transfer', 
+                    name: t('payment_transfer') || 'Banki Előreutalás', 
+                    icon: Building2, 
+                    description: t('payment_transfer_desc') || 'Kényelmes és biztonságos közvetlen banki átutalás.' 
+                }
+            ];
+        }
+
+        return [
+            { id: 'transfer', name: t('payment_transfer'), icon: Building2, description: t('payment_transfer_desc') },
+            { id: 'cod', name: t('payment_cod'), icon: Wallet, description: t('payment_cod_desc') },
+            { id: 'inperson', name: t('payment_inperson') || 'Személyes fizetés (üzletben)', icon: MapPin, description: t('payment_inperson_desc') || 'Az üzletünkben személyesen fizet átvételkor.' },
+        ];
+    }, [isLocalPickup, isDeliveryAdvanceOnly, t]);
+
     const [payment, setPayment] = useState(paymentOptions[0]);
+
+    useEffect(() => {
+        if (!paymentOptions.some(opt => opt.id === payment?.id)) {
+            setPayment(paymentOptions[0]);
+        }
+    }, [paymentOptions, payment?.id]);
     const [isOrdered, setIsOrdered] = useState(false);
     const [isMplSelectorOpen, setIsMplSelectorOpen] = useState(false);
     const [isFoxpostSelectorOpen, setIsFoxpostSelectorOpen] = useState(false);
@@ -666,9 +708,38 @@ export default function CheckoutPage() {
 
                         {/* 5. Payment Method */}
                         <section id="payment-method-section">
-                            <h2 className="text-xl font-serif mb-12 uppercase tracking-[0.3em] text-[#c9a56a] border-b border-[#c9a56a]/10 pb-6 italic">
+                            <h2 className="text-xl font-serif mb-6 sm:mb-8 uppercase tracking-[0.3em] text-[#c9a56a] border-b border-[#c9a56a]/10 pb-6 italic">
                                 5. {t('payment_method')}
                             </h2>
+
+                            {!isLocalPickup && isDeliveryAdvanceOnly && (
+                                <div className="p-4 sm:p-5 bg-gold/10 border border-gold/30 rounded-xl flex items-start gap-4 text-gold mb-8 shadow-sm">
+                                    <Info className="h-5 w-5 text-gold flex-shrink-0 mt-0.5" />
+                                    <div>
+                                        <p className="text-xs sm:text-sm font-bold tracking-wide uppercase text-ivory">
+                                            Kiszállítás esetén jelenleg kizárólag banki előreutalásos fizetés érhető el
+                                        </p>
+                                        <p className="text-[11px] text-ivory/70 font-serif italic mt-1 leading-relaxed">
+                                            A csomag feladása előtt a vételár átutalása szükséges. (Utánvétes / helyszíni fizetésre a műhelyben történő személyes átvétel esetén van lehetőség.)
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {isLocalPickup && (
+                                <div className="p-4 sm:p-5 bg-emerald-950/30 border border-emerald-500/30 rounded-xl flex items-start gap-4 text-emerald-300 mb-8 shadow-sm">
+                                    <MapPin className="h-5 w-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                                    <div>
+                                        <p className="text-xs sm:text-sm font-bold tracking-wide uppercase text-emerald-200">
+                                            Személyes átvétel a műhelyünkben
+                                        </p>
+                                        <p className="text-[11px] text-emerald-400/80 font-serif italic mt-1 leading-relaxed">
+                                            Átvételkor a helyszínen fizethet készpénzzel vagy bankkártyával, illetve választhatja a biztonságos banki előreutalást is.
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="space-y-6">
                                 {paymentOptions.map((option) => (
                                     <div key={option.id} className="space-y-4">

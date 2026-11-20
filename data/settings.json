@@ -181,7 +181,8 @@
     "localPickupEnabled": true,
     "localPickupPrice": 0,
     "freeShippingEnabled": true,
-    "freeShippingThreshold": 20000
+    "freeShippingThreshold": 20000,
+    "deliveryAdvancePaymentOnly": true
   },
   "translations": {
     "HU": {

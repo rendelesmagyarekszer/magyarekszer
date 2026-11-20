@@ -452,6 +452,24 @@ export default function AdminDashboard() {
                             <p className="text-[10px] text-ivory/50 font-serif italic mt-1">Ezen összeg felett a vevőnek díjtalan a szállítás (pl. 20000).</p>
                         </div>
                     </div>
+
+                    <div className="p-8 border border-gold/10 bg-[#150e03]/30 space-y-6 md:col-span-2 lg:col-span-1">
+                        <div className="flex items-center gap-4 border-b border-gold/10 pb-4">
+                            <input 
+                                type="checkbox"
+                                id="advancePaymentOnlyToggle"
+                                checked={shippingSettings?.deliveryAdvancePaymentOnly ?? true}
+                                onChange={(e) => updateShippingSettings({ ...shippingSettings, deliveryAdvancePaymentOnly: e.target.checked })}
+                                className="w-6 h-6 accent-gold cursor-pointer"
+                            />
+                            <label htmlFor="advancePaymentOnlyToggle" className="text-base uppercase tracking-widest font-black cursor-pointer text-gold">
+                                Kiszállításkor csak előreutalás
+                            </label>
+                        </div>
+                        <p className="text-xs text-ivory/70 leading-relaxed font-serif italic">
+                            Ideiglenes korlátozás: Kiszállítás választása esetén a vevő kizárólag előreutalással tud fizetni (nincs utánvét). Utánvét/helyszíni fizetés csak személyes átvételnél érhető el.
+                        </p>
+                    </div>
                 </div>
             </div>
 

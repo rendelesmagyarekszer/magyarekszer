@@ -37,6 +37,7 @@ export interface ShippingSettings {
     localPickupPrice: number;
     freeShippingEnabled?: boolean;
     freeShippingThreshold?: number;
+    deliveryAdvancePaymentOnly?: boolean;
 }
 
 type Currency = 'HUF';
@@ -104,7 +105,8 @@ const DEFAULT_SHIPPING_SETTINGS: ShippingSettings = {
     localPickupEnabled: true,
     localPickupPrice: 0,
     freeShippingEnabled: true,
-    freeShippingThreshold: 20000
+    freeShippingThreshold: 20000,
+    deliveryAdvancePaymentOnly: true
 };
 
 const DEFAULT_ANKER_PRICES = {
