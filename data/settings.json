@@ -179,7 +179,9 @@
     "mplBoxEnabled": false,
     "mplBoxPrice": 3000,
     "localPickupEnabled": true,
-    "localPickupPrice": 0
+    "localPickupPrice": 0,
+    "freeShippingEnabled": true,
+    "freeShippingThreshold": 20000
   },
   "translations": {
     "HU": {
@@ -268,7 +270,11 @@
       "stone_hegyikristaly": "Hegyikristály",
       "stone_holdko": "Holdkő",
       "stone_igazgyongy": "Igazgyöngy",
-      "page_open_hours_content": "Hétfő - Csütörtök: 10:00 - 17:00\nPéntek: 10:00 - 16:00\nEbédidő: 12:00 - 12:30\nSzombat - Vasárnap: Zárva"
+      "page_open_hours_content": "Hétfő - Csütörtök: 10:00 - 17:00\nPéntek: 10:00 - 16:00\nEbédidő: 12:00 - 12:30\nSzombat - Vasárnap: Zárva",
+      "free_shipping_banner": "20 000 Ft feletti rendelés esetén a házhozszállítás díjmentes! 🎁",
+      "free_shipping_reached": "Gratulálunk! A megrendelésedhez a szállítás díjtalan! 🎉",
+      "free_shipping_remaining": "Még {amount} hiányzik az ingyenes szállításhoz! 🎁",
+      "free_shipping_badge": "INGYENES (20 000 Ft felett)"
     },
     "EN": {
       "cart": "Cart",
@@ -356,7 +362,11 @@
       "stone_hegyikristaly": "Rock crystal",
       "stone_holdko": "Moonstone",
       "stone_igazgyongy": "Pearl",
-      "page_open_hours_content": "Monday - Thursday: 10:00 - 17:00\nFriday: 10:00 - 16:00\nLunch break: 12:00 - 12:30\nSaturday - Sunday: Closed"
+      "page_open_hours_content": "Monday - Thursday: 10:00 - 17:00\nFriday: 10:00 - 16:00\nLunch break: 12:00 - 12:30\nSaturday - Sunday: Closed",
+      "free_shipping_banner": "Free delivery on orders over 20,000 HUF! 🎁",
+      "free_shipping_reached": "Congratulations! Shipping is free for your order! 🎉",
+      "free_shipping_remaining": "{amount} more for free shipping! 🎁",
+      "free_shipping_badge": "FREE (over 20,000 HUF)"
     }
   },
   "collections": [],

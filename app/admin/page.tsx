@@ -427,6 +427,31 @@ export default function AdminDashboard() {
                             />
                         </div>
                     </div>
+
+                    <div className="p-8 border border-gold/10 bg-[#150e03]/30 space-y-6 md:col-span-2 lg:col-span-1">
+                        <div className="flex items-center gap-4 border-b border-gold/10 pb-4">
+                            <input 
+                                type="checkbox"
+                                id="freeShippingToggle"
+                                checked={shippingSettings?.freeShippingEnabled ?? true}
+                                onChange={(e) => updateShippingSettings({ ...shippingSettings, freeShippingEnabled: e.target.checked })}
+                                className="w-6 h-6 accent-gold cursor-pointer"
+                            />
+                            <label htmlFor="freeShippingToggle" className="text-base uppercase tracking-widest font-black cursor-pointer text-gold">
+                                Ingyenes Szállítás Bekapcsolása
+                            </label>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[11px] uppercase tracking-widest text-[#c9a56a] font-black block">Ingyenes szállítás értékhatára (Ft)</label>
+                            <input 
+                                type="number"
+                                value={shippingSettings?.freeShippingThreshold ?? 20000}
+                                onChange={(e) => updateShippingSettings({ ...shippingSettings, freeShippingThreshold: parseInt(e.target.value) || 0 })}
+                                className="w-full bg-black/50 border border-gold/30 text-ivory p-4 text-sm font-bold uppercase tracking-widest focus:outline-none focus:border-gold"
+                            />
+                            <p className="text-[10px] text-ivory/50 font-serif italic mt-1">Ezen összeg felett a vevőnek díjtalan a szállítás (pl. 20000).</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 

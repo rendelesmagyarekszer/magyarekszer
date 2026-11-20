@@ -27,6 +27,13 @@ const Navbar = () => {
     return (
         <>
             <header className="glass-nav fixed w-full top-0 z-50">
+                {/* Free Shipping Announcement Banner */}
+                <div className="w-full bg-[#1c1305]/95 backdrop-blur-md text-[#d4af37] border-b border-[#c9a56a]/20 py-1.5 px-3 text-center text-[10px] sm:text-[11px] font-serif tracking-[0.15em] sm:tracking-[0.25em] flex items-center justify-center gap-2 shadow-sm">
+                    <span className="text-[12px] opacity-80">🎁</span>
+                    <span>{t('free_shipping_banner')}</span>
+                    <span className="text-[12px] opacity-80">✨</span>
+                </div>
+
                 {vacationMode?.isActive && (
                     <div className="w-full bg-red-950/90 text-ivory/90 text-center py-2 text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-black shadow-lg border-b border-red-500/20">
                         {t('vacation_banner_text').replace('{date}', vacationMode.returnDate || '')}

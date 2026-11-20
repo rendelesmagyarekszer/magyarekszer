@@ -9,7 +9,12 @@ import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, ChevronLeft } from 'lucid
 
 export default function CartClient() {
     const { cartItems, removeFromCart, totalAmount, baseTotal, discountAmount, addToCart } = useCart();
-    const { formatPrice, t } = useConfig();
+    const { formatPrice, t, shippingSettings } = useConfig();
+
+    const freeShippingThreshold = shippingSettings?.freeShippingThreshold ?? 20000;
+    const isFreeShipping = (shippingSettings?.freeShippingEnabled !== false) && (totalAmount >= freeShippingThreshold);
+    const remainingForFreeShipping = Math.max(0, freeShippingThreshold - totalAmount);
+    const progressPercent = Math.min(100, Math.round((totalAmount / freeShippingThreshold) * 100));
 
     if (cartItems.length === 0) {
         return (
@@ -112,6 +117,45 @@ export default function CartClient() {
 
                     <div className="w-full lg:w-96">
                         <div className="bg-[#2D3419]/40 p-5 sm:p-8 md:p-12 border border-[#c9a56a]/10 sticky top-24 backdrop-blur-md rounded-xl">
+                            {/* Free Shipping Progress Card */}
+                            <div className={`p-4 rounded-xl border mb-8 transition-all ${
+                                isFreeShipping 
+                                    ? 'bg-emerald-950/40 border-emerald-500/30 text-emerald-300' 
+                                    : 'bg-[#150e03]/90 border-[#c9a56a]/20 text-[#fdfdf3]'
+                            }`}>
+                                {isFreeShipping ? (
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-2xl">🎉</span>
+                                        <div>
+                                            <p className="text-xs font-bold uppercase tracking-wider text-emerald-300">
+                                                {t('free_shipping_reached')}
+                                            </p>
+                                            <p className="text-[10px] text-emerald-400/80 font-serif italic mt-0.5">
+                                                A belföldi kiszállítás díjtalan a csomagodhoz!
+                                            </p>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-2.5">
+                                        <div className="flex items-center justify-between text-xs">
+                                            <span className="text-ivory/85 font-serif italic">
+                                                {t('free_shipping_remaining').replace('{amount}', formatPrice(remainingForFreeShipping))}
+                                            </span>
+                                            <span className="text-[10px] text-[#c9a56a] font-bold font-mono">{progressPercent}%</span>
+                                        </div>
+                                        <div className="w-full h-2 bg-black/60 rounded-full overflow-hidden border border-[#c9a56a]/15">
+                                            <div 
+                                                className="h-full bg-gradient-to-r from-[#b08d55] to-[#e6ca85] rounded-full transition-all duration-500 ease-out"
+                                                style={{ width: `${progressPercent}%` }}
+                                            />
+                                        </div>
+                                        <p className="text-[9px] text-[#888888] font-serif italic text-center">
+                                            20 000 Ft feletti rendelés esetén a házhozszállítás ajándék! 🎁
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+
                             <h2 className="font-serif text-xl mb-10 text-[#fdfdf3] uppercase tracking-widest border-b border-[#c9a56a]/10 pb-6 text-center italic">{t('order_summary')}</h2>
                             
                             <div className="space-y-8 text-[11px] mb-12 uppercase tracking-[0.2em] font-bold text-[#999999]">
@@ -125,6 +169,16 @@ export default function CartClient() {
                                         <span>-{formatPrice(discountAmount)}</span>
                                     </div>
                                 )}
+                                <div className="flex justify-between">
+                                    <span>{t('shipping')}</span>
+                                    <span>
+                                        {isFreeShipping ? (
+                                            <span className="text-emerald-400 font-bold tracking-wider">{t('free_label') || 'INGYENES'}</span>
+                                        ) : (
+                                            <span className="text-ivory/40 lowercase italic text-[10px]">pénztárnál</span>
+                                        )}
+                                    </span>
+                                </div>
                                 <div className="flex justify-between border-t border-[#c9a56a]/10 pt-10 text-[18px] font-black text-[#fdfdf3] tracking-[0.1em]">
                                     <span>{t('total')}</span>
                                     <span className="text-[#c9a56a]">{formatPrice(totalAmount)}</span>

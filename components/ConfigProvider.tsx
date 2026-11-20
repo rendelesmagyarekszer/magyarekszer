@@ -35,6 +35,8 @@ export interface ShippingSettings {
     mplBoxPrice: number;
     localPickupEnabled: boolean;
     localPickupPrice: number;
+    freeShippingEnabled?: boolean;
+    freeShippingThreshold?: number;
 }
 
 type Currency = 'HUF';
@@ -93,14 +95,16 @@ interface ConfigContextType {
 }
 
 const DEFAULT_SHIPPING_SETTINGS: ShippingSettings = {
-    foxpostEnabled: true,
+    foxpostEnabled: false,
     foxpostPrice: 1500,
     mplHomeEnabled: true,
     mplHomePrice: 3000,
-    mplBoxEnabled: true,
+    mplBoxEnabled: false,
     mplBoxPrice: 3000,
     localPickupEnabled: true,
-    localPickupPrice: 0
+    localPickupPrice: 0,
+    freeShippingEnabled: true,
+    freeShippingThreshold: 20000
 };
 
 const DEFAULT_ANKER_PRICES = {
@@ -319,6 +323,10 @@ const translations: Record<Language, Record<string, string>> = {
         'page_reference_content': 'Büszkék vagyunk azokra az egyedi alkotásokra, amelyek a műhelyünkből kerültek ki. Minden darab egy-egy különleges történetet mesél el.',
         'page_contact_content': 'Keressen minket bizalommal az alábbi elérhetőségeken: +36 20 807 4841, magyarekszer@gmail.com',
         'page_open_hours_content': 'Hétfő - Csütörtök: 10:00 - 17:00\nPéntek: 10:00 - 16:00\nEbédidő: 12:00 - 12:30\nSzombat - Vasárnap: Zárva',
+        'free_shipping_banner': '20 000 Ft feletti rendelés esetén a házhozszállítás díjmentes! 🎁',
+        'free_shipping_reached': 'Gratulálunk! A megrendelésedhez a szállítás díjtalan! 🎉',
+        'free_shipping_remaining': 'Még {amount} hiányzik az ingyenes szállításhoz! 🎁',
+        'free_shipping_badge': 'INGYENES (20 000 Ft felett)',
         'contact_email_1': 'magyarekszer@gmail.com',
         'contact_email_2': '',
         'contact_phone_1': '+36 20 807 4841',
@@ -522,6 +530,10 @@ const translations: Record<Language, Record<string, string>> = {
         'page_reference_content': 'We are proud of the unique creations that have left our workshop. Every piece tells a special story.',
         'page_contact_content': 'Feel free to contact us at: +36 20 807 4841, magyarekszer@gmail.com',
         'page_open_hours_content': 'Monday - Thursday: 10:00 - 17:00\nFriday: 10:00 - 16:00\nLunch break: 12:00 - 12:30\nSaturday - Sunday: Closed',
+        'free_shipping_banner': 'Free delivery on orders over 20,000 HUF! 🎁',
+        'free_shipping_reached': 'Congratulations! Shipping is free for your order! 🎉',
+        'free_shipping_remaining': '{amount} more for free shipping! 🎁',
+        'free_shipping_badge': 'FREE (over 20,000 HUF)',
         'contact_email_1': 'magyarekszer@gmail.com',
         'contact_email_2': '',
         'contact_phone_1': '+36 20 807 4841',

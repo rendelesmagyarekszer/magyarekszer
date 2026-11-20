@@ -34,22 +34,56 @@ export default function CheckoutPage() {
         title: ''
     });
 
+    const freeShippingThreshold = shippingSettings?.freeShippingThreshold ?? 20000;
+    const isFreeShipping = (shippingSettings?.freeShippingEnabled !== false) && (totalAmount >= freeShippingThreshold);
+
     const baseShippingOptions = [];
 
     if (shippingSettings?.mplHomeEnabled !== false) {
-        baseShippingOptions.push({ id: 'mpl-delivery', name: t('shipping_mpl_home'), price: shippingSettings?.mplHomePrice ?? 3000, icon: Truck, description: t('shipping_mpl_home_desc') });
+        const origPrice = shippingSettings?.mplHomePrice ?? 3000;
+        baseShippingOptions.push({
+            id: 'mpl-delivery',
+            name: t('shipping_mpl_home'),
+            price: isFreeShipping ? 0 : origPrice,
+            originalPrice: origPrice,
+            icon: Truck,
+            description: t('shipping_mpl_home_desc')
+        });
     }
 
     if (shippingSettings?.mplBoxEnabled !== false) {
-        baseShippingOptions.push({ id: 'mpl-box', name: t('shipping_mpl_box'), price: shippingSettings?.mplBoxPrice ?? 3000, icon: Truck, description: t('shipping_mpl_box_desc') });
+        const origPrice = shippingSettings?.mplBoxPrice ?? 3000;
+        baseShippingOptions.push({
+            id: 'mpl-box',
+            name: t('shipping_mpl_box'),
+            price: isFreeShipping ? 0 : origPrice,
+            originalPrice: origPrice,
+            icon: Truck,
+            description: t('shipping_mpl_box_desc')
+        });
     }
 
     if (shippingSettings?.foxpostEnabled !== false) {
-        baseShippingOptions.push({ id: 'foxpost-box', name: t('shipping_foxpost_box'), price: shippingSettings?.foxpostPrice ?? 1500, icon: Truck, description: t('shipping_foxpost_box_desc') });
+        const origPrice = shippingSettings?.foxpostPrice ?? 1500;
+        baseShippingOptions.push({
+            id: 'foxpost-box',
+            name: t('shipping_foxpost_box'),
+            price: isFreeShipping ? 0 : origPrice,
+            originalPrice: origPrice,
+            icon: Truck,
+            description: t('shipping_foxpost_box_desc')
+        });
     }
 
     if (shippingSettings?.localPickupEnabled !== false) {
-        baseShippingOptions.push({ id: 'local-pickup', name: t('shipping_local'), price: shippingSettings?.localPickupPrice ?? 0, icon: MapPin, description: t('shipping_local_desc') });
+        baseShippingOptions.push({
+            id: 'local-pickup',
+            name: t('shipping_local'),
+            price: 0,
+            originalPrice: 0,
+            icon: MapPin,
+            description: t('shipping_local_desc')
+        });
     }
 
     const shippingOptions = baseShippingOptions;
@@ -60,7 +94,8 @@ export default function CheckoutPage() {
         { id: 'inperson', name: t('payment_inperson') || 'Személyes fizetés (üzletben)', icon: MapPin, description: t('payment_inperson_desc') || 'Az üzletünkben személyesen fizet átvételkor.' },
     ];
 
-    const [shipping, setShipping] = useState(shippingOptions[0]);
+    const [selectedShippingId, setSelectedShippingId] = useState(shippingOptions[0]?.id || 'mpl-delivery');
+    const shipping = shippingOptions.find(opt => opt.id === selectedShippingId) || shippingOptions[0] || { id: 'mpl-delivery', name: '', price: 0, originalPrice: 0, icon: Truck, description: '' };
     const [payment, setPayment] = useState(paymentOptions[0]);
     const [isOrdered, setIsOrdered] = useState(false);
     const [isMplSelectorOpen, setIsMplSelectorOpen] = useState(false);
@@ -481,9 +516,35 @@ export default function CheckoutPage() {
 
                         {/* 4. Shipping Method */}
                         <section id="shipping-method-section">
-                            <h2 className="text-lg sm:text-xl font-serif mb-8 sm:mb-12 uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[#c9a56a] border-b border-[#c9a56a]/10 pb-4 sm:pb-6 italic">
+                            <h2 className="text-lg sm:text-xl font-serif mb-6 sm:mb-8 uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[#c9a56a] border-b border-[#c9a56a]/10 pb-4 sm:pb-6 italic">
                                 4. {t('shipping_method')}
                             </h2>
+
+                            {/* Free Shipping Notification Box */}
+                            {isFreeShipping ? (
+                                <div className="p-4 sm:p-5 bg-emerald-950/40 border border-emerald-500/30 rounded-xl flex items-center gap-4 text-emerald-300 mb-8 shadow-inner animate-in fade-in">
+                                    <span className="text-2xl sm:text-3xl">🎉</span>
+                                    <div>
+                                        <p className="text-xs sm:text-sm font-bold tracking-wide uppercase text-emerald-200">
+                                            {t('free_shipping_reached')}
+                                        </p>
+                                        <p className="text-[11px] text-emerald-400/80 font-serif italic mt-0.5">
+                                            A 20 000 Ft-os értékhatár felett a kiszállítás díjtalan!
+                                        </p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="p-4 bg-[#150e03] border border-[#c9a56a]/20 rounded-xl flex items-center justify-between flex-wrap gap-3 text-xs mb-8">
+                                    <span className="text-ivory/85 font-serif italic flex items-center gap-2">
+                                        <span>🎁</span>
+                                        <span>{t('free_shipping_remaining').replace('{amount}', formatPrice(Math.max(0, freeShippingThreshold - totalAmount)))}</span>
+                                    </span>
+                                    <Link href="/" className="text-[10px] text-[#c9a56a] hover:underline uppercase tracking-wider font-bold">
+                                        + Vásárlás folytatása
+                                    </Link>
+                                </div>
+                            )}
+
                             <div className="space-y-6">
                                 {shippingOptions.map((option) => (
                                     <div key={option.id} className="space-y-4">
@@ -498,7 +559,7 @@ export default function CheckoutPage() {
                                                 className="sr-only" 
                                                 checked={shipping.id === option.id}
                                                 onChange={() => {
-                                                    setShipping(option);
+                                                    setSelectedShippingId(option.id);
                                                     if (option.id !== 'mpl-box') setSelectedMplPoint(null);
                                                 }}
                                             />
@@ -511,9 +572,20 @@ export default function CheckoutPage() {
                                                     <p className="text-sm text-[#999999] italic mt-2 tracking-wide">{option.description}</p>
                                                 </div>
                                             </div>
-                                            <p className="font-black text-sm text-[#c9a56a] tracking-[0.1em]">
-                                                {option.price === 0 ? t('free_label') : formatPrice(option.price)}
-                                            </p>
+                                            <div className="text-right">
+                                                {isFreeShipping && option.originalPrice > 0 ? (
+                                                    <div className="flex flex-col items-end">
+                                                        <span className="text-[10px] text-[#777777] line-through font-mono">{formatPrice(option.originalPrice)}</span>
+                                                        <span className="font-black text-xs sm:text-sm text-emerald-400 tracking-[0.1em]">
+                                                            {t('free_label') || 'INGYENES'}
+                                                        </span>
+                                                    </div>
+                                                ) : (
+                                                    <p className="font-black text-sm text-[#c9a56a] tracking-[0.1em]">
+                                                        {option.price === 0 ? (t('free_label') || 'INGYENES') : formatPrice(option.price)}
+                                                    </p>
+                                                )}
+                                            </div>
                                         </label>
 
                                         {option.id === 'mpl-box' && shipping.id === 'mpl-box' && (
@@ -845,7 +917,13 @@ export default function CheckoutPage() {
                                 )}
                                 <div className="flex justify-between text-[#555555]">
                                     <span>{t('shipping')}</span>
-                                    <span>{formatPrice(shipping.price)}</span>
+                                    <span>
+                                        {isFreeShipping && shipping.id !== 'local-pickup' ? (
+                                            <span className="text-emerald-400 font-bold tracking-wider">{t('free_label') || 'INGYENES'}</span>
+                                        ) : (
+                                            formatPrice(shipping.price)
+                                        )}
+                                    </span>
                                 </div>
                                 <div className="pt-12 flex justify-between text-[22px] font-black text-[#fdfdf3] tracking-[0.1em] border-t border-[#c9a56a]/20">
                                     <span>{t('total')}</span>

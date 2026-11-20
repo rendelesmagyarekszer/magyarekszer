@@ -94,7 +94,7 @@ export default function RootLayout({
               <SearchProvider>
                 <div className="flex flex-col min-h-screen">
                   <Navbar />
-                  <main className="flex-grow pt-28">
+                  <main className="flex-grow pt-32 sm:pt-36">
                     {children}
                   </main>
                   <Footer />
