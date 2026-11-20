@@ -564,22 +564,23 @@ export default function CheckoutPage() {
 
                             {/* Free Shipping Notification Box */}
                             {isFreeShipping ? (
-                                <div className="p-4 sm:p-5 bg-emerald-950/40 border border-emerald-500/30 rounded-xl flex items-center gap-4 text-emerald-300 mb-8 shadow-inner animate-in fade-in">
-                                    <span className="text-2xl sm:text-3xl">🎉</span>
+                                <div className="p-4 sm:p-5 bg-emerald-950/40 border border-emerald-500/30 rounded-xl flex items-center justify-between text-emerald-300 mb-8 shadow-inner animate-in fade-in">
                                     <div>
                                         <p className="text-xs sm:text-sm font-bold tracking-wide uppercase text-emerald-200">
                                             {t('free_shipping_reached')}
                                         </p>
                                         <p className="text-[11px] text-emerald-400/80 font-serif italic mt-0.5">
-                                            A 20 000 Ft-os értékhatár felett a kiszállítás díjtalan!
+                                            A 20 000 Ft-os értékhatár felett a kiszállítás díjtalan.
                                         </p>
                                     </div>
+                                    <span className="text-[10px] uppercase font-bold tracking-widest text-emerald-400 px-3 py-1 bg-emerald-500/20 border border-emerald-500/30 rounded-full">
+                                        0 Ft
+                                    </span>
                                 </div>
                             ) : (
                                 <div className="p-4 bg-[#150e03] border border-[#c9a56a]/20 rounded-xl flex items-center justify-between flex-wrap gap-3 text-xs mb-8">
-                                    <span className="text-ivory/85 font-serif italic flex items-center gap-2">
-                                        <span>🎁</span>
-                                        <span>{t('free_shipping_remaining').replace('{amount}', formatPrice(Math.max(0, freeShippingThreshold - totalAmount)))}</span>
+                                    <span className="text-ivory/85 font-serif italic">
+                                        {t('free_shipping_remaining').replace('{amount}', formatPrice(Math.max(0, freeShippingThreshold - totalAmount)))}
                                     </span>
                                     <Link href="/" className="text-[10px] text-[#c9a56a] hover:underline uppercase tracking-wider font-bold">
                                         + Vásárlás folytatása

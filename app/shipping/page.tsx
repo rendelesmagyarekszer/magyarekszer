@@ -28,15 +28,15 @@ export default function ShippingPage() {
                     
                     {/* Free Shipping Highlight Banner */}
                     <div className="p-6 md:p-8 bg-gradient-to-r from-gold/15 via-gold/10 to-transparent border border-gold/30 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center gap-6 shadow-xl">
-                        <div className="p-4 bg-gold/20 rounded-2xl text-gold flex-shrink-0 text-3xl">
-                            🎁
+                        <div className="p-4 bg-gold/20 rounded-2xl text-gold flex-shrink-0">
+                            <Truck className="h-8 w-8 text-gold" />
                         </div>
                         <div className="space-y-1">
                             <h3 className="font-serif text-xl sm:text-2xl text-ivory uppercase tracking-widest font-black gold-text">
                                 Ingyenes Házhozszállítás 20 000 Ft felett
                             </h3>
                             <p className="text-ivory/80 text-sm font-serif italic leading-relaxed">
-                                Minden 20 000 Ft-ot elérő vagy meghaladó belföldi megrendelés esetén a kiszállítás teljesen díjmentes – ajándékunk az Ön számára!
+                                Minden 20 000 Ft-ot elérő vagy meghaladó belföldi megrendelés esetén a kiszállítás teljesen díjmentes.
                             </p>
                         </div>
                     </div>

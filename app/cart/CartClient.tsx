@@ -124,16 +124,13 @@ export default function CartClient() {
                                     : 'bg-[#150e03]/90 border-[#c9a56a]/20 text-[#fdfdf3]'
                             }`}>
                                 {isFreeShipping ? (
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-2xl">🎉</span>
-                                        <div>
-                                            <p className="text-xs font-bold uppercase tracking-wider text-emerald-300">
-                                                {t('free_shipping_reached')}
-                                            </p>
-                                            <p className="text-[10px] text-emerald-400/80 font-serif italic mt-0.5">
-                                                A belföldi kiszállítás díjtalan a csomagodhoz!
-                                            </p>
-                                        </div>
+                                    <div className="py-1 text-center">
+                                        <p className="text-xs sm:text-sm font-bold uppercase tracking-wider text-emerald-300">
+                                            {t('free_shipping_reached')}
+                                        </p>
+                                        <p className="text-[10px] text-emerald-400/80 font-serif italic mt-1">
+                                            A belföldi kiszállítás díjtalan a csomagodhoz.
+                                        </p>
                                     </div>
                                 ) : (
                                     <div className="space-y-2.5">
@@ -150,7 +147,7 @@ export default function CartClient() {
                                             />
                                         </div>
                                         <p className="text-[9px] text-[#888888] font-serif italic text-center">
-                                            20 000 Ft feletti rendelés esetén a házhozszállítás ajándék! 🎁
+                                            20 000 Ft feletti rendelés esetén a házhozszállítás díjmentes.
                                         </p>
                                     </div>
                                 )}
