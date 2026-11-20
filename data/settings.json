@@ -46,23 +46,22 @@
       "category": "casting",
       "name": "Ezüst",
       "desc": "925 Sterling ezüst öntés kiváló felületi minőséggel.",
-      "price": "410 ft",
-      "icon": "Gem",
-      "price2": "1020 ft"
+      "price": "Telefonos érdeklődésre",
+      "icon": "Gem"
     },
     {
       "id": "cast_2",
       "category": "casting",
       "name": "Arany",
       "desc": "14k és 18k sárga, fehér és vörös arany öntés.",
-      "price": "Napi ár alapján"
+      "price": "Telefonos érdeklődésre"
     },
     {
       "id": "cast_3",
       "category": "casting",
       "name": "Szilícium Bronz",
       "desc": "Művészeti és dísztárgyak precíziós bronz öntése.",
-      "price": "Érdeklődésre",
+      "price": "Telefonos érdeklődésre",
       "icon": "Activity"
     },
     {

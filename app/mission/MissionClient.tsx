@@ -70,9 +70,9 @@ export default function MissionClient() {
                             <Phone className="h-6 w-6" />
                         </div>
                         <div>
-                            <h4 className="text-sm font-black uppercase tracking-widest text-[#fdfdf3] mb-1">Időpont Érdeklődés</h4>
+                            <h4 className="text-sm font-black uppercase tracking-widest text-[#fdfdf3] mb-1">Időpont és Ár Érdeklődés</h4>
                             <p className="text-[14px] text-gold/80 leading-relaxed font-bold">
-                                Az eheti öntés pontos napjáról kérjük, érdeklődjön telefonon!
+                                Az eheti öntés pontos napjáról és az aktuális árakról kérjük, érdeklődjön telefonon!
                             </p>
                         </div>
                     </motion.div>
@@ -91,17 +91,10 @@ export default function MissionClient() {
                                         <div className="p-3 bg-gold/10 rounded-lg text-gold group-hover:scale-110 transition-transform">
                                             {getIcon(item.icon, "h-6 w-6")}
                                         </div>
-                                        <div className="text-right space-y-2">
-                                            <div className="flex flex-col items-end gap-1">
-                                                <span className="text-[9px] uppercase tracking-tighter text-gold/60 font-black">Öntési díj</span>
-                                                <span className="text-[10px] uppercase tracking-widest text-gold font-bold px-3 py-1 bg-gold/10 rounded-full">{item.price}</span>
-                                            </div>
-                                            {item.price2 && (
-                                                <div className="flex flex-col items-end gap-1">
-                                                    <span className="text-[9px] uppercase tracking-tighter text-gold/60 font-black">Anyag ár</span>
-                                                    <span className="text-[10px] uppercase tracking-widest text-gold font-bold px-3 py-1 bg-gold/10 rounded-full">{item.price2}</span>
-                                                </div>
-                                            )}
+                                        <div className="text-right">
+                                            <span className="text-[10px] uppercase tracking-widest text-gold font-bold px-3 py-1 bg-gold/10 rounded-full">
+                                                Telefonos érdeklődésre
+                                            </span>
                                         </div>
                                     </div>
                                 </div>

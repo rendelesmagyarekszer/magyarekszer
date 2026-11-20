@@ -126,9 +126,9 @@ const DEFAULT_BARBARA_PRICES = {
 };
 
 const DEFAULT_EXTRA_SERVICES: ExtraService[] = [
-    { id: 'cast_1', category: 'casting', name: 'Ezüst', desc: '925 Sterling ezüst öntés kiváló felületi minőséggel.', price: 'Kalkuláció alatt', icon: 'Gem' },
-    { id: 'cast_2', category: 'casting', name: 'Arany', desc: '14k és 18k sárga, fehér és vörös arany öntés.', price: 'Napi ár alapján' },
-    { id: 'cast_3', category: 'casting', name: 'Szilícium Bronz', desc: 'Művészeti és dísztárgyak precíziós bronz öntése.', price: 'Érdeklődésre', icon: 'Activity' },
+    { id: 'cast_1', category: 'casting', name: 'Ezüst', desc: '925 Sterling ezüst öntés kiváló felületi minőséggel.', price: 'Telefonos érdeklődésre', icon: 'Gem' },
+    { id: 'cast_2', category: 'casting', name: 'Arany', desc: '14k és 18k sárga, fehér és vörös arany öntés.', price: 'Telefonos érdeklődésre' },
+    { id: 'cast_3', category: 'casting', name: 'Szilícium Bronz', desc: 'Művészeti és dísztárgyak precíziós bronz öntése.', price: 'Telefonos érdeklődésre', icon: 'Activity' },
     { id: 'dig_1', category: 'digital', name: '3D Ékszer Tervezés', desc: 'Fotorealisztikus látványtervek és precíz 3D modellezés.', price: 'Hamarosan', icon: 'Cpu' },
     { id: 'dig_2', category: 'digital', name: '3D Print (Viasz/Gyanta)', desc: 'Nagy felbontású 3D nyomtatás közvetlen öntéshez.', price: 'Hamarosan', icon: 'Layers' },
     { id: 'dig_3', category: 'digital', name: 'Printmarás', desc: 'Precíziós CNC marás viaszból vagy fémből.', price: 'Hamarosan', icon: 'Cog' },
@@ -692,7 +692,7 @@ export const ConfigProvider = ({
     }, []);
 
     useEffect(() => {
-        const SETTINGS_SYNC_VERSION = '2026-11-20-stones-fix-v1';
+        const SETTINGS_SYNC_VERSION = '2026-11-20-stones-casting-v2';
         try {
             if (localStorage.getItem('magyarekszer_settings_version') !== SETTINGS_SYNC_VERSION) {
                 [
@@ -705,7 +705,8 @@ export const ConfigProvider = ({
                     'magyarekszer_stone_prices',
                     'stonePrices',
                     'magyarekszer_global_enamel_colors',
-                    'magyarekszer_global_leather_colors'
+                    'magyarekszer_global_leather_colors',
+                    'magyarekszer_extra_services'
                 ].forEach(k => localStorage.removeItem(k));
                 localStorage.setItem('magyarekszer_settings_version', SETTINGS_SYNC_VERSION);
             }
