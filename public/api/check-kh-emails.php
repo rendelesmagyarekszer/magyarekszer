@@ -9,8 +9,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-$GMAIL_USER = 'rendeles.magyarekszer@gmail.com';
-$GMAIL_APP_PASSWORD = 'kiiyjnpypmogievh';
+$GMAIL_USER = 'magyarekszer@gmail.com';
+$GMAIL_APP_PASSWORD = 'ryiuydrxvpinayoa';
 $ordersFile = __DIR__ . '/orders.json';
 
 function getOrders($file) {

@@ -25,8 +25,8 @@ if (!$order) {
 }
 
 $STORE_EMAIL = 'magyarekszer@gmail.com';
-$GMAIL_USER = 'rendeles.magyarekszer@gmail.com';
-$GMAIL_APP_PASSWORD = 'kiiyjnpypmogievh';
+$GMAIL_USER = 'magyarekszer@gmail.com';
+$GMAIL_APP_PASSWORD = 'ryiuydrxvpinayoa';
 
 function formatPrice($num) {
     return number_format((float)$num, 0, ',', ' ') . ' Ft';
