@@ -1,0 +1,1 @@
+export { CategoryImageUpload } from "./CategoryImageUpload";

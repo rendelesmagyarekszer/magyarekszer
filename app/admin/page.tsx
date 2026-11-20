@@ -426,7 +426,7 @@ export default function AdminDashboard() {
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                    {allStonesMaster.map(stoneKey => {
+                    {Array.from(new Set(allStonesMaster)).map(stoneKey => {
                         const isAvailable = availableStones.includes(stoneKey);
                         const price = stonePrices[stoneKey] ?? 0;
                         return (
@@ -435,14 +435,11 @@ export default function AdminDashboard() {
                                 className={`p-4 border transition-all flex flex-col items-center justify-between gap-3 relative group ${isAvailable ? 'border-gold bg-gold/10' : 'border-gold/10 bg-black/40 opacity-50 grayscale'}`}
                             >
                                 <button
+                                    type="button"
                                     onClick={() => {
-                                        if (isAvailable) {
-                                            setAvailableStones(availableStones.filter(s => s !== stoneKey));
-                                        } else {
-                                            setAvailableStones([...availableStones, stoneKey]);
-                                        }
+                                        setAvailableStones(prev => isAvailable ? prev.filter(s => s !== stoneKey) : [...prev, stoneKey]);
                                     }}
-                                    className="w-full h-full absolute inset-0 z-0"
+                                    className="w-full h-full absolute inset-0 z-0 cursor-pointer"
                                 />
                                 
                                 <div className="flex flex-col items-center gap-2 relative z-10 pointer-events-none">
@@ -517,9 +514,24 @@ export default function AdminDashboard() {
                                     )}
                                 </div>
 
-                                <div className="flex items-center gap-4 relative z-20 w-full mt-4 justify-center">
-                                    <div className={`w-3 h-3 rounded-full border ${isAvailable ? 'border-gold bg-gold' : 'border-ivory/20 bg-black'}`}></div>
+                                <div className="flex items-center gap-3 relative z-20 w-full mt-4 justify-center">
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setAvailableStones(prev => isAvailable ? prev.filter(s => s !== stoneKey) : [...prev, stoneKey]);
+                                        }}
+                                        className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer shadow-md ${
+                                            isAvailable 
+                                                ? 'bg-gold text-deep-brown hover:bg-gold/90' 
+                                                : 'bg-black/60 border border-gold/30 text-gold/60 hover:text-gold hover:border-gold'
+                                        }`}
+                                    >
+                                        <span className={`w-2 h-2 rounded-full ${isAvailable ? 'bg-deep-brown' : 'bg-gold/40'}`}></span>
+                                        {isAvailable ? 'Elérhető' : 'Kikapcsolva'}
+                                    </button>
                                     <button 
+                                        type="button"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             if (confirm('Biztosan véglegesen törlöd ezt a követ?')) {
@@ -527,6 +539,7 @@ export default function AdminDashboard() {
                                             }
                                         }}
                                         className="p-2 text-red-500/40 hover:text-red-500 transition-colors"
+                                        title="Kő törlése"
                                     >
                                         <Trash2 className="h-3 w-3" />
                                     </button>
@@ -587,13 +600,17 @@ export default function AdminDashboard() {
                         <div className="flex justify-end pt-2">
                             <button
                                 onClick={() => {
-                                    if (newStoneHu.trim() && newStoneEn.trim()) {
-                                        addStone(newStoneHu.trim(), newStoneEn.trim(), parseInt(newStonePrice) || 0);
-                                        setNewStoneHu('');
-                                        setNewStoneEn('');
-                                        setNewStonePrice('3000');
-                                        setIsAddingStone(false);
+                                    const hu = newStoneHu.trim();
+                                    if (!hu) {
+                                        alert('Kérjük, adj meg egy nevet a kőnek!');
+                                        return;
                                     }
+                                    const en = newStoneEn.trim() || hu;
+                                    addStone(hu, en, parseInt(newStonePrice) || 0);
+                                    setNewStoneHu('');
+                                    setNewStoneEn('');
+                                    setNewStonePrice('3000');
+                                    setIsAddingStone(false);
                                 }}
                                 className="bg-gold text-deep-brown px-8 py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg"
                             >

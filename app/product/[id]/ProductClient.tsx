@@ -19,7 +19,7 @@ export default function ProductClient({ product: serverProduct, initialCollectio
     const { 
         products, collections, language, t, formatPrice, currency,
         ankerPrices, barbaraPrices, vacationMode,
-        availableStones, stonePrices, imageSettings, globalEnamelColors
+        availableStones, stonePrices, imageSettings, globalEnamelColors, globalLeatherColors
     } = useConfig();
     
     // Find enriched version from config (localStorage) or fallback to server prop
@@ -47,6 +47,7 @@ export default function ProductClient({ product: serverProduct, initialCollectio
     const [chainLength, setChainLength] = useState<'40' | '42' | '45' | '50' | '55'>('45');
     const [chainType, setChainType] = useState<'anker' | 'barbara'>('anker');
     const [leatherColor, setLeatherColor] = useState<'fekete' | 'barna'>('fekete');
+    const [selectedLeatherBraceletColor, setSelectedLeatherBraceletColor] = useState<string>('');
     const [isGoldModalOpen, setIsGoldModalOpen] = useState(false);
     const [userName, setUserName] = useState('');
     const [userEmail, setUserEmail] = useState('');
@@ -79,7 +80,64 @@ export default function ProductClient({ product: serverProduct, initialCollectio
     const [labDiamondSize, setLabDiamondSize] = useState('0.50ct');
     const [goldColor, setGoldColor] = useState('gold_white');
 
-    const stoneOptions = availableStones || [];
+    const [clientStones, setClientStones] = useState<string[]>(availableStones ? Array.from(new Set(availableStones)) : []);
+    const [clientStonePrices, setClientStonePrices] = useState<Record<string, number>>(stonePrices || {});
+
+    React.useEffect(() => {
+        if (availableStones && availableStones.length > 0) {
+            setClientStones(Array.from(new Set(availableStones)));
+        }
+    }, [availableStones]);
+
+    React.useEffect(() => {
+        if (stonePrices && Object.keys(stonePrices).length > 0) {
+            setClientStonePrices(stonePrices);
+        }
+    }, [stonePrices]);
+
+    React.useEffect(() => {
+        const handleUpdate = (e?: any) => {
+            try {
+                let parsed: string[] | null = null;
+                if (e && e.detail && Array.isArray(e.detail)) {
+                    parsed = e.detail;
+                } else {
+                    const savedStones = localStorage.getItem('availableStones')
+                        || localStorage.getItem('magyarekszer_availableStones')
+                        || localStorage.getItem('magyarekszer_available_stones');
+                    if (savedStones) {
+                        parsed = JSON.parse(savedStones);
+                    }
+                }
+                if (parsed && Array.isArray(parsed)) {
+                    setClientStones(Array.from(new Set(parsed)));
+                }
+                const savedPrices = localStorage.getItem('magyarekszer_stonePrices')
+                    || localStorage.getItem('magyarekszer_stone_prices')
+                    || localStorage.getItem('stonePrices');
+                if (savedPrices) {
+                    const parsedPrices = JSON.parse(savedPrices);
+                    if (parsedPrices && typeof parsedPrices === 'object') {
+                        setClientStonePrices(parsedPrices);
+                    }
+                }
+            } catch (e) {}
+        };
+        handleUpdate();
+        window.addEventListener('stonesUpdated', handleUpdate);
+        window.addEventListener('storage', handleUpdate);
+        return () => {
+            window.removeEventListener('stonesUpdated', handleUpdate);
+            window.removeEventListener('storage', handleUpdate);
+        };
+    }, []);
+
+    const stoneOptions = Array.from(new Set([...(availableStones || []), ...(clientStones || [])].map(s => s.trim().toLowerCase()))).map(s => {
+        // Visszaállítjuk az eredeti formázást (nagybetűk)
+        const original = [...(availableStones || []), ...(clientStones || [])].find(x => x.trim().toLowerCase() === s);
+        return original ? original.trim() : s;
+    });
+    const effectiveStonePrices = { ...stonePrices, ...clientStonePrices };
     const isNecklaceOrMedallion = product ? (product.category === 'nyaklancok' || product.category === 'medallok' || product.category === 'noi-lancok' || product.category === 'medalok-es-talizmanok') : false;
     const isKolie = product ? (product.isKolie || product.name.toLowerCase().includes('kolié') || product.name.toLowerCase().includes('kolie')) : false;
 
@@ -151,6 +209,10 @@ export default function ProductClient({ product: serverProduct, initialCollectio
         if (product.isEnamel && selectedEnamelColors.length > 0) {
             parts.push(`Zománc: ${selectedEnamelColors.join(' + ')}`);
         }
+
+        if (product.isLeatherBracelet && selectedLeatherBraceletColor) {
+            parts.push(`Bőrszín: ${selectedLeatherBraceletColor}`);
+        }
         
         if (product.category === 'ferfi-ekszerek' && product.name.toLowerCase().includes('bőr')) {
             parts.push(`Bőr színe: ${leatherColor === 'fekete' ? 'Fekete' : 'Csoki Barna'}`);
@@ -177,8 +239,8 @@ export default function ProductClient({ product: serverProduct, initialCollectio
                 if (leatherHasClasp) total += 8000;
             }
         }
-        if (selectedStone && stonePrices) {
-            const stonePrice = stonePrices[selectedStone];
+        if (selectedStone && effectiveStonePrices) {
+            const stonePrice = effectiveStonePrices[selectedStone];
             if (stonePrice !== undefined) {
                 total += stonePrice;
             }
@@ -223,6 +285,17 @@ export default function ProductClient({ product: serverProduct, initialCollectio
             const requiredCount = product.enamelRequiredCount || 1;
             if (selectedEnamelColors.length < requiredCount) {
                 setValidationError(t(`select_enamel_colors_${requiredCount}`));
+                return false;
+            }
+        }
+
+        const effectiveLeatherColors = (globalLeatherColors && globalLeatherColors.length > 0) 
+            ? globalLeatherColors 
+            : (product.leatherColors || []);
+
+        if (product.isLeatherBracelet && effectiveLeatherColors.length > 0) {
+            if (!selectedLeatherBraceletColor) {
+                setValidationError('Kérjük, válassz bőrszínt a rendeléshez!');
                 return false;
             }
         }
@@ -275,10 +348,10 @@ export default function ProductClient({ product: serverProduct, initialCollectio
     return (
         <main className="w-full bg-deep-brown text-ivory min-h-screen">
             <div className="max-w-[1400px] mx-auto px-4 py-8 md:py-12">
-                <Link href="/" className="inline-flex items-center text-xs text-ivory/60 hover:text-gold transition-colors uppercase tracking-[0.3em] font-bold mb-12 group/back">
+                <button onClick={() => window.history.back()} className="inline-flex items-center text-xs text-ivory/60 hover:text-gold transition-colors uppercase tracking-[0.3em] font-bold mb-12 group/back cursor-pointer">
                     <ArrowLeft className="h-4 w-4 mr-3 transition-transform group-hover/back:-translate-x-1" />
                     {t('back_to_products')}
-                </Link>
+                </button>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-y-12 gap-x-0 lg:gap-x-16 lg:gap-y-0">
                     {/* Image Column */}
@@ -291,8 +364,9 @@ export default function ProductClient({ product: serverProduct, initialCollectio
                                 src={currentImage} 
                                 alt={displayName} 
                                 fill 
-                                className="object-cover transition-transform duration-[3000ms] group-hover:scale-105"
                                 priority
+                                sizes="(max-width: 768px) 100vw, 50vw"
+                                className="object-cover transition-transform duration-[3000ms] group-hover:scale-105"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-deep-brown/40 to-transparent flex items-end justify-center pb-6 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <span className="text-ivory text-[9px] font-bold uppercase tracking-widest bg-black/60 px-4 py-2 rounded-full border border-gold/20 backdrop-blur-md">Kattints a nagyításhoz</span>
@@ -318,29 +392,29 @@ export default function ProductClient({ product: serverProduct, initialCollectio
 
                         <div 
                             onClick={() => window.location.href="tel:+36208074841"}
-                            className="max-w-md mx-auto mt-6 bg-[#c9a56a] p-6 rounded-3xl flex items-center justify-center gap-6 shadow-[0_0_40px_rgba(201,165,106,0.3)] hover:scale-[1.03] transition-all text-[#150e03] cursor-pointer text-center sm:text-left sm:flex-row flex-col"
+                            className="max-w-md mx-auto mt-6 bg-[#c9a56a] p-4 sm:p-6 rounded-2xl sm:rounded-3xl flex items-center justify-center gap-4 sm:gap-6 shadow-[0_0_40px_rgba(201,165,106,0.3)] hover:scale-[1.03] transition-all text-[#150e03] cursor-pointer text-center sm:text-left sm:flex-row flex-col"
                         >
-                            <div className="bg-[#150e03] p-4 rounded-full text-[#c9a56a] scale-110">
-                                <Phone className="h-6 w-6 animate-pulse" />
+                            <div className="bg-[#150e03] p-3 sm:p-4 rounded-full text-[#c9a56a] scale-100 sm:scale-110">
+                                <Phone className="h-5 w-5 sm:h-6 sm:w-6 animate-pulse" />
                             </div>
                             <div>
-                                <p className="text-[9px] uppercase tracking-[0.2em] font-black mb-1 opacity-80">Kérdése van a termékkel kapcsolatban?</p>
-                                <div className="text-xl sm:text-2xl font-black tracking-widest font-serif block">06-20-807-4841</div>
+                                <p className="text-[8px] sm:text-[9px] uppercase tracking-[0.2em] font-black mb-1 opacity-80">Kérdése van a termékkel kapcsolatban?</p>
+                                <div className="text-lg sm:text-2xl font-black tracking-widest font-serif block">06-20-807-4841</div>
                             </div>
                         </div>
                     </div>
 
                     {/* Buy Box */}
                     <div className="lg:col-span-5 order-2 lg:row-span-3 relative mb-8 lg:mb-0">
-                        <div className="sticky top-32 space-y-10">
-                            <div className="bg-black/30 backdrop-blur-xl border border-gold/30 p-10 md:p-12 rounded-[2rem] shadow-2xl flex flex-col space-y-8">
-                                <div className="space-y-6">
+                        <div className="sticky top-28 sm:top-32 space-y-6 sm:space-y-10">
+                            <div className="bg-black/30 backdrop-blur-xl border border-gold/30 p-4 sm:p-8 md:p-12 rounded-2xl sm:rounded-[2rem] shadow-2xl flex flex-col space-y-6 sm:space-y-8">
+                                <div className="space-y-4 sm:space-y-6">
                                     <div>
-                                        <span className="text-gold text-[10px] font-bold uppercase tracking-[0.6em] border-b border-gold/20 pb-2 inline-block">
+                                        <span className="text-gold text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.4em] sm:tracking-[0.6em] border-b border-gold/20 pb-1.5 sm:pb-2 inline-block">
                                             {t(`cat_${product.category}`)}
                                         </span>
                                     </div>
-                                    <h1 className="text-3xl md:text-4xl font-serif text-ivory tracking-tight leading-tight">{displayName}</h1>
+                                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif text-ivory tracking-tight leading-tight">{displayName}</h1>
                                     
                                     <div className="flex flex-wrap items-center gap-2 pt-2">
                                         <div className="flex items-center gap-2 bg-gold/10 border border-gold/30 px-4 py-2.5 rounded-xl">
@@ -383,7 +457,7 @@ export default function ProductClient({ product: serverProduct, initialCollectio
                                                                 <span>Karikagyűrű Pár</span>
                                                                 <span className="font-serif">89 000 Ft</span>
                                                             </button>
-                                                            <div className="grid grid-cols-2 gap-2">
+                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                                 <button onClick={() => setRingSelectionMode('single-female')} className={`py-4 px-6 border rounded-xl text-[10px] uppercase tracking-widest font-black transition-all flex justify-between items-center ${ringSelectionMode === 'single-female' ? 'border-gold bg-gold/5 text-gold' : 'border-gold/30 text-ivory/70'}`}>
                                                                     <span>Csak Női</span>
                                                                     <span className="font-serif">45 000 Ft</span>
@@ -400,11 +474,11 @@ export default function ProductClient({ product: serverProduct, initialCollectio
                                                     {(ringSelectionMode === 'pair' || ringSelectionMode === 'single-female') && (
                                                         <div className="space-y-4 p-6 bg-gold/5 border border-gold/10 rounded-2xl">
                                                             <label className="flex items-center text-[10px] uppercase tracking-[0.4em] font-black text-gold italic">Női Gyűrű Mérete</label>
-                                                            <div className="grid grid-cols-4 gap-2">
+                                                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5 sm:gap-2">
                                                                 {[48, 50, 52, 54, 56, 58, 60, 62].map((s) => (
                                                                     <button key={s} onClick={() => { setFemaleRingSize(s.toString()); setIsFemaleCustom(false); }} className={`py-3 text-[11px] font-black transition-all border rounded-lg ${!isFemaleCustom && femaleRingSize === s.toString() ? 'bg-gold border-gold text-deep-brown shadow-lg' : 'border-gold/20 text-gold/60'}`}>{s}</button>
                                                                 ))}
-                                                                <button onClick={() => { setIsFemaleCustom(true); setFemaleRingSize(''); }} className={`py-3 text-[10px] font-black transition-all border rounded-lg ${isFemaleCustom ? 'bg-gold border-gold text-deep-brown shadow-lg' : 'border-gold/20 text-gold/60'}`}>{t('custom_size')}</button>
+                                                                <button onClick={() => { setIsFemaleCustom(true); setFemaleRingSize(''); }} className={`col-span-2 sm:col-span-1 py-3 text-[10px] font-black transition-all border rounded-lg ${isFemaleCustom ? 'bg-gold border-gold text-deep-brown shadow-lg' : 'border-gold/20 text-gold/60'}`}>{t('custom_size')}</button>
                                                             </div>
                                                             {isFemaleCustom && (
                                                                 <input type="text" value={femaleCustomValue} onChange={(e) => setFemaleCustomValue(e.target.value)} placeholder={t('custom_size_placeholder')} className="w-full bg-black/40 border border-gold/20 p-4 rounded-xl text-xs outline-none focus:border-gold text-ivory" />
@@ -416,11 +490,11 @@ export default function ProductClient({ product: serverProduct, initialCollectio
                                                     {(ringSelectionMode === 'pair' || ringSelectionMode === 'single-male') && (
                                                         <div className="space-y-4 p-6 bg-gold/5 border border-gold/10 rounded-2xl">
                                                             <label className="flex items-center text-[10px] uppercase tracking-[0.4em] font-black text-gold italic">Férfi Gyűrű Mérete</label>
-                                                            <div className="grid grid-cols-4 gap-2">
+                                                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5 sm:gap-2">
                                                                 {[54, 56, 58, 60, 62, 64, 66, 68].map((s) => (
                                                                     <button key={s} onClick={() => { setMaleRingSize(s.toString()); setIsMaleCustom(false); }} className={`py-3 text-[11px] font-black transition-all border rounded-lg ${!isMaleCustom && maleRingSize === s.toString() ? 'bg-gold border-gold text-deep-brown shadow-lg' : 'border-gold/20 text-gold/60'}`}>{s}</button>
                                                                 ))}
-                                                                <button onClick={() => { setIsMaleCustom(true); setMaleRingSize(''); }} className={`py-3 text-[10px] font-black transition-all border rounded-lg ${isMaleCustom ? 'bg-gold border-gold text-deep-brown shadow-lg' : 'border-gold/20 text-gold/60'}`}>{t('custom_size')}</button>
+                                                                <button onClick={() => { setIsMaleCustom(true); setMaleRingSize(''); }} className={`col-span-2 sm:col-span-1 py-3 text-[10px] font-black transition-all border rounded-lg ${isMaleCustom ? 'bg-gold border-gold text-deep-brown shadow-lg' : 'border-gold/20 text-gold/60'}`}>{t('custom_size')}</button>
                                                             </div>
                                                             {isMaleCustom && (
                                                                 <input type="text" value={maleCustomValue} onChange={(e) => setMaleCustomValue(e.target.value)} placeholder={t('custom_size_placeholder')} className="w-full bg-black/40 border border-gold/20 p-4 rounded-xl text-xs outline-none focus:border-gold text-ivory" />
@@ -431,14 +505,14 @@ export default function ProductClient({ product: serverProduct, initialCollectio
                                             ) : (
                                                 <div className="space-y-4">
                                                     <label className="flex items-center text-[10px] uppercase tracking-[0.4em] font-black text-gold">{t('size')}</label>
-                                                    <div className="grid grid-cols-4 gap-2">
+                                                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5 sm:gap-2">
                                                         {(product.isGoldEngagementRing || product.category === 'gyuruk' || product.category === 'eljegyzesi-es-karikagyuruk' || product.category === 'eljegyzesi-gyuruk' ? [48, 50, 52, 54, 56, 58, 60, 62] : [16, 17, 18, 19, 20, 21]).map((s) => {
                                                             const isBracelet = product.category === 'karkotok' || product.category === 'karperecek';
                                                             return (
                                                                 <button key={s} onClick={() => { setCustomization(isBracelet ? `${s} cm-es méret` : `${s}-es méret`); setUseCustomSize(false); }} className={`py-3 text-[11px] font-black transition-all border rounded-lg ${!useCustomSize && customization.includes(s.toString()) ? 'bg-gold border-gold text-deep-brown shadow-lg' : 'border-gold/20 text-gold/60'}`}>{s}{isBracelet ? ' cm' : ''}</button>
                                                             );
                                                         })}
-                                                        <button onClick={() => { setUseCustomSize(true); setCustomization(''); }} className={`py-3 text-[10px] font-black transition-all border rounded-lg ${useCustomSize ? 'bg-gold border-gold text-deep-brown shadow-lg' : 'border-gold/20 text-gold/60'}`}>{t('custom_size')}</button>
+                                                        <button onClick={() => { setUseCustomSize(true); setCustomization(''); }} className={`col-span-2 sm:col-span-1 py-3 text-[10px] font-black transition-all border rounded-lg ${useCustomSize ? 'bg-gold border-gold text-deep-brown shadow-lg' : 'border-gold/20 text-gold/60'}`}>{t('custom_size')}</button>
                                                     </div>
                                                     <div className="mt-4 bg-[#c9a56a]/10 border border-[#c9a56a]/30 p-4 rounded-xl flex gap-3 items-start">
                                                         <AlertCircle className="h-5 w-5 text-[#c9a56a] shrink-0 fill-[#150e03]" />
@@ -455,7 +529,7 @@ export default function ProductClient({ product: serverProduct, initialCollectio
                                     )}
 
                                     {/* Necklace & Medallion Logic */}
-                                    {displayDescription && (
+                                    {false && (
                                         <p className="text-ivory/60 leading-relaxed text-sm lg:text-base font-light text-justify">
                                             {displayDescription}
                                         </p>
@@ -499,11 +573,11 @@ export default function ProductClient({ product: serverProduct, initialCollectio
                                                             <div className="grid grid-cols-2 gap-4">
                                                                 <div className="relative">
                                                                     <button onClick={() => setChainType('anker')} className={`w-full py-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${chainType === 'anker' ? 'border-gold bg-gold/10 text-gold shadow-lg' : 'border-gold/10 text-ivory/40'}`}>Anker</button>
-                                                                    <button onClick={(e) => { e.preventDefault(); setPreviewModal({ isOpen: true, src: imageSettings.anker_chain, title: 'Anker típusú lánc' }); }} className="absolute -top-2 -right-2 bg-[#150e03] border border-gold/40 p-2 rounded-full text-gold group-hover:scale-110 shadow-xl z-10"><Eye className="h-3.5 w-3.5" /></button>
+                                                                    <button type="button" onClick={(e) => { e.preventDefault(); setPreviewModal({ isOpen: true, src: imageSettings.anker_chain, title: 'Anker típusú lánc' }); }} className="absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 bg-[#150e03] border border-gold/40 p-1.5 sm:p-2 rounded-full text-gold group-hover:scale-110 shadow-xl z-10"><Eye className="h-3 w-3 sm:h-3.5 sm:w-3.5" /></button>
                                                                 </div>
                                                                 <div className="relative">
                                                                     <button onClick={() => setChainType('barbara')} className={`w-full py-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${chainType === 'barbara' ? 'border-gold bg-gold/10 text-gold shadow-lg' : 'border-gold/10 text-ivory/40'}`}>Barbara</button>
-                                                                    <button onClick={(e) => { e.preventDefault(); setPreviewModal({ isOpen: true, src: imageSettings.barbara_chain, title: 'Barbara típusú lánc' }); }} className="absolute -top-2 -right-2 bg-[#150e03] border border-gold/40 p-2 rounded-full text-gold group-hover:scale-110 shadow-xl z-10"><Eye className="h-3.5 w-3.5" /></button>
+                                                                    <button type="button" onClick={(e) => { e.preventDefault(); setPreviewModal({ isOpen: true, src: imageSettings.barbara_chain, title: 'Barbara típusú lánc' }); }} className="absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 bg-[#150e03] border border-gold/40 p-1.5 sm:p-2 rounded-full text-gold group-hover:scale-110 shadow-xl z-10"><Eye className="h-3 w-3 sm:h-3.5 sm:w-3.5" /></button>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -548,15 +622,71 @@ export default function ProductClient({ product: serverProduct, initialCollectio
                                         </div>
                                     )}
 
+                                    {/* Leather Bracelet Color Selection */}
+                                    {product.isLeatherBracelet && (
+                                        (() => {
+                                            const effectiveLeatherColors = (globalLeatherColors && globalLeatherColors.length > 0) 
+                                                ? globalLeatherColors 
+                                                : (product.leatherColors || []);
+                                            
+                                            if (effectiveLeatherColors.length === 0) return null;
+
+                                            return (
+                                                <div className="space-y-4">
+                                                    <label className="flex items-center text-[10px] uppercase tracking-[0.4em] font-black text-gold">
+                                                        Bőrszín Kiválasztása (Kérjük, válassz színt)
+                                                    </label>
+                                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                                                        {effectiveLeatherColors.map((item: { color: string; imageUrl?: string }, idx: number) => {
+                                                            const isSelected = selectedLeatherBraceletColor === item.color;
+                                                            return (
+                                                                <button
+                                                                    key={idx}
+                                                                    type="button"
+                                                                    onClick={() => setSelectedLeatherBraceletColor(item.color)}
+                                                                    className={`relative p-2 rounded-2xl border transition-all flex flex-col items-center text-center group cursor-pointer ${
+                                                                        isSelected 
+                                                                            ? 'bg-gold/15 border-gold shadow-[0_0_15px_rgba(201,165,106,0.3)]' 
+                                                                            : 'bg-black/30 border-gold/20 hover:border-gold/50'
+                                                                    }`}
+                                                                >
+                                                                    <div className="aspect-square w-full rounded-xl overflow-hidden mb-2 bg-black/40 border border-gold/10 relative">
+                                                                        {item.imageUrl ? (
+                                                                            <img 
+                                                                                src={item.imageUrl} 
+                                                                                alt={item.color} 
+                                                                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                                                                            />
+                                                                        ) : (
+                                                                            <div className="w-full h-full flex items-center justify-center text-gold/30 text-xs">
+                                                                                Nincs kép
+                                                                            </div>
+                                                                        )}
+                                                                        {isSelected && (
+                                                                            <div className="absolute inset-0 bg-gold/10 border-2 border-gold rounded-xl pointer-events-none" />
+                                                                        )}
+                                                                    </div>
+                                                                    <span className={`text-[11px] font-black uppercase tracking-wider ${isSelected ? 'text-gold' : 'text-ivory/80'}`}>
+                                                                        {item.color}
+                                                                    </span>
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })()
+                                    )}
+
                                     {/* Stone Selection */}
                                     {isKoves && (
                                         <div className="space-y-4">
                                             <label className="flex items-center text-[10px] uppercase tracking-[0.4em] font-black text-gold">{t('stone_selection')}</label>
                                             <div className="flex flex-wrap gap-2">
-                                                {stoneOptions.map((stoneKey) => {
-                                                    const price = stonePrices[stoneKey] || 0;
+                                                {stoneOptions.map((stoneKey, idx) => {
+                                                    const price = effectiveStonePrices[stoneKey] !== undefined ? effectiveStonePrices[stoneKey] : (effectiveStonePrices[stoneKey.toLowerCase()] !== undefined ? effectiveStonePrices[stoneKey.toLowerCase()] : 0);
                                                     return (
-                                                        <button key={stoneKey} onClick={() => setSelectedStone(stoneKey)} className={`px-4 py-3 rounded-xl text-[10px] uppercase font-black border transition-all flex flex-col items-center gap-1 min-w-[80px] ${selectedStone === stoneKey ? 'bg-gold border-gold text-deep-brown shadow-lg' : 'border-gold/30 text-gold/80 bg-gold/5 hover:border-gold/50'}`}>
+                                                        <button key={`${stoneKey}_${idx}`} onClick={() => setSelectedStone(stoneKey)} className={`px-4 py-3 rounded-xl text-[10px] uppercase font-black border transition-all flex flex-col items-center gap-1 min-w-[80px] ${selectedStone === stoneKey ? 'bg-gold border-gold text-deep-brown shadow-lg' : 'border-gold/30 text-gold/80 bg-gold/5 hover:border-gold/50'}`}>
                                                             <span>{t(stoneKey)}</span>
                                                             <span className="text-[8px] opacity-60 font-medium whitespace-nowrap">{price > 0 ? `+${formatPrice(price)}` : '0 Ft'}</span>
                                                         </button>
@@ -639,7 +769,7 @@ export default function ProductClient({ product: serverProduct, initialCollectio
                                         <h3 className="text-xs uppercase tracking-[0.4em] font-black text-gold">{t('history_title')}</h3>
                                         <div className="h-[1px] flex-1 bg-gold/10"></div>
                                     </div>
-                                    <div className="text-ivory/95 leading-relaxed text-base font-serif bg-white/[0.02] p-10 rounded-[2rem] border border-white/[0.05] shadow-inner text-justify">
+                                    <div className="text-ivory/95 leading-relaxed text-sm sm:text-base font-serif bg-white/[0.02] p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-[2rem] border border-white/[0.05] shadow-inner text-left sm:text-justify">
                                         {displayHistory || displayDescription || "Nincs elérhető történelmi háttér."}
                                     </div>
                                 </div>

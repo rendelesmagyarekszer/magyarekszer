@@ -32,9 +32,9 @@ const Navbar = () => {
                         {t('vacation_banner_text').replace('{date}', vacationMode.returnDate || '')}
                     </div>
                 )}
-                <nav className="py-4 px-6 md:px-12 flex items-center justify-between relative">
+                <nav className="py-3 sm:py-4 px-3 sm:px-6 md:px-12 flex items-center justify-between relative">
                     {/* Left: Hamburger (Mobile) & Selectors (Desktop) */}
-                    <div className="flex items-center gap-4 md:gap-8">
+                    <div className="flex items-center gap-2 sm:gap-4 md:gap-8">
                         <button 
                             className="md:hidden p-2 text-gold/80 hover:text-gold transition-colors z-[60]"
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -59,10 +59,10 @@ const Navbar = () => {
                     </div>
 
                     {/* Center: Logo */}
-                    <div className="absolute left-1/2 -translate-x-1/2">
+                    <div className="absolute left-1/2 -translate-x-1/2 max-w-[45%] sm:max-w-[60%] md:max-w-none text-center pointer-events-auto">
                         <Link href="/" className="group flex flex-col items-center">
                             {pathname === '/' ? (
-                                <div className="relative w-16 h-16 md:w-20 md:h-20 -my-2 opacity-80 group-hover:opacity-100 transition-opacity bg-deep-brown rounded-lg overflow-hidden flex items-center justify-center">
+                                <div className="relative w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 -my-2 opacity-80 group-hover:opacity-100 transition-opacity bg-deep-brown rounded-lg overflow-hidden flex items-center justify-center">
                                     <Image 
                                         src="/logo.jpg" 
                                         alt="MagyarÉkszer Logo" 
@@ -73,23 +73,23 @@ const Navbar = () => {
                                 </div>
                             ) : (
                                 <>
-                                    <h1 className="text-xl md:text-2xl font-serif tracking-[0.5em] uppercase gold-text group-hover:scale-105 transition-transform duration-500">
+                                    <h1 className="text-xs sm:text-lg md:text-2xl font-serif tracking-[0.15em] sm:tracking-[0.4em] md:tracking-[0.5em] uppercase gold-text group-hover:scale-105 transition-transform duration-500 truncate whitespace-nowrap">
                                         MAGYARÉKSZER
                                     </h1>
-                                    <span className="text-[10px] md:text-[11px] uppercase tracking-[0.3em] text-gold/60 mt-1 group-hover:text-gold/80 transition-colors font-bold">
+                                    <span className="text-[7px] sm:text-[10px] md:text-[11px] uppercase tracking-[0.1em] sm:tracking-[0.3em] text-gold/60 mt-0.5 sm:mt-1 group-hover:text-gold/80 transition-colors font-bold whitespace-nowrap">
                                         {t('tradition')}
                                     </span>
-                                    <div className="w-8 h-[1px] bg-gold/40 mt-2 group-hover:w-16 transition-all duration-500"></div>
+                                    <div className="w-4 sm:w-8 h-[1px] bg-gold/40 mt-1 sm:mt-2 group-hover:w-16 transition-all duration-500"></div>
                                 </>
                             )}
                         </Link>
                     </div>
                     
                     {/* Right: Actions */}
-                    <div className="flex items-center gap-4 md:gap-8">
+                    <div className="flex items-center gap-1.5 sm:gap-4 md:gap-8">
                         <button 
                             onClick={() => setIsSearchOpen(true)}
-                            className="group flex items-center gap-3 px-4 py-2 border border-gold/10 rounded-full hover:border-gold/40 hover:bg-gold/5 transition-all duration-500 shadow-sm hover:shadow-[0_0_15px_rgba(201,165,106,0.1)] mr-2"
+                            className="group flex items-center gap-2 p-2 sm:px-4 sm:py-2 border border-gold/10 rounded-full hover:border-gold/40 hover:bg-gold/5 transition-all duration-500 shadow-sm hover:shadow-[0_0_15px_rgba(201,165,106,0.1)]"
                             aria-label="Search"
                         >
                             <Search className="h-4 w-4 text-gold/60 group-hover:text-gold transition-colors" />
@@ -98,11 +98,11 @@ const Navbar = () => {
                             </span>
                         </button>
 
-                        <Link href="/account" className="p-2 hover:text-gold transition-colors" aria-label={t('account')}>
+                        <Link href="/account" className="p-1.5 sm:p-2 hover:text-gold transition-colors" aria-label={t('account')}>
                             <User className="h-5 w-5" />
                         </Link>
 
-                        <Link href="/cart" className="p-2 hover:text-gold transition-colors relative" aria-label={t('cart')}>
+                        <Link href="/cart" className="p-1.5 sm:p-2 hover:text-gold transition-colors relative" aria-label={t('cart')}>
                             <ShoppingCart className="h-5 w-5" />
                             <AnimatePresence>
                                 {cartCount > 0 && (

@@ -11,6 +11,7 @@ export default function SettingsPage() {
     const { 
         ankerPrices, barbaraPrices, updateChainPrice, 
         globalEnamelColors, updateGlobalEnamelColors,
+        globalLeatherColors, updateGlobalLeatherColors,
         extraServices, updateExtraServices, deleteExtraService,
         premiumBoxPrice, updatePremiumBoxPrice,
         imageSettings, updateImageSetting,
@@ -22,6 +23,12 @@ export default function SettingsPage() {
     const [localBarbara, setLocalBarbara] = useState(barbaraPrices);
     const [localEnamelColors, setLocalEnamelColors] = useState(globalEnamelColors);
     const [newColor, setNewColor] = useState('');
+
+    const [localLeatherColors, setLocalLeatherColors] = useState(globalLeatherColors || []);
+    const [newLeatherName, setNewLeatherName] = useState('');
+    const [newLeatherImg, setNewLeatherImg] = useState('');
+    const [isUploadingLeather, setIsUploadingLeather] = useState(false);
+    const leatherInputRef = React.useRef<HTMLInputElement>(null);
     
     const [localServices, setLocalServices] = useState(extraServices);
     const [localBoxPrice, setLocalBoxPrice] = useState(premiumBoxPrice);
@@ -38,12 +45,13 @@ export default function SettingsPage() {
             setLocalAnker(ankerPrices);
             setLocalBarbara(barbaraPrices);
             setLocalEnamelColors(globalEnamelColors);
+            setLocalLeatherColors(globalLeatherColors || []);
             setLocalServices(extraServices);
             setLocalBoxPrice(premiumBoxPrice);
             setLocalImageSettings(imageSettings);
             setLocalCustomJewelry(customJewelry);
         }
-    }, [isLoaded, ankerPrices, barbaraPrices, globalEnamelColors, extraServices, premiumBoxPrice, imageSettings, customJewelry]);
+    }, [isLoaded, ankerPrices, barbaraPrices, globalEnamelColors, globalLeatherColors, extraServices, premiumBoxPrice, imageSettings, customJewelry]);
 
     const handleSave = () => {
         setIsSaving(true);
@@ -60,6 +68,9 @@ export default function SettingsPage() {
 
         // Save Enamel Colors
         updateGlobalEnamelColors(localEnamelColors);
+
+        // Save Leather Colors
+        updateGlobalLeatherColors(localLeatherColors);
 
         // Save Services (Bulk)
         updateExtraServices(localServices);
@@ -400,6 +411,130 @@ export default function SettingsPage() {
                         ))}
                         {localEnamelColors.length === 0 && (
                             <p className="text-xs text-[#666666] italic uppercase tracking-widest">Nincsenek megadva színek. Adjon hozzá egyet feljebb!</p>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Global Leather Colors Section */}
+            <div className="bg-[#150e03] border border-[#c9a56a]/10 p-8 rounded-2xl space-y-8">
+                <div className="flex items-center gap-3">
+                    <Star className="h-5 w-5 text-[#c9a56a]" />
+                    <div>
+                        <h2 className="text-base font-serif uppercase tracking-[0.2em] text-[#fdfdf3]">Központi Bőrszínek (Karperecekhez és Bőrékszerekhez)</h2>
+                        <p className="text-[11px] uppercase tracking-widest text-gold/40 font-bold mt-1">Itt adhatod meg a választható színeket és fotókat. Az ékszereknél elég csak bepipálni a "Bőrszín Választó" kapcsolót!</p>
+                    </div>
+                </div>
+
+                <div className="space-y-6">
+                    {/* Add new leather color with image */}
+                    <div className="bg-black/30 border border-gold/10 p-6 rounded-2xl space-y-4">
+                        <h3 className="text-xs font-black uppercase tracking-widest text-gold">Új Bőrszín Létrehozása</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                            <div className="space-y-2">
+                                <label className="text-[10px] uppercase tracking-widest text-ivory/40">Szín megnevezése</label>
+                                <input 
+                                    type="text" 
+                                    value={newLeatherName}
+                                    onChange={(e) => setNewLeatherName(e.target.value)}
+                                    placeholder="Pl. Fekete, Sötétbarna, Konyak..."
+                                    className="w-full bg-[#0d0902] border border-[#c9a56a]/20 p-4 rounded-xl text-sm text-[#fdfdf3] outline-none focus:border-[#c9a56a]"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] uppercase tracking-widest text-ivory/40">Bőr mintafotó feltöltése</label>
+                                <div className="flex gap-3 items-center">
+                                    {newLeatherImg && (
+                                        <div className="w-12 h-12 rounded-xl overflow-hidden border border-gold/20 flex-shrink-0 bg-black">
+                                            <img src={newLeatherImg} alt="Preview" className="w-full h-full object-cover" />
+                                        </div>
+                                    )}
+                                    <button 
+                                        type="button" 
+                                        onClick={() => leatherInputRef.current?.click()}
+                                        disabled={isUploadingLeather}
+                                        className="flex-1 bg-gold/5 border border-gold/20 hover:bg-gold/15 py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
+                                    >
+                                        {isUploadingLeather ? (
+                                            <Loader2 className="h-4 w-4 text-gold animate-spin" />
+                                        ) : (
+                                            <>
+                                                <Upload className="h-4 w-4 text-gold" />
+                                                <span className="text-[10px] uppercase font-black tracking-widest text-gold">{newLeatherImg ? 'Kép módosítása' : 'Kép tallózása'}</span>
+                                            </>
+                                        )}
+                                    </button>
+                                    <input 
+                                        type="file" 
+                                        ref={leatherInputRef} 
+                                        onChange={async (e) => {
+                                            const file = e.target.files?.[0];
+                                            if (!file) return;
+                                            setIsUploadingLeather(true);
+                                            const formData = new FormData();
+                                            formData.append('file', file);
+                                            try {
+                                                const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                                                if (!res.ok) throw new Error('Upload error');
+                                                const d = await res.json();
+                                                setNewLeatherImg(d.url);
+                                            } catch (err) {
+                                                alert('Hiba történt a kép feltöltése során.');
+                                            } finally {
+                                                setIsUploadingLeather(false);
+                                                if (leatherInputRef.current) leatherInputRef.current.value = '';
+                                            }
+                                        }} 
+                                        className="hidden" 
+                                        accept="image/*"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <button 
+                            type="button"
+                            onClick={() => {
+                                if (!newLeatherName.trim()) return;
+                                setLocalLeatherColors([
+                                    ...localLeatherColors, 
+                                    { color: newLeatherName.trim(), imageUrl: newLeatherImg }
+                                ]);
+                                setNewLeatherName('');
+                                setNewLeatherImg('');
+                            }}
+                            disabled={!newLeatherName.trim()}
+                            className="bg-[#c9a56a] hover:bg-[#b08d55] text-deep-brown px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all disabled:opacity-30 cursor-pointer"
+                        >
+                            + Szín Hozzáadása
+                        </button>
+                    </div>
+
+                    {/* Existing Leather colors preview */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4 p-6 bg-[#0d0902] rounded-2xl border border-[#c9a56a]/5">
+                        {localLeatherColors.map((item, idx) => (
+                            <div key={idx} className="relative group bg-black/50 border border-gold/15 rounded-2xl p-3 flex flex-col items-center text-center">
+                                <div className="aspect-square w-full rounded-xl overflow-hidden mb-2 bg-black border border-gold/10 flex items-center justify-center">
+                                    {item.imageUrl ? (
+                                        <img src={item.imageUrl} alt={item.color} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <span className="text-[10px] text-ivory/20 uppercase font-black">Nincs kép</span>
+                                    )}
+                                </div>
+                                <span className="text-[11px] font-black uppercase tracking-wider text-gold truncate w-full">{item.color}</span>
+                                <button 
+                                    type="button"
+                                    onClick={() => setLocalLeatherColors(localLeatherColors.filter((_, i) => i !== idx))}
+                                    className="absolute top-2 right-2 p-1.5 bg-red-950/80 hover:bg-red-900 text-red-200 rounded-full text-xs transition-all border border-red-500/20"
+                                    title="Törlés"
+                                >
+                                    <X className="h-3 w-3" />
+                                </button>
+                            </div>
+                        ))}
+                        {localLeatherColors.length === 0 && (
+                            <p className="col-span-full text-xs text-[#666666] italic uppercase tracking-widest text-center py-4">Még nincsenek megadva bőrszínek. Adj hozzá egyet feljebb!</p>
                         )}
                     </div>
                 </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { products as initialProductsData, Product, Collection, VacationMode, ALL_STONES, Coupon } from '@/lib/data';
+import { products as initialProductsData, Product, Collection, VacationMode, ALL_STONES, Coupon, AdminSettings } from '@/lib/data';
 
 export interface ExtraService {
     id: string;
@@ -59,7 +59,7 @@ interface ConfigContextType {
     vacationMode: VacationMode;
     setVacationMode: (v: VacationMode) => void;
     availableStones: string[];
-    setAvailableStones: (s: string[]) => void;
+    setAvailableStones: (s: string[] | ((prev: string[]) => string[])) => void;
     allStonesMaster: string[];
     stonePrices: Record<string, number>;
     addStone: (huName: string, enName: string, price: number) => void;
@@ -75,6 +75,8 @@ interface ConfigContextType {
     updateChainPrice: (type: 'anker' | 'barbara', length: string, price: number) => void;
     globalEnamelColors: string[];
     updateGlobalEnamelColors: (colors: string[]) => void;
+    globalLeatherColors: { color: string; imageUrl?: string }[];
+    updateGlobalLeatherColors: (colors: { color: string; imageUrl?: string }[]) => void;
     extraServices: ExtraService[];
     saveExtraService: (service: ExtraService) => void;
     updateExtraServices: (services: ExtraService[]) => void;
@@ -553,25 +555,41 @@ const translations: Record<Language, Record<string, string>> = {
     }
 };
 
-export const ConfigProvider = ({ children, initialProducts }: { children: ReactNode, initialProducts?: Product[] }) => {
+export const ConfigProvider = ({ 
+    children, 
+    initialProducts, 
+    initialSettings 
+}: { 
+    children: ReactNode, 
+    initialProducts?: Product[], 
+    initialSettings?: AdminSettings 
+}) => {
     const [currency, setCurrency] = useState<'HUF'>('HUF');
     const [language, setLanguage] = useState<Language>('HU');
-    const [products, setProducts] = useState<Product[]>([]);
-    const [collections, setCollections] = useState<Collection[]>([]);
-    const [dynamicTranslations, setDynamicTranslations] = useState<Record<Language, Record<string, string>>>(translations);
-    const [vacationMode, setVacationMode] = useState<VacationMode>({ isActive: false, returnDate: '' });
-    const [allStonesMaster, setAllStonesMaster] = useState<string[]>(ALL_STONES);
-    const [availableStones, setAvailableStones] = useState<string[]>([]);
-    const [stonePrices, setStonePrices] = useState<Record<string, number>>({});
-    const [notifications, setNotifications] = useState<any[]>([]);
-    const [coupons, setCoupons] = useState<Coupon[]>([]);
+    const [products, setProducts] = useState<Product[]>(initialProducts && initialProducts.length > 0 ? initialProducts : []);
+    const [collections, setCollections] = useState<Collection[]>(initialSettings?.collections || []);
+    const [dynamicTranslations, setDynamicTranslations] = useState<Record<Language, Record<string, string>>>(
+        initialSettings?.translations ? { ...translations, ...initialSettings.translations } : translations
+    );
+    const [vacationMode, setVacationMode] = useState<VacationMode>(initialSettings?.vacationMode || { isActive: false, returnDate: '' });
+    const [allStonesMaster, setAllStonesMaster] = useState<string[]>(initialSettings?.allStonesMaster || ALL_STONES);
+    const [availableStones, setAvailableStones] = useState<string[]>(initialSettings?.availableStones || ALL_STONES);
+    const [stonePrices, setStonePrices] = useState<Record<string, number>>(initialSettings?.stonePrices || {});
+    const [notifications, setNotifications] = useState<any[]>(initialSettings?.notifications || []);
+    const [coupons, setCoupons] = useState<Coupon[]>(initialSettings?.coupons || []);
     const [isLoaded, setIsLoaded] = useState(false);
-    const [ankerPrices, setAnkerPrices] = useState<Record<string, number>>(DEFAULT_ANKER_PRICES);
-    const [barbaraPrices, setBarbaraPrices] = useState<Record<string, number>>(DEFAULT_BARBARA_PRICES);
-    const [globalEnamelColors, setGlobalEnamelColors] = useState<string[]>(['Piros', 'Kék', 'Fehér', 'Zöld', 'Bordó', 'Fekete', 'Turkiz']);
-    const [extraServices, setExtraServices] = useState<ExtraService[]>(DEFAULT_EXTRA_SERVICES);
-    const [premiumBoxPrice, setPremiumBoxPrice] = useState<number>(1500);
-    const [imageSettings, setImageSettings] = useState<Record<string, string>>({
+    const [ankerPrices, setAnkerPrices] = useState<Record<string, number>>(initialSettings?.ankerPrices || DEFAULT_ANKER_PRICES);
+    const [barbaraPrices, setBarbaraPrices] = useState<Record<string, number>>(initialSettings?.barbaraPrices || DEFAULT_BARBARA_PRICES);
+    const [globalEnamelColors, setGlobalEnamelColors] = useState<string[]>([]);
+    const [globalLeatherColors, setGlobalLeatherColors] = useState<{ color: string; imageUrl?: string }[]>(initialSettings?.globalLeatherColors || [
+        { color: 'Fekete', imageUrl: '' },
+        { color: 'Sötétbarna', imageUrl: '' },
+        { color: 'Konyak', imageUrl: '' },
+        { color: 'Natúr', imageUrl: '' }
+    ]);
+    const [extraServices, setExtraServices] = useState<ExtraService[]>(initialSettings?.extraServices || DEFAULT_EXTRA_SERVICES);
+    const [premiumBoxPrice, setPremiumBoxPrice] = useState<number>(initialSettings?.premiumBoxPrice ?? 1500);
+    const [imageSettings, setImageSettings] = useState<Record<string, string>>(initialSettings?.imageSettings || {
         anker_chain: '',
         barbara_chain: '',
         standard_box: '',
@@ -595,28 +613,86 @@ export const ConfigProvider = ({ children, initialProducts }: { children: ReactN
         }
     ]);
 
-    const [shippingSettings, setShippingSettings] = useState<ShippingSettings>(DEFAULT_SHIPPING_SETTINGS);
+    const [shippingSettings, setShippingSettings] = useState<ShippingSettings>(initialSettings?.shippingSettings || DEFAULT_SHIPPING_SETTINGS);
+
+    const updateAvailableStones = (s: string[] | ((prev: string[]) => string[])) => {
+        setAvailableStones(prev => {
+            const rawNext = typeof s === 'function' ? s(prev) : s;
+            const next = Array.from(new Set(rawNext));
+            try {
+                localStorage.setItem('availableStones', JSON.stringify(next));
+                localStorage.setItem('magyarekszer_availableStones', JSON.stringify(next));
+                localStorage.setItem('magyarekszer_available_stones', JSON.stringify(next));
+            } catch (e) {}
+            setTimeout(() => {
+                if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new CustomEvent('stonesUpdated', { detail: next }));
+                }
+            }, 0);
+            return next;
+        });
+    };
+
+    useEffect(() => {
+        const handleUpdate = (e?: any) => {
+            try {
+                let parsed: string[] | null = null;
+                if (e && e.detail && Array.isArray(e.detail)) {
+                    parsed = e.detail;
+                } else {
+                    const savedStones = localStorage.getItem('availableStones') || JSON.stringify([])
+                        || localStorage.getItem('magyarekszer_availableStones')
+                        || localStorage.getItem('magyarekszer_available_stones');
+                    if (savedStones) {
+                        parsed = Array.from(new Set(JSON.parse(savedStones)));
+                    }
+                }
+                if (parsed && Array.isArray(parsed)) {
+                    setAvailableStones(Array.from(new Set(parsed)));
+                }
+            } catch (e) {}
+        };
+
+        window.addEventListener('stonesUpdated', handleUpdate);
+        window.addEventListener('storage', handleUpdate);
+
+        return () => {
+            window.removeEventListener('stonesUpdated', handleUpdate);
+            window.removeEventListener('storage', handleUpdate);
+        };
+    }, []);
 
     useEffect(() => {
         const savedProducts = localStorage.getItem('magyarekszer_products');
         const savedTranslations = localStorage.getItem('magyarekszer_translations');
         const savedCollections = localStorage.getItem('magyarekszer_collections');
         const savedVacationMode = localStorage.getItem('magyarekszer_vacationMode');
-        const savedStones = localStorage.getItem('magyarekszer_availableStones');
-        const savedAllStones = localStorage.getItem('magyarekszer_allStonesMaster');
-        const savedStonePrices = localStorage.getItem('magyarekszer_stonePrices');
+        const savedStones = localStorage.getItem('availableStones') || JSON.stringify([])
+            || localStorage.getItem('magyarekszer_availableStones')
+            || localStorage.getItem('magyarekszer_available_stones');
+        const savedAllStones = localStorage.getItem('magyarekszer_allStonesMaster')
+            || localStorage.getItem('allStonesMaster');
+        const savedStonePrices = localStorage.getItem('magyarekszer_stonePrices')
+            || localStorage.getItem('magyarekszer_stone_prices')
+            || localStorage.getItem('stonePrices');
         const savedNotifications = localStorage.getItem('magyarekszer_notifications');
         const savedCoupons = localStorage.getItem('magyarekszer_coupons');
         const savedShippingSettings = localStorage.getItem('magyarekszer_shippingSettings');
         const savedAnker = localStorage.getItem('magyarekszer_prices_anker');
         const savedBarbara = localStorage.getItem('magyarekszer_prices_barbara');
         const savedEnamel = localStorage.getItem('magyarekszer_global_enamel_colors');
+        const savedLeather = localStorage.getItem('magyarekszer_global_leather_colors');
         const savedServices = localStorage.getItem('magyarekszer_extra_services');
         const savedBoxPrice = localStorage.getItem('magyarekszer_premium_box_price');
  
         if (savedAnker) setAnkerPrices(JSON.parse(savedAnker));
         if (savedBarbara) setBarbaraPrices(JSON.parse(savedBarbara));
         if (savedEnamel) setGlobalEnamelColors(JSON.parse(savedEnamel));
+        if (savedLeather) {
+            try {
+                setGlobalLeatherColors(JSON.parse(savedLeather));
+            } catch (e) {}
+        }
         if (savedServices) setExtraServices(JSON.parse(savedServices));
         if (savedBoxPrice) setPremiumBoxPrice(JSON.parse(savedBoxPrice));
 
@@ -656,6 +732,16 @@ export const ConfigProvider = ({ children, initialProducts }: { children: ReactN
                     setProducts(initialProductsData);
                 }
             } else {
+                try {
+                    const res = await fetch('/data/products.json', { cache: 'no-store' });
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (Array.isArray(data) && data.length > 0) {
+                            setProducts(data);
+                            return;
+                        }
+                    }
+                } catch (err) {}
                 setProducts(initialProductsData);
             }
         };
@@ -723,15 +809,15 @@ export const ConfigProvider = ({ children, initialProducts }: { children: ReactN
         
         if (savedStones) {
             try {
-                const parsed = JSON.parse(savedStones);
-                if (Array.isArray(parsed)) setAvailableStones(parsed);
+                const parsed = Array.from(new Set(JSON.parse(savedStones)));
+                if (Array.isArray(parsed)) setAvailableStones(parsed as string[]);
             } catch (e) {}
         }
 
         if (savedAllStones) {
             try {
                 const parsed = JSON.parse(savedAllStones);
-                if (Array.isArray(parsed)) setAllStonesMaster(parsed);
+                if (Array.isArray(parsed)) setAllStonesMaster(Array.from(new Set(parsed)));
             } catch (e) {}
         }
 
@@ -800,17 +886,51 @@ export const ConfigProvider = ({ children, initialProducts }: { children: ReactN
             localStorage.setItem('magyarekszer_vacationMode', JSON.stringify(vacationMode));
             localStorage.setItem('magyarekszer_availableStones', JSON.stringify(availableStones));
             localStorage.setItem('magyarekszer_available_stones', JSON.stringify(availableStones));
+            localStorage.setItem('availableStones', JSON.stringify(availableStones));
+            localStorage.setItem('magyarekszer_allStonesMaster', JSON.stringify(allStonesMaster));
+            localStorage.setItem('allStonesMaster', JSON.stringify(allStonesMaster));
+            localStorage.setItem('magyarekszer_stonePrices', JSON.stringify(stonePrices));
             localStorage.setItem('magyarekszer_stone_prices', JSON.stringify(stonePrices));
+            localStorage.setItem('stonePrices', JSON.stringify(stonePrices));
             localStorage.setItem('magyarekszer_notifications', JSON.stringify(notifications));
             localStorage.setItem('magyarekszer_coupons', JSON.stringify(coupons));
             localStorage.setItem('magyarekszer_global_enamel_colors', JSON.stringify(globalEnamelColors));
+            localStorage.setItem('magyarekszer_global_leather_colors', JSON.stringify(globalLeatherColors));
             localStorage.setItem('magyarekszer_extra_services', JSON.stringify(extraServices));
             localStorage.setItem('magyarekszer_premium_box_price', JSON.stringify(premiumBoxPrice));
             localStorage.setItem('magyarekszer_image_settings', JSON.stringify(imageSettings));
             localStorage.setItem('magyarekszer_custom_jewelry', JSON.stringify(customJewelry));
             localStorage.setItem('magyarekszer_shippingSettings', JSON.stringify(shippingSettings));
+
+            const syncTimer = setTimeout(() => {
+                if (typeof window !== 'undefined') {
+                    fetch('/api/admin/settings', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            availableStones,
+                            allStonesMaster,
+                            stonePrices,
+                            ankerPrices,
+                            barbaraPrices,
+                            extraServices,
+                            premiumBoxPrice,
+                            imageSettings,
+                            customJewelry,
+                            shippingSettings,
+                            translations: dynamicTranslations,
+                            collections,
+                            vacationMode,
+                            notifications,
+                            coupons,
+                            globalLeatherColors
+                        })
+                    }).catch(console.error);
+                }
+            }, 600);
+            return () => clearTimeout(syncTimer);
         }
-    }, [products, dynamicTranslations, collections, vacationMode, availableStones, allStonesMaster, stonePrices, notifications, coupons, globalEnamelColors, extraServices, premiumBoxPrice, imageSettings, customJewelry, shippingSettings, isLoaded]);
+    }, [products, dynamicTranslations, collections, vacationMode, availableStones, allStonesMaster, stonePrices, notifications, coupons, globalEnamelColors, globalLeatherColors, extraServices, premiumBoxPrice, imageSettings, customJewelry, shippingSettings, isLoaded]);
 
     const formatPrice = (priceHuf: number | undefined | null) => {
         if (priceHuf === undefined || priceHuf === null || isNaN(priceHuf)) return '';
@@ -858,6 +978,10 @@ export const ConfigProvider = ({ children, initialProducts }: { children: ReactN
         setGlobalEnamelColors(colors);
     };
 
+    const updateGlobalLeatherColors = (colors: { color: string; imageUrl?: string }[]) => {
+        setGlobalLeatherColors(colors);
+    };
+
     const saveExtraService = (service: ExtraService) => {
         setExtraServices(prev => {
             const index = prev.findIndex(s => s.id === service.id);
@@ -885,17 +1009,36 @@ export const ConfigProvider = ({ children, initialProducts }: { children: ReactN
     const saveProduct = (p: Product) => {
         setProducts(prev => {
             const index = prev.findIndex(item => item.id === p.id);
+            let next: Product[];
             if (index !== -1) {
-                const newProducts = [...prev];
-                newProducts[index] = p;
-                return newProducts;
+                next = [...prev];
+                next[index] = p;
+            } else {
+                next = [...prev, p];
             }
-            return [...prev, p];
+            if (typeof window !== 'undefined') {
+                fetch('/api/admin/save-products', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ products: next })
+                }).catch(console.error);
+            }
+            return next;
         });
     };
 
     const deleteProduct = (id: string) => {
-        setProducts(prev => prev.filter(p => p.id !== id));
+        setProducts(prev => {
+            const next = prev.filter(p => p.id !== id);
+            if (typeof window !== 'undefined') {
+                fetch('/api/admin/save-products', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ products: next })
+                }).catch(console.error);
+            }
+            return next;
+        });
     };
 
     const saveCollection = (c: Collection) => {
@@ -917,26 +1060,72 @@ export const ConfigProvider = ({ children, initialProducts }: { children: ReactN
     const addStone = (huName: string, enName: string, price: number) => {
         const key = `stone_${huName.toLowerCase().replace(/\s+/g, '_')}_${Date.now()}`;
         
-        setDynamicTranslations(prev => ({
-            HU: { ...prev.HU, [key]: huName },
-            EN: { ...prev.EN, [key]: enName }
-        }));
+        setDynamicTranslations(prev => {
+            const next = {
+                ...prev,
+                HU: { ...prev.HU, [key]: huName },
+                EN: { ...prev.EN, [key]: enName }
+            };
+            try { localStorage.setItem('magyarekszer_translations', JSON.stringify(next)); } catch (e) {}
+            return next;
+        });
         
-        setStonePrices(prev => ({ ...prev, [key]: price }));
-        setAllStonesMaster(prev => [...prev, key]);
-        setAvailableStones(prev => [...prev, key]);
+        setStonePrices(prev => {
+            const next = { ...prev, [key]: price };
+            try {
+                localStorage.setItem('magyarekszer_stonePrices', JSON.stringify(next));
+                localStorage.setItem('magyarekszer_stone_prices', JSON.stringify(next));
+                localStorage.setItem('stonePrices', JSON.stringify(next));
+            } catch (e) {}
+            return next;
+        });
+        setAllStonesMaster(prev => {
+            const next = Array.from(new Set([...prev, key]));
+            try {
+                localStorage.setItem('magyarekszer_allStonesMaster', JSON.stringify(next));
+                localStorage.setItem('allStonesMaster', JSON.stringify(next));
+            } catch (e) {}
+            return next;
+        });
+        updateAvailableStones(prev => Array.from(new Set([...prev, key])));
     };
 
     const updateStonePrice = (key: string, price: number) => {
-        setStonePrices(prev => ({ ...prev, [key]: price }));
+        setStonePrices(prev => {
+            const next = { ...prev, [key]: price };
+            try {
+                localStorage.setItem('magyarekszer_stonePrices', JSON.stringify(next));
+                localStorage.setItem('magyarekszer_stone_prices', JSON.stringify(next));
+                localStorage.setItem('stonePrices', JSON.stringify(next));
+            } catch (e) {}
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new Event('stonesUpdated'));
+            }
+            return next;
+        });
     };
 
     const deleteStone = (key: string) => {
-        setAllStonesMaster(prev => prev.filter(k => k !== key));
-        setAvailableStones(prev => prev.filter(k => k !== key));
+        setAllStonesMaster(prev => {
+            const next = prev.filter(k => k !== key);
+            try {
+                localStorage.setItem('magyarekszer_allStonesMaster', JSON.stringify(next));
+                localStorage.setItem('allStonesMaster', JSON.stringify(next));
+            } catch (e) {}
+            return next;
+        });
+        updateAvailableStones(prev => prev.filter(k => k !== key));
         setStonePrices(prev => {
             const next = { ...prev };
             delete next[key];
+            try {
+                localStorage.setItem('magyarekszer_stonePrices', JSON.stringify(next));
+                localStorage.setItem('magyarekszer_stone_prices', JSON.stringify(next));
+                localStorage.setItem('stonePrices', JSON.stringify(next));
+            } catch (e) {}
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new Event('stonesUpdated'));
+            }
             return next;
         });
     };
@@ -992,7 +1181,7 @@ export const ConfigProvider = ({ children, initialProducts }: { children: ReactN
             vacationMode,
             setVacationMode,
             availableStones,
-            setAvailableStones,
+            setAvailableStones: updateAvailableStones,
             allStonesMaster,
             stonePrices,
             addStone,
@@ -1008,6 +1197,8 @@ export const ConfigProvider = ({ children, initialProducts }: { children: ReactN
             updateChainPrice,
             globalEnamelColors,
             updateGlobalEnamelColors,
+            globalLeatherColors,
+            updateGlobalLeatherColors,
             extraServices,
             saveExtraService,
             updateExtraServices,

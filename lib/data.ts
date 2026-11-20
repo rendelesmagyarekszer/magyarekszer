@@ -3,7 +3,7 @@ export interface Product {
     name: string;
     description: string;
     price: number;
-    categories: string[];
+    categories?: string[];
     image: string;
     sku?: string;
     weight?: string;
@@ -20,6 +20,9 @@ export interface Product {
     nameEn?: string;
     descriptionEn?: string;
     historyEn?: string;
+    category?: string;
+    isLeatherBracelet?: boolean;
+    leatherColors?: { color: string; imageUrl: string }[];
 }
 
 export interface VacationMode {
@@ -40,10 +43,32 @@ export interface Coupon {
     isActive: boolean;
 }
 
-export const ALL_STONES = [
-    'stone_solyomszem', 'stone_granat', 'stone_holdko', 'stone_hegyikristaly', 
-    'stone_borostyan', 'stone_olivin', 'stone_igazgyongy'
-];
+export interface LeatherColorOption {
+    color: string;
+    imageUrl?: string;
+}
+
+export interface AdminSettings {
+    categories?: any[];
+    availableStones?: string[];
+    allStonesMaster?: string[];
+    stonePrices?: Record<string, number>;
+    ankerPrices?: Record<string, number>;
+    barbaraPrices?: Record<string, number>;
+    extraServices?: any[];
+    premiumBoxPrice?: number;
+    imageSettings?: Record<string, string>;
+    customJewelry?: any[];
+    shippingSettings?: any;
+    translations?: any;
+    collections?: any[];
+    vacationMode?: any;
+    notifications?: any[];
+    coupons?: any[];
+    globalLeatherColors?: LeatherColorOption[];
+}
+
+export const ALL_STONES = [];
 
 export interface Category {
     name: string;

@@ -38,7 +38,7 @@ const HomeCategoryRow = () => {
 
     return (
         <div className="w-full h-full">
-            <div className="flex justify-between items-center gap-1 sm:gap-2 md:gap-4 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4 sm:mx-0 sm:px-0">
+            <div className="flex justify-start sm:justify-between items-center gap-3 sm:gap-2 md:gap-4 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 scroll-smooth">
                 {categories.map((category) => {
                     const isActive = slug === category.slug;
                     const isAnyActive = !!slug;
@@ -51,9 +51,9 @@ const HomeCategoryRow = () => {
                         <Link 
                             key={category.slug} 
                             href={`/category/${category.slug}`}
-                            className="flex flex-col items-center group flex-shrink-0 sm:flex-1 min-w-[70px] sm:min-w-0"
+                            className="flex flex-col items-center group flex-shrink-0 sm:flex-1 w-[72px] sm:w-auto min-w-[72px] sm:min-w-0"
                         >
-                            <div className={`relative aspect-square w-full max-w-[80px] md:max-w-[100px] overflow-hidden rounded-md border transition-all duration-700 mb-3 ${isActive ? 'border-gold shadow-[0_0_20px_rgba(201,165,106,0.3)]' : 'border-gold/10 group-hover:border-gold/50'}`}>
+                            <div className={`relative aspect-square w-[72px] h-[72px] sm:w-full sm:h-auto max-w-[80px] md:max-w-[100px] overflow-hidden rounded-md border transition-all duration-700 mb-2 sm:mb-3 flex-shrink-0 ${isActive ? 'border-gold shadow-[0_0_20px_rgba(201,165,106,0.3)]' : 'border-gold/10 group-hover:border-gold/50'}`}>
                                 <img
                                     src={finalImage}
                                     alt={t(`cat_${category.slug}`)}
@@ -62,8 +62,8 @@ const HomeCategoryRow = () => {
                                 />
                                 <div className={`absolute inset-0 bg-deep-brown transition-all duration-700 ${isDimmed ? 'opacity-40' : 'opacity-0 group-hover:opacity-0'}`}></div>
                             </div>
-                            <div className="flex flex-col items-center gap-1.5 h-8">
-                                <span className={`text-[8px] md:text-[10px] uppercase tracking-[0.2em] text-center font-bold leading-tight transition-all duration-500 ${isActive ? 'text-gold scale-110' : (isDimmed ? 'text-ivory/20 group-hover:text-gold' : 'text-ivory/80 group-hover:text-gold')}`}>
+                            <div className="flex flex-col items-center gap-1 h-9 sm:h-8 w-full">
+                                <span className={`text-[8px] md:text-[10px] uppercase tracking-[0.1em] sm:tracking-[0.2em] text-center font-bold leading-tight transition-all duration-500 line-clamp-2 px-0.5 ${isActive ? 'text-gold scale-105' : (isDimmed ? 'text-ivory/20 group-hover:text-gold' : 'text-ivory/80 group-hover:text-gold')}`}>
                                     {t(`cat_${category.slug}`)}
                                 </span>
                                 {isActive && (

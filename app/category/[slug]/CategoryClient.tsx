@@ -21,7 +21,12 @@ export default function CategoryClient({ slug }: CategoryClientProps) {
                 return product.isEnamel === true;
             }
             // Support multi-category products
-            return product.categories && product.categories.includes(slug);
+            const cats = Array.isArray(product.categories) ? product.categories : [];
+            const singleCat = (product as { category?: string }).category;
+            const matchesCategory = cats.includes(slug) || singleCat === slug;
+            const matchesWeddingEngagement = (slug === 'eljegyzesi-gyuruk' || slug === 'eljegyzesi-es-karikagyuruk') && 
+                (singleCat === 'eljegyzesi-es-karikagyuruk' || singleCat === 'eljegyzesi-gyuruk' || cats.includes('eljegyzesi-es-karikagyuruk') || cats.includes('eljegyzesi-gyuruk'));
+            return matchesCategory || matchesWeddingEngagement;
         });
         
         if (sortBy === 'asc') {

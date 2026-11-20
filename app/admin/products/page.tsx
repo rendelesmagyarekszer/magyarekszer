@@ -42,6 +42,7 @@ function AdminProductsContent() {
     const [priceConfirm, setPriceConfirm] = useState(false);
     
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+    const [isLeatherInput, setIsLeatherInput] = useState(false);
     const [enamelColorsInput, setEnamelColorsInput] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState<string | null>(null);
@@ -80,7 +81,7 @@ function AdminProductsContent() {
     const filteredProducts = products.filter(p => {
         const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                              (p.sku && p.sku.toLowerCase().includes(searchTerm.toLowerCase()));
-        const matchesCategory = categoryFilter === 'all' || (p.categories && p.categories.includes(categoryFilter));
+        const matchesCategory = categoryFilter === 'all' || p.category === categoryFilter;
         const matchesEnamel = !isEnamelOnly || p.isEnamel === true;
         return matchesSearch && matchesCategory && matchesEnamel;
     });
@@ -93,7 +94,7 @@ function AdminProductsContent() {
         if (isNaN(factor)) return;
 
         const updatedProducts = products.map(p => {
-            if (pricingCategory === 'all' || (p.categories && p.categories.includes(pricingCategory))) {
+            if (pricingCategory === 'all' || p.category === pricingCategory) {
                 return { ...p, price: Math.round(p.price * factor) };
             }
             return p;
@@ -116,7 +117,7 @@ function AdminProductsContent() {
                 name: '',
                 description: '',
                 price: 0,
-                categories: categoryFilter === 'all' ? [] : [categoryFilter],
+                category: categoryFilter === 'all' ? 'medalok-es-talizmanok' : categoryFilter,
                 image: '',
                 sku: '',
                 weight: '',
@@ -133,7 +134,11 @@ function AdminProductsContent() {
         e.preventDefault();
         if (editingProduct) {
             const colors = enamelColorsInput.split(',').map(s => s.trim()).filter(Boolean);
-            saveProduct({ ...editingProduct, enamelColors: colors });
+            saveProduct({ 
+                ...editingProduct, 
+                enamelColors: colors,
+                isLeatherBracelet: editingProduct.isLeatherBracelet || false
+            });
             setIsModalOpen(false);
             setEditingProduct(null);
             setEnamelColorsInput('');
@@ -348,7 +353,7 @@ function AdminProductsContent() {
                                             </div>
                                         </td>
                                         <td className="px-8 py-6">
-                                            <span className="text-xs text-ivory/60 uppercase tracking-widest">{t(`cat_${p.categories?.[0] || ''}`)}</span>
+                                            <span className="text-xs text-ivory/60 uppercase tracking-widest">{t(`cat_${p.category}`)}</span>
                                         </td>
                                         <td className="px-8 py-6">
                                             <span className="text-base font-bold text-gold">{formatPrice(p.price)}</span>
@@ -449,32 +454,15 @@ function AdminProductsContent() {
 
                                                 <div className="space-y-3">
                                                     <label className="text-xs uppercase tracking-[0.2em] font-black text-gold">Kategória</label>
-                                                                                                         <div className="grid grid-cols-2 gap-4">{categories.map(cat => (
-
-                                                             <label key={cat.slug} className="flex items-center space-x-2">
-                                                                 <input
-                                                                     type="checkbox"
-                                                                     className="w-4 h-4 accent-gold"
-                                                                     checked={editingProduct.categories?.includes(cat.slug) || false}
-                                                                     onChange={e => {
-                                                                         const newCats = e.target.checked
-                                                                             ? [...(editingProduct.categories || []), cat.slug]
-                                                                             : (editingProduct.categories || []).filter(sl => sl !== cat.slug);
-                                                                         setEditingProduct({ ...editingProduct, categories: newCats });
-                                                                     }}
-                                                                 />
-                                                                 <span className="text-ivory uppercase font-black text-xs tracking-widest">{cat.name}</span>
-                                                             </label>
-                                                         )}
-                                                     </div>
-                                                         
-                                                        
-                                                        
-                                                    
-                                                        
-                                                            
-                                                        
-                                                    
+                                                    <select 
+                                                        value={editingProduct.category || ''}
+                                                        onChange={(e) => setEditingProduct({...editingProduct, category: e.target.value})}
+                                                        className="w-full bg-[#0d0902] border border-gold/10 p-5 text-base text-ivory outline-none focus:border-gold/40 uppercase tracking-widest font-black"
+                                                    >
+                                                        {categories.filter(c => c.slug !== 'all').map(cat => (
+                                                            <option key={cat.slug} value={cat.slug}>{cat.name}</option>
+                                                        ))}
+                                                    </select>
                                                 </div>
                                             </div>
 
@@ -513,7 +501,7 @@ function AdminProductsContent() {
                                                 </div>
 
                                                 {/* Kolié Toggle */}
-                                                {(editingProduct.categories?.includes('noi-lancok') || editingProduct.categories?.includes('medalok-es-talizmanok')) && (
+                                                {(editingProduct.category === 'noi-lancok' || editingProduct.category === 'medalok-es-talizmanok') && (
                                                     <div className="flex items-center gap-4 bg-gold/5 p-6 border border-gold/10 rounded-md">
                                                         <input 
                                                             type="checkbox" 
@@ -638,11 +626,33 @@ function AdminProductsContent() {
                                                                         >
                                                                             {count} szín
                                                                         </button>
-                                                                    )}
+                                                                    ))}
                                                                 </div>
                                                             </div>
                                                         </motion.div>
                                                     )}
+                                                </div>
+
+                                                {/* Leather Bracelet Toggle */}
+                                                <div className="space-y-4">
+                                                    <div className="flex items-center gap-4 bg-gold/5 p-6 border border-gold/10 rounded-md">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            id="isLeatherBracelet"
+                                                            checked={editingProduct.isLeatherBracelet || false}
+                                                            onChange={(e) => setEditingProduct({
+                                                                ...editingProduct, 
+                                                                isLeatherBracelet: e.target.checked
+                                                            })}
+                                                            className="w-5 h-5 accent-gold cursor-pointer"
+                                                        />
+                                                        <div className="space-y-1">
+                                                            <label htmlFor="isLeatherBracelet" className="text-xs uppercase tracking-[0.2em] font-black text-gold cursor-pointer">Bőrszín Választó (Bőrkarkötő / Karperec)</label>
+                                                            <p className="text-[10px] text-ivory/40 uppercase tracking-widest leading-relaxed">
+                                                                Ha be van kapcsolva, a vásárlónak a Beállításokban feltöltött központi bőrszínek közül kell választania.
+                                                            </p>
+                                                        </div>
+                                                    </div>
                                                 </div>
 
                                                 <div className="flex bg-black/40 border border-gold/10 rounded-md p-6 gap-6 items-center">
@@ -903,7 +913,7 @@ function AdminProductsContent() {
                                                             {p.image && <img src={p.image} className="w-10 h-10 object-cover rounded border border-gold/10" alt="" />}
                                                             <div className="flex flex-col">
                                                                 <span className="text-sm font-serif leading-tight">{p.name}</span>
-                                                                <span className="text-[11px] uppercase tracking-widest opacity-60 mt-1">{t(`cat_${p.categories?.[0] || ''}`)}</span>
+                                                                <span className="text-[11px] uppercase tracking-widest opacity-60 mt-1">{t(`cat_${p.category}`)}</span>
                                                             </div>
                                                         </div>
                                                     </label>

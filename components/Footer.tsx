@@ -56,7 +56,7 @@ const Footer = () => {
                     </div>
 
                     {/* Workshop Info */}
-                    <div className="space-y-8 p-8 bg-ivory/5 border border-gold/5 rounded-xl shadow-inner relative overflow-hidden">
+                    <div className="space-y-6 sm:space-y-8 p-5 sm:p-8 bg-ivory/5 border border-gold/5 rounded-xl shadow-inner relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-full h-[1px] bg-gold/20"></div>
                         <Link href="/contact" className="group/link block">
                             <h3 className="text-[10px] uppercase tracking-[0.5em] font-black text-gold group-hover/link:translate-x-1 transition-transform">{t('contact')}</h3>
@@ -92,8 +92,8 @@ const Footer = () => {
                         </div>
                     </div>
                     
-                    <div className="pt-8 border-t border-gold/5 flex flex-col md:flex-row items-center justify-between gap-8">
-                        <p className="text-[10px] text-[#333333] tracking-[0.5em] font-black uppercase">
+                    <div className="pt-8 border-t border-gold/5 flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8">
+                        <p className="text-[9px] sm:text-[10px] text-[#666666] tracking-[0.15em] sm:tracking-[0.3em] md:tracking-[0.5em] font-black uppercase text-center md:text-left">
                             MAGYAR ÉKSZER &copy; 2024 • TRADÍCIONÁLIS ÖTVÖSMŰVÉSZET
                         </p>
                         <div className="flex items-center gap-4 opacity-30 grayscale hover:grayscale-0 transition-all cursor-pointer">

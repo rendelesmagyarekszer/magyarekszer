@@ -58,12 +58,12 @@ const SearchOverlay = () => {
                     {/* Close Button */}
                     <button 
                         onClick={() => setIsSearchOpen(false)}
-                        className="absolute top-8 right-8 p-3 text-[#c9a56a]/60 hover:text-[#fdfdf3] transition-colors rounded-full border border-[#c9a56a]/20 hover:border-[#c9a56a]/60"
+                        className="absolute top-4 right-4 sm:top-8 sm:right-8 p-2 sm:p-3 text-[#c9a56a]/60 hover:text-[#fdfdf3] transition-colors rounded-full border border-[#c9a56a]/20 hover:border-[#c9a56a]/60"
                     >
-                        <X className="h-6 w-6" />
+                        <X className="h-5 w-5 sm:h-6 sm:w-6" />
                     </button>
 
-                    <div className="w-full max-w-3xl flex flex-col space-y-12">
+                    <div className="w-full max-w-3xl flex flex-col space-y-8 sm:space-y-12">
                         {/* Search Input Section */}
                         <div className="relative group">
                             <motion.div 
@@ -73,15 +73,15 @@ const SearchOverlay = () => {
                                 className="absolute -bottom-2 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#c9a56a] to-transparent opacity-50"
                             ></motion.div>
                             
-                            <div className="flex items-center space-x-6">
-                                <Search className="h-8 w-8 text-[#c9a56a]" />
+                            <div className="flex items-center space-x-3 sm:space-x-6">
+                                <Search className="h-6 w-6 sm:h-8 sm:w-8 text-[#c9a56a] flex-shrink-0" />
                                 <input
                                     ref={inputRef}
                                     type="text"
                                     placeholder={t('search_placeholder')}
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full bg-transparent border-none text-3xl md:text-5xl font-serif text-[#fdfdf3] placeholder-[#c9a56a]/30 outline-none pb-2 decoration-none"
+                                    className="w-full bg-transparent border-none text-xl sm:text-3xl md:text-5xl font-serif text-[#fdfdf3] placeholder-[#c9a56a]/30 outline-none pb-2 decoration-none"
                                 />
                             </div>
                         </div>
@@ -99,7 +99,7 @@ const SearchOverlay = () => {
                                     >
                                         <Link 
                                             href={`/product/${product.id}`}
-                                            onClick={() => { setIsSearchOpen(false); setSearchQuery(''); }}
+                                            onClick={() => setIsSearchOpen(false)}
                                             className="group flex items-center space-x-4 p-3 rounded-lg bg-[#1e1405]/40 border border-[#c9a56a]/10 hover:border-[#c9a56a]/40 transition-all hover:bg-[#1e1405]"
                                         >
                                             <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-md border border-[#c9a56a]/20">
