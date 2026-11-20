@@ -66,6 +66,7 @@ export interface AdminSettings {
     notifications?: any[];
     coupons?: any[];
     globalLeatherColors?: LeatherColorOption[];
+    globalEnamelColors?: string[];
 }
 
 export const ALL_STONES = [];

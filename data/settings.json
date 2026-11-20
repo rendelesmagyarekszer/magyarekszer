@@ -1,35 +1,30 @@
 {
   "availableStones": [
     "stone_borostyan",
+    "stone_olivin",
+    "stone_citrin",
+    "stone_granat",
     "stone_hegyikristaly",
     "stone_holdko",
-    "stone_sötét_holdkő_1775678110141",
-    "stone_citrin_1775678068509",
-    "stone_igazgyongy",
-    "stone_granat",
-    "stone_solyomszem",
-    "stone_olivin"
+    "stone_igazgyongy"
   ],
   "allStonesMaster": [
-    "stone_solyomszem",
-    "stone_granat",
-    "stone_holdko",
-    "stone_hegyikristaly",
     "stone_borostyan",
     "stone_olivin",
-    "stone_igazgyongy",
-    "stone_citrin_1775678068509",
-    "stone_sötét_holdkő_1775678110141"
+    "stone_citrin",
+    "stone_granat",
+    "stone_hegyikristaly",
+    "stone_holdko",
+    "stone_igazgyongy"
   ],
   "stonePrices": {
-    "stone_solyomszem": 0,
-    "stone_granat": 0,
-    "stone_holdko": 0,
-    "stone_hegyikristaly": 0,
     "stone_borostyan": 0,
     "stone_olivin": 0,
-    "stone_igazgyongy": 3000,
-    "stone_olivin_1793565512675": 0
+    "stone_citrin": 0,
+    "stone_granat": 0,
+    "stone_hegyikristaly": 0,
+    "stone_holdko": 3000,
+    "stone_igazgyongy": 3000
   },
   "ankerPrices": {
     "40": 13000,
@@ -265,8 +260,15 @@
       "message_label": "Üzenet tartalma",
       "stone_citrin_1775678068509": "Citrin",
       "stone_sötét_holdkő_1775678110141": "SöTÉT olivin",
-      "stone_olivin": "világos Olivin",
-      "stone_olivin_1793565512675": "olivin"
+      "stone_olivin": "Olivin",
+      "stone_olivin_1793565512675": "olivin",
+      "stone_borostyan": "Borostyán",
+      "stone_citrin": "Citrin",
+      "stone_granat": "Gránát",
+      "stone_hegyikristaly": "Hegyikristály",
+      "stone_holdko": "Holdkő",
+      "stone_igazgyongy": "Igazgyöngy",
+      "page_open_hours_content": "Hétfő - Csütörtök: 10:00 - 17:00\nPéntek: 10:00 - 16:00\nEbédidő: 12:00 - 12:30\nSzombat - Vasárnap: Zárva"
     },
     "EN": {
       "cart": "Cart",
@@ -346,8 +348,15 @@
       "message_label": "Message Content",
       "stone_citrin_1775678068509": "citrine",
       "stone_sötét_holdkő_1775678110141": "SöTÉT olivin",
-      "stone_olivin": "világos Olivin",
-      "stone_olivin_1793565512675": "olivin"
+      "stone_olivin": "Olivine",
+      "stone_olivin_1793565512675": "olivin",
+      "stone_borostyan": "Amber",
+      "stone_citrin": "Citrine",
+      "stone_granat": "Garnet",
+      "stone_hegyikristaly": "Rock crystal",
+      "stone_holdko": "Moonstone",
+      "stone_igazgyongy": "Pearl",
+      "page_open_hours_content": "Monday - Thursday: 10:00 - 17:00\nFriday: 10:00 - 16:00\nLunch break: 12:00 - 12:30\nSaturday - Sunday: Closed"
     }
   },
   "collections": [],
@@ -659,20 +668,24 @@
       "imageUrl": ""
     },
     {
-      "color": "Sötétbarna",
+      "color": "Világos barna",
       "imageUrl": ""
     },
     {
-      "color": "Konyak",
+      "color": "Sötét barna",
       "imageUrl": ""
-    },
-    {
-      "color": "világos barna",
-      "imageUrl": ""
-    },
-    {
-      "color": "teszt",
-      "imageUrl": "/uploads/1795037191228_tn_265x212lovas_kk.jpg"
     }
+  ],
+  "globalEnamelColors": [
+    "Aranybarna",
+    "Földbarna",
+    "Fekete",
+    "Fehér",
+    "Erdélyi kék",
+    "Búzavirág kék",
+    "Fenyőzöld",
+    "Fűzöld",
+    "Olívazöld",
+    "Borvörös"
   ]
 }

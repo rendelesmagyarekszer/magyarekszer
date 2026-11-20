@@ -308,6 +308,7 @@ const translations: Record<Language, Record<string, string>> = {
         'stone_hegyikristaly': 'Hegyikristály',
         'stone_borostyan': 'Borostyán',
         'stone_olivin': 'Olivin',
+        'stone_citrin': 'Citrin',
         'stone_igazgyongy': 'Igazgyöngy',
         'casting_title': 'Precíziós Öntés',
         'page_about_content': 'Családi vállalkozásunk 2002-ben indult azzal a küldetéssel, hogy a Kárpát-medence ősi ékszerkultúráját a modern ötvösművészettel ötvözve hozzuk el a mának.',
@@ -317,7 +318,7 @@ const translations: Record<Language, Record<string, string>> = {
         'page_mission_content': 'Hiszünk abban, hogy ékszereink nem csak kiegészítők, hanem identitásunk és múltunk hordozói. Műhelyünkben a tradicionális ötvösművészetet ötvözzük a modern technológiával, hogy maradandót alkossunk.',
         'page_reference_content': 'Büszkék vagyunk azokra az egyedi alkotásokra, amelyek a műhelyünkből kerültek ki. Minden darab egy-egy különleges történetet mesél el.',
         'page_contact_content': 'Keressen minket bizalommal az alábbi elérhetőségeken: +36 20 807 4841, magyarekszer@gmail.com',
-        'page_open_hours_content': 'Hétfő - Csütörtök: 10:00 - 18:00\nPéntek: 10:00 - 16:00\nEbédidő: 12:00 - 12:30\nSzombat - Vasárnap: Zárva',
+        'page_open_hours_content': 'Hétfő - Csütörtök: 10:00 - 17:00\nPéntek: 10:00 - 16:00\nEbédidő: 12:00 - 12:30\nSzombat - Vasárnap: Zárva',
         'contact_email_1': 'magyarekszer@gmail.com',
         'contact_email_2': '',
         'contact_phone_1': '+36 20 807 4841',
@@ -510,6 +511,7 @@ const translations: Record<Language, Record<string, string>> = {
         'stone_hegyikristaly': 'Rock crystal',
         'stone_borostyan': 'Amber',
         'stone_olivin': 'Olivine',
+        'stone_citrin': 'Citrine',
         'stone_igazgyongy': 'Pearl',
         'casting_title': 'Precision Casting',
         'page_about_content': 'Our family business started in 2002 with the mission of blending the ancient jewelry culture of the Carpathian Basin with modern goldsmith art.',
@@ -519,7 +521,7 @@ const translations: Record<Language, Record<string, string>> = {
         'page_mission_content': 'We believe that our jewelry are not just accessories, but carriers of our identity and past. In our workshop, we blend traditional goldsmithing with modern technology to create lasting pieces.',
         'page_reference_content': 'We are proud of the unique creations that have left our workshop. Every piece tells a special story.',
         'page_contact_content': 'Feel free to contact us at: +36 20 807 4841, magyarekszer@gmail.com',
-        'page_open_hours_content': 'Monday - Thursday: 10:00 - 18:00\nFriday: 10:00 - 16:00\nLunch break: 12:00 - 12:30\nSaturday - Sunday: Closed',
+        'page_open_hours_content': 'Monday - Thursday: 10:00 - 17:00\nFriday: 10:00 - 16:00\nLunch break: 12:00 - 12:30\nSaturday - Sunday: Closed',
         'contact_email_1': 'magyarekszer@gmail.com',
         'contact_email_2': '',
         'contact_phone_1': '+36 20 807 4841',
@@ -580,12 +582,22 @@ export const ConfigProvider = ({
     const [isLoaded, setIsLoaded] = useState(false);
     const [ankerPrices, setAnkerPrices] = useState<Record<string, number>>(initialSettings?.ankerPrices || DEFAULT_ANKER_PRICES);
     const [barbaraPrices, setBarbaraPrices] = useState<Record<string, number>>(initialSettings?.barbaraPrices || DEFAULT_BARBARA_PRICES);
-    const [globalEnamelColors, setGlobalEnamelColors] = useState<string[]>([]);
+    const [globalEnamelColors, setGlobalEnamelColors] = useState<string[]>(initialSettings?.globalEnamelColors || [
+        'Aranybarna',
+        'Földbarna',
+        'Fekete',
+        'Fehér',
+        'Erdélyi kék',
+        'Búzavirág kék',
+        'Fenyőzöld',
+        'Fűzöld',
+        'Olívazöld',
+        'Borvörös'
+    ]);
     const [globalLeatherColors, setGlobalLeatherColors] = useState<{ color: string; imageUrl?: string }[]>(initialSettings?.globalLeatherColors || [
         { color: 'Fekete', imageUrl: '' },
-        { color: 'Sötétbarna', imageUrl: '' },
-        { color: 'Konyak', imageUrl: '' },
-        { color: 'Natúr', imageUrl: '' }
+        { color: 'Világos barna', imageUrl: '' },
+        { color: 'Sötét barna', imageUrl: '' }
     ]);
     const [extraServices, setExtraServices] = useState<ExtraService[]>(initialSettings?.extraServices || DEFAULT_EXTRA_SERVICES);
     const [premiumBoxPrice, setPremiumBoxPrice] = useState<number>(initialSettings?.premiumBoxPrice ?? 1500);

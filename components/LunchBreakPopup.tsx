@@ -15,8 +15,8 @@ const LunchBreakPopup = () => {
             const minutes = now.getMinutes();
             const totalMinutes = hours * 60 + minutes;
 
-            // 10:00 (600 mins) to 12:30 (750 mins)
-            const shouldBeVisible = totalMinutes >= 600 && totalMinutes <= 750;
+            // 12:00 (720 mins) to 12:30 (750 mins)
+            const shouldBeVisible = totalMinutes >= 720 && totalMinutes <= 750;
             
             if (shouldBeVisible && !isDismissed) {
                 setIsVisible(true);
