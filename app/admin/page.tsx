@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { getTrafficData, TrafficData } from '@/components/VisitorTracker';
 import { useConfig } from '@/components/ConfigProvider';
 import { 
     Package, 
@@ -58,6 +59,21 @@ export default function AdminDashboard() {
     const [showAnalytics, setShowAnalytics] = useState(false);
     const [analyticsTab, setAnalyticsTab] = useState<'traffic' | 'sales'>('sales');
     const [bestSellersTab, setBestSellersTab] = useState<'all' | 'month'>('all');
+    const [trafficStats, setTrafficStats] = useState<TrafficData>({
+        totalViews: 0,
+        uniqueVisits: 0,
+        daily: {},
+        hourly: {},
+        pages: {},
+        devices: { mobile: 0, desktop: 0 },
+        lastUpdated: ''
+    });
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            setTrafficStats(getTrafficData());
+        }
+    }, [showAnalytics]);
 
     // Sales Statistics Calculation
     const productSales: Record<string, { quantity: number, revenue: number, image?: string }> = {};
@@ -664,25 +680,41 @@ export default function AdminDashboard() {
                             <div className="flex-1 overflow-y-auto p-12 space-y-12 custom-scrollbar">
                                 {analyticsTab === 'traffic' ? (
                                     <>
-                                        {/* Top Stats Summary */}
+                                        {/* Real Traffic Stats Summary */}
                                         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                                             {[
-                                                { label: 'Összes Látogató (Havi)', value: '18,420', icon: Users, color: 'text-gold' },
-                                                { label: 'Átlagos Időtartam', value: '4:22 perc', icon: Clock, color: 'text-ivory/60' },
-                                                { label: 'Bounce Rate', value: '24.5%', icon: TrendingUp, color: 'text-red-400' },
-                                                { label: 'Országok száma', value: '12', icon: Globe, color: 'text-blue-400' }
+                                                { label: 'Összes Oldalmegtekintés', value: trafficStats.totalViews.toLocaleString('hu-HU'), icon: Users, color: 'text-gold' },
+                                                { label: 'Egyedi Látogatók', value: trafficStats.uniqueVisits.toLocaleString('hu-HU'), icon: Globe, color: 'text-emerald-400' },
+                                                { label: 'Mobil látogatók', value: `${trafficStats.devices?.mobile || 0} (${trafficStats.totalViews > 0 ? Math.round(((trafficStats.devices?.mobile || 0) / trafficStats.totalViews) * 100) : 0}%)`, icon: TrendingUp, color: 'text-gold/80' },
+                                                { label: 'Asztali (PC/Laptop)', value: `${trafficStats.devices?.desktop || 0} (${trafficStats.totalViews > 0 ? Math.round(((trafficStats.devices?.desktop || 0) / trafficStats.totalViews) * 100) : 0}%)`, icon: Clock, color: 'text-blue-400' }
                                             ].map((s, idx) => (
-                                                <div key={idx} className="bg-black/20 border border-gold/5 p-6 space-y-4">
+                                                <div key={idx} className="bg-black/40 border border-gold/20 p-6 space-y-4 rounded-xl shadow-lg">
                                                     <div className="flex justify-between items-start">
                                                         <s.icon className={`h-4 w-4 ${s.color}`} />
-                                                        <span className="text-[10px] font-black text-gold/20 tracking-tighter uppercase">Live</span>
+                                                        <span className="text-[10px] font-black text-emerald-400 tracking-wider uppercase bg-emerald-950/50 px-2 py-0.5 rounded border border-emerald-500/20">Valódi Adat</span>
                                                     </div>
                                                     <div>
                                                         <p className="text-2xl font-black text-ivory tracking-tight">{s.value}</p>
-                                                        <p className="text-[11px] font-black text-[#666666] uppercase tracking-widest mt-1">{s.label}</p>
+                                                        <p className="text-[11px] font-black text-gold/60 uppercase tracking-widest mt-1">{s.label}</p>
                                                     </div>
                                                 </div>
                                             ))}
+                                        </div>
+
+                                        {/* Direct Link to MediaCenter Server Stats */}
+                                        <div className="p-6 bg-gold/5 border border-gold/20 rounded-xl flex flex-col sm:flex-row justify-between items-center gap-4">
+                                            <div className="space-y-1 text-center sm:text-left">
+                                                <h4 className="text-xs uppercase font-black tracking-widest text-gold">Hivatalos Szerver Statisztikák (MediaCenter AWStats / Webalizer)</h4>
+                                                <p className="text-[11px] text-ivory/60">A tárhelyeden a szerver szintű IP és látogatói forgalom automatikusan naplózódik a MediaCenter Ügyfélkapuban.</p>
+                                            </div>
+                                            <a 
+                                                href="https://admin.mediacenter.hu/index_stats.php" 
+                                                target="_blank" 
+                                                rel="noopener noreferrer"
+                                                className="px-6 py-3 bg-gold text-deep-brown font-black text-xs uppercase tracking-widest rounded-lg hover:bg-gold/80 transition-all shadow-lg shrink-0"
+                                            >
+                                                Szerver Statisztika Megnyitása ↗
+                                            </a>
                                         </div>
 
                                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">

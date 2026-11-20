@@ -9,6 +9,7 @@ import { CartProvider } from "@/components/CartProvider";
 import { ConfigProvider } from "@/components/ConfigProvider";
 import { AuthProvider } from "@/components/AuthProvider";
 import LunchBreakPopup from "@/components/LunchBreakPopup";
+import VisitorTracker from "@/components/VisitorTracker";
 
 import { getProducts } from "@/lib/products-server";
 import { getSettings } from "@/lib/settings-server";
@@ -98,6 +99,7 @@ export default function RootLayout({
                   </main>
                   <Footer />
                   <LunchBreakPopup />
+          <VisitorTracker />
                   <CookieConsent />
                 </div>
               </SearchProvider>
