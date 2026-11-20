@@ -666,14 +666,17 @@ export const ConfigProvider = ({
                 if (e && e.detail && Array.isArray(e.detail)) {
                     parsed = e.detail;
                 } else {
-                    const savedStones = localStorage.getItem('availableStones') || JSON.stringify([])
+                    const savedStones = localStorage.getItem('availableStones')
                         || localStorage.getItem('magyarekszer_availableStones')
                         || localStorage.getItem('magyarekszer_available_stones');
                     if (savedStones) {
-                        parsed = Array.from(new Set(JSON.parse(savedStones)));
+                        const parsedJson = JSON.parse(savedStones);
+                        if (Array.isArray(parsedJson) && parsedJson.length > 0) {
+                            parsed = Array.from(new Set(parsedJson));
+                        }
                     }
                 }
-                if (parsed && Array.isArray(parsed)) {
+                if (parsed && Array.isArray(parsed) && parsed.length > 0) {
                     setAvailableStones(Array.from(new Set(parsed)));
                 }
             } catch (e) {}
@@ -689,11 +692,30 @@ export const ConfigProvider = ({
     }, []);
 
     useEffect(() => {
+        const SETTINGS_SYNC_VERSION = '2026-11-20-stones-fix-v1';
+        try {
+            if (localStorage.getItem('magyarekszer_settings_version') !== SETTINGS_SYNC_VERSION) {
+                [
+                    'availableStones',
+                    'magyarekszer_availableStones',
+                    'magyarekszer_available_stones',
+                    'magyarekszer_allStonesMaster',
+                    'allStonesMaster',
+                    'magyarekszer_stonePrices',
+                    'magyarekszer_stone_prices',
+                    'stonePrices',
+                    'magyarekszer_global_enamel_colors',
+                    'magyarekszer_global_leather_colors'
+                ].forEach(k => localStorage.removeItem(k));
+                localStorage.setItem('magyarekszer_settings_version', SETTINGS_SYNC_VERSION);
+            }
+        } catch (e) {}
+
         const savedProducts = localStorage.getItem('magyarekszer_products');
         const savedTranslations = localStorage.getItem('magyarekszer_translations');
         const savedCollections = localStorage.getItem('magyarekszer_collections');
         const savedVacationMode = localStorage.getItem('magyarekszer_vacationMode');
-        const savedStones = localStorage.getItem('availableStones') || JSON.stringify([])
+        const savedStones = localStorage.getItem('availableStones')
             || localStorage.getItem('magyarekszer_availableStones')
             || localStorage.getItem('magyarekszer_available_stones');
         const savedAllStones = localStorage.getItem('magyarekszer_allStonesMaster')
@@ -836,27 +858,32 @@ export const ConfigProvider = ({
         if (savedStones) {
             try {
                 const parsed = Array.from(new Set(JSON.parse(savedStones)));
-                if (Array.isArray(parsed)) setAvailableStones(parsed as string[]);
+                if (Array.isArray(parsed) && parsed.length > 0) setAvailableStones(parsed as string[]);
             } catch (e) {}
         }
 
         if (savedAllStones) {
             try {
                 const parsed = JSON.parse(savedAllStones);
-                if (Array.isArray(parsed)) setAllStonesMaster(Array.from(new Set(parsed)));
+                if (Array.isArray(parsed) && parsed.length > 0) setAllStonesMaster(Array.from(new Set(parsed)));
             } catch (e) {}
         }
 
         if (savedStonePrices) {
             try {
                 const parsed = JSON.parse(savedStonePrices);
-                if (parsed) setStonePrices(parsed);
+                if (parsed && Object.keys(parsed).length > 0) setStonePrices(parsed);
             } catch (e) {}
-        } else {
-            const defaults: Record<string, number> = {};
-            ALL_STONES.forEach(key => {
-                defaults[key] = 3000;
-            });
+        } else if (!initialSettings?.stonePrices || Object.keys(initialSettings.stonePrices).length === 0) {
+            const defaults: Record<string, number> = {
+                stone_borostyan: 0,
+                stone_olivin: 0,
+                stone_citrin: 0,
+                stone_granat: 0,
+                stone_hegyikristaly: 0,
+                stone_holdko: 3000,
+                stone_igazgyongy: 3000
+            };
             setStonePrices(defaults);
         }
 

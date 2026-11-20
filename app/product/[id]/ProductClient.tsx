@@ -109,7 +109,7 @@ export default function ProductClient({ product: serverProduct, initialCollectio
                         parsed = JSON.parse(savedStones);
                     }
                 }
-                if (parsed && Array.isArray(parsed)) {
+                if (parsed && Array.isArray(parsed) && parsed.length > 0) {
                     setClientStones(Array.from(new Set(parsed)));
                 }
                 const savedPrices = localStorage.getItem('magyarekszer_stonePrices')
@@ -117,7 +117,7 @@ export default function ProductClient({ product: serverProduct, initialCollectio
                     || localStorage.getItem('stonePrices');
                 if (savedPrices) {
                     const parsedPrices = JSON.parse(savedPrices);
-                    if (parsedPrices && typeof parsedPrices === 'object') {
+                    if (parsedPrices && typeof parsedPrices === 'object' && Object.keys(parsedPrices).length > 0) {
                         setClientStonePrices(parsedPrices);
                     }
                 }

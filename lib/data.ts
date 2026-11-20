@@ -69,7 +69,15 @@ export interface AdminSettings {
     globalEnamelColors?: string[];
 }
 
-export const ALL_STONES = [];
+export const ALL_STONES: string[] = [
+    'stone_borostyan',
+    'stone_olivin',
+    'stone_citrin',
+    'stone_granat',
+    'stone_hegyikristaly',
+    'stone_holdko',
+    'stone_igazgyongy'
+];
 
 export interface Category {
     name: string;
