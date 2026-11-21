@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useConfig } from '@/components/ConfigProvider';
-import { Coupon } from '@/lib/data';
+import { Coupon, categories } from '@/lib/data';
 import { 
     Ticket, 
     Plus, 
@@ -27,9 +27,22 @@ export default function AdminCouponsPage() {
         code: '',
         discountType: 'percentage',
         value: 10,
+        startDate: new Date().toISOString().split('T')[0],
         expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        categories: [],
         isActive: true
     });
+
+    const toggleCategory = (slug: string) => {
+        setNewCoupon(prev => {
+            const current = prev.categories || [];
+            const exists = current.includes(slug);
+            return {
+                ...prev,
+                categories: exists ? current.filter(s => s !== slug) : [...current, slug]
+            };
+        });
+    };
 
     const filteredCoupons = coupons.filter(c => 
         c.code.toLowerCase().includes(searchQuery.toLowerCase())
@@ -46,13 +59,20 @@ export default function AdminCouponsPage() {
             code: '',
             discountType: 'percentage',
             value: 10,
+            startDate: new Date().toISOString().split('T')[0],
             expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            categories: [],
             isActive: true
         });
     };
 
     const isExpired = (date: string) => {
-        return new Date(date) < new Date();
+        return new Date(`${date}T23:59:59`) < new Date();
+    };
+
+    const isScheduled = (startDate?: string) => {
+        if (!startDate) return false;
+        return new Date(`${startDate}T00:00:00`) > new Date();
     };
 
     return (
@@ -130,6 +150,14 @@ export default function AdminCouponsPage() {
                                         )}
                                     </div>
                                     <div className="space-y-1">
+                                        {coupon.startDate && (
+                                            <div className="flex items-center gap-2">
+                                                <Calendar className="h-3 w-3 text-gold/40" />
+                                                <span className="text-xs font-bold text-ivory/60">
+                                                    Kezdés: {coupon.startDate}
+                                                </span>
+                                            </div>
+                                        )}
                                         <div className="flex items-center gap-2">
                                             <Calendar className="h-3 w-3 text-gold/40" />
                                             <span className={`text-xs font-bold ${isExpired(coupon.expiryDate) ? 'text-red-400' : 'text-ivory/60'}`}>
@@ -137,12 +165,31 @@ export default function AdminCouponsPage() {
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <CheckCircle2 className={`h-3 w-3 ${coupon.isActive ? 'text-green-500' : 'text-red-500'}`} />
+                                            <CheckCircle2 className={`h-3 w-3 ${!coupon.isActive || isExpired(coupon.expiryDate) ? 'text-red-500' : isScheduled(coupon.startDate) ? 'text-amber-400' : 'text-green-500'}`} />
                                             <span className="text-xs font-bold text-ivory/60 uppercase tracking-widest">
-                                                {coupon.isActive ? 'Aktív' : 'Inaktív'}
+                                                {!coupon.isActive ? 'Inaktív' : isExpired(coupon.expiryDate) ? 'Lejárt' : isScheduled(coupon.startDate) ? 'Ütemezett (Előre beállítva)' : 'Aktív'}
                                             </span>
                                         </div>
                                     </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-gold/50">Érvényes kategóriák:</p>
+                                    {!coupon.categories || coupon.categories.length === 0 ? (
+                                        <span className="inline-block px-2.5 py-1 rounded text-[10px] font-bold bg-gold/10 text-gold border border-gold/20">
+                                            Minden kategóriára érvényes
+                                        </span>
+                                    ) : (
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {coupon.categories.map(slug => {
+                                                const cat = categories.find(c => c.slug === slug);
+                                                return (
+                                                    <span key={slug} className="px-2 py-0.5 rounded text-[10px] font-bold bg-white/5 text-ivory/80 border border-gold/20">
+                                                        {cat ? cat.name : slug}
+                                                    </span>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
                                 </div>
                                 {isExpired(coupon.expiryDate) && (
                                     <div className="flex items-center gap-2 text-red-500/60 font-black text-[10px] uppercase tracking-widest italic animate-pulse">
@@ -164,7 +211,7 @@ export default function AdminCouponsPage() {
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-[#150e03] border border-gold/20 w-full max-w-lg p-12 shadow-[0_0_100px_rgba(201,165,106,0.1)] rounded-[2rem]"
+                            className="bg-[#150e03] border border-gold/20 w-full max-w-xl max-h-[90vh] overflow-y-auto p-8 sm:p-10 shadow-[0_0_100px_rgba(201,165,106,0.1)] rounded-[2rem]"
                         >
                             <div className="flex justify-between items-center mb-12">
                                 <h2 className="text-2xl font-serif text-ivory uppercase tracking-[0.2em] italic">Új Kupon Létrehozása</h2>
@@ -218,15 +265,72 @@ export default function AdminCouponsPage() {
                                     </div>
                                 </div>
 
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                    <div className="space-y-3">
+                                        <label className="text-[11px] uppercase tracking-[0.3em] font-black text-gold italic">Kezdés Dátuma (ettől él)</label>
+                                        <input 
+                                            type="date" 
+                                            required 
+                                            value={newCoupon.startDate || ''}
+                                            onChange={(e) => setNewCoupon({...newCoupon, startDate: e.target.value})}
+                                            className="w-full bg-[#0d0902] border border-gold/10 p-4 text-base font-black text-ivory outline-none focus:border-gold transition-all [color-scheme:dark]"
+                                        />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-[11px] uppercase tracking-[0.3em] font-black text-gold italic">Lejárati Dátum (eddig él)</label>
+                                        <input 
+                                            type="date" 
+                                            required 
+                                            value={newCoupon.expiryDate}
+                                            onChange={(e) => setNewCoupon({...newCoupon, expiryDate: e.target.value})}
+                                            className="w-full bg-[#0d0902] border border-gold/10 p-4 text-base font-black text-ivory outline-none focus:border-gold transition-all [color-scheme:dark]"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Category Selection */}
                                 <div className="space-y-3">
-                                    <label className="text-[11px] uppercase tracking-[0.3em] font-black text-gold italic">Lejárati Dátum</label>
-                                    <input 
-                                        type="date" 
-                                        required 
-                                        value={newCoupon.expiryDate}
-                                        onChange={(e) => setNewCoupon({...newCoupon, expiryDate: e.target.value})}
-                                        className="w-full bg-[#0d0902] border border-gold/10 p-5 text-base font-black text-ivory outline-none focus:border-gold transition-all [color-scheme:dark]"
-                                    />
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-[11px] uppercase tracking-[0.3em] font-black text-gold italic">Érvényes kategóriák</label>
+                                        <button
+                                            type="button"
+                                            onClick={() => setNewCoupon({ ...newCoupon, categories: [] })}
+                                            className={`text-[10px] uppercase tracking-widest font-black px-3 py-1 rounded border transition-all ${
+                                                (!newCoupon.categories || newCoupon.categories.length === 0)
+                                                    ? 'bg-gold text-deep-brown border-gold'
+                                                    : 'text-gold/60 border-gold/20 hover:border-gold'
+                                            }`}
+                                        >
+                                            Minden kategóriára
+                                        </button>
+                                    </div>
+                                    <p className="text-[11px] text-ivory/40">
+                                        Jelöld ki, mely kategóriákra legyen érvényes a kupon (ha egyet sem jelölsz ki, minden termékre érvényes):
+                                    </p>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
+                                        {categories.map((cat) => {
+                                            const isSelected = (newCoupon.categories || []).includes(cat.slug);
+                                            return (
+                                                <button
+                                                    key={cat.slug}
+                                                    type="button"
+                                                    onClick={() => toggleCategory(cat.slug)}
+                                                    className={`p-3 rounded border text-left text-xs font-bold transition-all flex items-center justify-between ${
+                                                        isSelected
+                                                            ? 'bg-gold/15 border-gold text-gold'
+                                                            : 'bg-[#0d0902] border-gold/10 text-ivory/60 hover:border-gold/30'
+                                                    }`}
+                                                >
+                                                    <span className="truncate pr-2">{cat.name}</span>
+                                                    <span className={`w-4 h-4 rounded-sm border flex items-center justify-center shrink-0 text-[10px] ${
+                                                        isSelected ? 'bg-gold text-deep-brown border-gold font-black' : 'border-gold/30'
+                                                    }`}>
+                                                        {isSelected ? '✓' : ''}
+                                                    </span>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
 
                                 <div className="flex items-center gap-4 pt-4">

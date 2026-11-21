@@ -39,7 +39,9 @@ export interface Coupon {
     code: string;
     discountType: 'percentage' | 'fixed';
     value: number;
+    startDate?: string;
     expiryDate: string;
+    categories?: string[]; // empty or undefined = all categories
     isActive: boolean;
 }
 

@@ -81,14 +81,27 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const applyCoupon = (code: string) => {
-        const coupon = coupons.find(c => c.code.toUpperCase() === code.toUpperCase());
+        const coupon = coupons.find(c => c.code.toUpperCase() === code.toUpperCase().trim());
         
         if (!coupon) return "Érvénytelen kuponkód";
         if (!coupon.isActive) return "Ez a kupon már nem aktív";
         
-        const expiryDate = new Date(coupon.expiryDate);
         const now = new Date();
-        if (expiryDate < now) return "Ez a kupon már lejárt";
+        if (coupon.startDate) {
+            const start = new Date(`${coupon.startDate}T00:00:00`);
+            if (now < start) {
+                return `Ez a kupon még nem érvényes (kezdés: ${coupon.startDate})`;
+            }
+        }
+        const expiryDate = new Date(`${coupon.expiryDate}T23:59:59`);
+        if (now > expiryDate) return "Ez a kupon már lejárt";
+
+        if (coupon.categories && coupon.categories.length > 0) {
+            const hasEligibleItem = cartItems.some(item => Boolean(item.category && coupon.categories!.includes(item.category)));
+            if (!hasEligibleItem) {
+                return "Ez a kupon a kosárban lévő termékek kategóriájára nem érvényes";
+            }
+        }
         
         setAppliedCoupon(coupon);
         return null; // Success
@@ -126,10 +139,19 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     
     let couponDiscount = 0;
     if (appliedCoupon) {
-        if (appliedCoupon.discountType === 'percentage') {
-            couponDiscount = Math.round((baseTotal - collectionDiscount) * (appliedCoupon.value / 100));
-        } else {
-            couponDiscount = appliedCoupon.value;
+        const hasCategoryFilter = Array.isArray(appliedCoupon.categories) && appliedCoupon.categories.length > 0;
+        const eligibleTotal = hasCategoryFilter
+            ? cartItems
+                .filter(item => Boolean(item.category && appliedCoupon.categories.includes(item.category)))
+                .reduce((sum, item) => sum + (item.price * item.quantity), 0)
+            : Math.max(0, baseTotal - collectionDiscount);
+
+        if (eligibleTotal > 0) {
+            if (appliedCoupon.discountType === 'percentage') {
+                couponDiscount = Math.round(eligibleTotal * (appliedCoupon.value / 100));
+            } else {
+                couponDiscount = Math.min(eligibleTotal, appliedCoupon.value);
+            }
         }
     }
 
