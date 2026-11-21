@@ -341,8 +341,8 @@ const translations: Record<Language, Record<string, string>> = {
         'bank_swift': 'OKHBHUHB',
         'custom_size': 'Egyedi méret',
         'custom_size_placeholder': 'Írja be a méretet',
-        'order_comment': 'Megjegyzés a rendeléshez (Gravírozás, vésés)',
-        'order_comment_placeholder': 'Írja ide, ha gravíroztatni vagy vésetni akar...',
+        'order_comment': 'Megjegyzés a rendeléshez',
+        'order_comment_placeholder': 'Írja ide a megjegyzését a rendeléshez...',
         'checkout_error_mpl': 'Kérjük, válassz ki egy átvételi pontot!',
         'checkout_error_terms': 'A vásárláshoz el kell fogadnod az Általános Szerződési Feltételeket és az Adatkezelési Tájékoztatót!',
         'checkout_error_card': 'Kérjük, adja meg helyesen a bankkártya adatait!',
@@ -548,8 +548,8 @@ const translations: Record<Language, Record<string, string>> = {
         'bank_swift': 'OKHBHUHB',
         'custom_size': 'Custom size',
         'custom_size_placeholder': 'Enter size',
-        'order_comment': 'Order comment (Engraving, etching)',
-        'order_comment_placeholder': 'Write here if you want engraving or etching...',
+        'order_comment': 'Order comment',
+        'order_comment_placeholder': 'Write any notes about your order here...',
         'checkout_error_mpl': 'Please select a pickup point!',
         'checkout_error_terms': 'You must accept the Terms and Conditions and Privacy Policy to purchase!',
         'checkout_error_card': 'Please enter your card details correctly!',
@@ -692,7 +692,7 @@ export const ConfigProvider = ({
     }, []);
 
     useEffect(() => {
-        const SETTINGS_SYNC_VERSION = '2026-11-20-stones-casting-v2';
+        const SETTINGS_SYNC_VERSION = '2026-11-21-comment-fix-v3';
         try {
             if (localStorage.getItem('magyarekszer_settings_version') !== SETTINGS_SYNC_VERSION) {
                 [
@@ -706,7 +706,8 @@ export const ConfigProvider = ({
                     'stonePrices',
                     'magyarekszer_global_enamel_colors',
                     'magyarekszer_global_leather_colors',
-                    'magyarekszer_extra_services'
+                    'magyarekszer_extra_services',
+                    'magyarekszer_translations'
                 ].forEach(k => localStorage.removeItem(k));
                 localStorage.setItem('magyarekszer_settings_version', SETTINGS_SYNC_VERSION);
             }

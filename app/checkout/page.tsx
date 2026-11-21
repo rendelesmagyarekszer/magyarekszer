@@ -213,13 +213,17 @@ export default function CheckoutPage() {
             taxNumber: formData.isCompany ? formData.taxNumber : undefined
         };
 
+        const isPickup = shipping.id === 'local-pickup';
         const shippingInfo = {
-            postcode: formData.shippingPostcode,
-            city: formData.shippingCity,
-            address: shipping.id === 'mpl-box' && selectedMplPoint 
-                ? `${selectedMplPoint.name} (${selectedMplPoint.id}) - ${selectedMplPoint.postcode} ${selectedMplPoint.city}, ${selectedMplPoint.address}`
-                : shipping.id === 'foxpost-box' ? formData.foxpostMachine : formData.shippingAddress,
-            method: shipping.name
+            postcode: isPickup ? '1056' : formData.shippingPostcode,
+            city: isPickup ? 'Budapest' : formData.shippingCity,
+            address: isPickup
+                ? 'Személyes átvétel az üzletben (1056 Budapest, Molnár u. 23.)'
+                : shipping.id === 'mpl-box' && selectedMplPoint 
+                    ? `${selectedMplPoint.name} (${selectedMplPoint.id}) - ${selectedMplPoint.postcode} ${selectedMplPoint.city}, ${selectedMplPoint.address}`
+                    : shipping.id === 'foxpost-box' ? formData.foxpostMachine : formData.shippingAddress,
+            method: shipping.name,
+            type: isPickup ? 'local-pickup' : 'delivery'
         };
 
         // Prepare detailed order data
@@ -242,8 +246,10 @@ export default function CheckoutPage() {
                 phone: formData.phone
             },
             shipping: shippingInfo,
+            shippingType: isPickup ? 'local-pickup' : 'delivery',
             billing: billingInfo,
             paymentMethod: payment.name,
+            paymentId: payment.id,
             premiumBox: isPremiumBoxSelected,
             premiumBoxPrice: premiumBoxPrice,
             marketingConsent: marketingConsent
@@ -261,6 +267,8 @@ export default function CheckoutPage() {
             customerName: formData.fullName,
             customerEmail: formData.email,
             shipping: shippingInfo,
+            shippingType: isPickup ? 'local-pickup' : 'delivery',
+            paymentMethod: payment.name,
             billing: billingInfo,
             items: cartItems.map(item => ({
                 name: item.name,

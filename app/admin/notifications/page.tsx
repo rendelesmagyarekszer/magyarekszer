@@ -79,6 +79,14 @@ export default function NotificationsPage() {
                                         <span className="text-[10px] font-black text-ivory/20 whitespace-nowrap">{new Date(n.date).toLocaleDateString('hu-HU')}</span>
                                     </div>
                                     <p className="text-xs text-ivory/40 font-bold mb-2">{n.customerEmail}</p>
+                                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-gold/10 text-gold">
+                                            {n.shippingType === 'local-pickup' || (n.shipping?.method || '').toLowerCase().includes('személyes') ? 'Helybeni átvétel' : `Szállítás: ${n.shipping?.method || 'Házhozszállítás'}`}
+                                        </span>
+                                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-white/10 text-ivory/80">
+                                            {n.paymentMethod || ((n.shippingType === 'local-pickup' || (n.shipping?.method || '').toLowerCase().includes('személyes')) ? 'Utánvét' : 'Előre utalás')}
+                                        </span>
+                                    </div>
                                     <p className="text-xs text-gold/60 italic truncate">Összesen: {formatPrice(n.total)}</p>
                                 </div>
                             </button>
@@ -147,14 +155,21 @@ export default function NotificationsPage() {
                                                 </div>
                                             </div>
                                             <div className="space-y-4">
-                                                <h4 className="text-[11px] font-black uppercase tracking-widest text-gold italic">Szállítási Adatok</h4>
-                                                <div className="space-y-1">
+                                                <h4 className="text-[11px] font-black uppercase tracking-widest text-gold italic">Szállítás / Átvétel és Fizetés</h4>
+                                                <div className="space-y-2">
                                                     <p className="text-base font-black text-ivory uppercase tracking-widest">{activeNotif.customerName}</p>
-                                                    <p className="text-sm font-serif text-ivory/60">
-                                                        {activeNotif.shipping?.postcode} {activeNotif.shipping?.city}<br/>
-                                                        {activeNotif.shipping?.address}
+                                                    <p className="text-xs font-bold text-gold">
+                                                        Átvétel / Szállítás: {activeNotif.shippingType === 'local-pickup' || (activeNotif.shipping?.method || '').toLowerCase().includes('személyes') ? 'Helybeni átvétel az üzletben (1056 Budapest, Molnár u. 23.)' : (activeNotif.shipping?.method || 'Szállítás')}
                                                     </p>
-                                                    <p className="text-xs font-bold text-ivory/40 mt-2 italic">Mód: {activeNotif.shipping?.method}</p>
+                                                    <p className="text-xs font-bold text-emerald-400">
+                                                        Fizetési mód: {activeNotif.paymentMethod || ((activeNotif.shippingType === 'local-pickup' || (activeNotif.shipping?.method || '').toLowerCase().includes('személyes')) ? 'Utánvét / Személyes fizetés' : 'Banki Előreutalás')}
+                                                    </p>
+                                                    {!(activeNotif.shippingType === 'local-pickup' || (activeNotif.shipping?.method || '').toLowerCase().includes('személyes')) && (
+                                                        <p className="text-sm font-serif text-ivory/60">
+                                                            {activeNotif.shipping?.postcode} {activeNotif.shipping?.city}<br/>
+                                                            {activeNotif.shipping?.address}
+                                                        </p>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>

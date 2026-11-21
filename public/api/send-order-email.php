@@ -318,9 +318,11 @@ $orderRecord = [
         'email' => $customerEmail,
         'phone' => $customerPhone
     ],
+    'shippingType' => $order['shippingType'] ?? $order['shipping']['type'] ?? (stripos($shippingMethod, 'személyes') !== false || stripos($shippingMethod, 'üzlet') !== false || stripos($shippingMethod, 'pickup') !== false ? 'local-pickup' : 'delivery'),
     'shippingInfo' => [
         'address' => $shippingAddress,
         'method' => $shippingMethod,
+        'type' => $order['shippingType'] ?? $order['shipping']['type'] ?? (stripos($shippingMethod, 'személyes') !== false || stripos($shippingMethod, 'üzlet') !== false || stripos($shippingMethod, 'pickup') !== false ? 'local-pickup' : 'delivery'),
         'postcode' => $order['shippingInfo']['postcode'] ?? $order['shipping']['postcode'] ?? '',
         'city' => $order['shippingInfo']['city'] ?? $order['shipping']['city'] ?? ''
     ],

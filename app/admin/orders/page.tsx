@@ -204,6 +204,13 @@ export default function OrdersPage() {
                         const StatusIcon = getStatusIcon(order.status || 'pending');
                         const isBankTransfer = (order.paymentMethod || '').toLowerCase().includes('utal');
                         const isPaid = order.paymentStatus === 'paid';
+                        const shippingMethodName = order.shippingInfo?.method || order.shipping?.method || '';
+                        const isLocalPickup = order.shippingType === 'local-pickup'
+                            || order.shippingInfo?.type === 'local-pickup'
+                            || order.shipping?.type === 'local-pickup'
+                            || shippingMethodName.toLowerCase().includes('személyes')
+                            || shippingMethodName.toLowerCase().includes('üzlet')
+                            || shippingMethodName.toLowerCase().includes('pickup');
                         
                         return (
                             <div 
@@ -212,10 +219,10 @@ export default function OrdersPage() {
                             >
                                 {/* Order Header - SLEEK & COMPACT LIST ROW */}
                                 <div 
-                                    className="p-4 flex items-center justify-between cursor-pointer group hover:bg-gold/5 transition-colors"
+                                    className="p-4 flex flex-wrap sm:flex-nowrap items-center justify-between gap-4 cursor-pointer group hover:bg-gold/5 transition-colors"
                                     onClick={() => toggleOrder(order.id)}
                                 >
-                                    <div className="flex items-center gap-4 sm:gap-6">
+                                    <div className="flex items-center gap-4 sm:gap-6 min-w-0 flex-1">
                                         <div className="flex flex-col items-center justify-center py-2 px-3 bg-gold/5 border border-gold/10 w-20 shrink-0">
                                             <span className="text-[6px] uppercase font-black text-gold/40 mb-0.5">Dátum</span>
                                             <span className="text-[11px] font-bold text-ivory/80">
@@ -223,57 +230,61 @@ export default function OrdersPage() {
                                             </span>
                                         </div>
 
-                                        <div className="flex items-center gap-4 sm:gap-6 min-w-0">
-                                            <h3 className="text-base font-serif text-ivory/80 tracking-wider group-hover:text-gold transition-colors truncate max-w-[180px] sm:max-w-[240px]">
-                                                {order.customerInfo?.fullName || 'Vendég'}
-                                            </h3>
-                                            
-                                            <div className="hidden lg:flex items-center gap-3 border-l border-gold/10 pl-6">
-                                                <p className="text-[10px] uppercase tracking-widest text-[#666666] font-bold">
+                                        <div className="flex flex-col gap-1.5 min-w-0">
+                                            <div className="flex items-center gap-3 min-w-0">
+                                                <h3 className="text-base font-serif text-ivory/90 tracking-wider group-hover:text-gold transition-colors truncate max-w-[200px] sm:max-w-[260px]">
+                                                    {order.customerInfo?.fullName || 'Vendég'}
+                                                </h3>
+                                                <p className="hidden xl:block text-[10px] uppercase tracking-widest text-[#666666] font-bold">
                                                     ID: <span className="text-ivory/50">{order.id}</span>
                                                 </p>
-                                                
-                                                {/* Fulfillment status pill */}
-                                                <div className={`px-2 py-0.5 rounded-[4px] text-[7px] uppercase font-black border flex items-center gap-1.5 ${getStatusColor(order.status || 'pending')}`}>
-                                                    <StatusIcon className="h-2.5 w-2.5" />
-                                                    {order.status === 'delivered' ? 'Kézbesítve' : order.status === 'shipped' ? 'Elküldve' : 'Feldolgozás alatt'}
-                                                </div>
+                                            </div>
+                                            
+                                            {/* Always visible Shipping + Payment + Status pills */}
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                {/* Shipping vs Local Pickup Pill */}
+                                                {isLocalPickup ? (
+                                                    <span className="px-2 py-0.5 rounded text-[9px] uppercase font-black bg-purple-500/15 text-purple-300 border border-purple-500/30 flex items-center gap-1">
+                                                        <MapPin className="h-2.5 w-2.5" /> Helybeni átvétel (Üzletben)
+                                                    </span>
+                                                ) : (
+                                                    <span className="px-2 py-0.5 rounded text-[9px] uppercase font-black bg-sky-500/15 text-sky-300 border border-sky-500/30 flex items-center gap-1">
+                                                        <Truck className="h-2.5 w-2.5" /> Szállítás{shippingMethodName ? `: ${shippingMethodName}` : ''}
+                                                    </span>
+                                                )}
 
-                                                {/* Payment Status Pill */}
+                                                {/* Payment Method & Status Pill */}
                                                 {isBankTransfer ? (
                                                     isPaid ? (
-                                                        <span className="px-2 py-0.5 rounded text-[8px] uppercase font-black bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
-                                                            <Check className="h-2.5 w-2.5" /> Utalás beérkezett
+                                                        <span className="px-2 py-0.5 rounded text-[9px] uppercase font-black bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                                                            <Check className="h-2.5 w-2.5" /> Előre utalás • Fizetve
                                                         </span>
                                                     ) : (
-                                                        <span className="px-2 py-0.5 rounded text-[8px] uppercase font-black bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center gap-1 animate-pulse">
-                                                            <Clock className="h-2.5 w-2.5" /> Utalásra vár
+                                                        <span className="px-2 py-0.5 rounded text-[9px] uppercase font-black bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center gap-1">
+                                                            <Clock className="h-2.5 w-2.5" /> Előre utalás • Utalásra vár
                                                         </span>
                                                     )
                                                 ) : (
-                                                    <span className="px-2 py-0.5 rounded text-[8px] uppercase font-black bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                                                        Utánvét
+                                                    <span className="px-2 py-0.5 rounded text-[9px] uppercase font-black bg-teal-500/15 text-teal-300 border border-teal-500/30 flex items-center gap-1">
+                                                        <CreditCard className="h-2.5 w-2.5" /> Utánvét
                                                     </span>
                                                 )}
+
+                                                {/* Fulfillment status pill */}
+                                                <div className={`px-2 py-0.5 rounded text-[9px] uppercase font-black border flex items-center gap-1 ${getStatusColor(order.status || 'pending')}`}>
+                                                    <StatusIcon className="h-2.5 w-2.5" />
+                                                    {order.status === 'delivered' ? 'Kézbesítve' : order.status === 'shipped' ? 'Elküldve' : 'Feldolgozás alatt'}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-6">
-                                        <div className="text-right hidden sm:block">
+                                    <div className="flex items-center gap-4 shrink-0">
+                                        <div className="text-right">
                                             <p className="text-sm font-black text-gold tracking-tight">{formatPrice(order.total)}</p>
-                                            <div className="flex items-center justify-end gap-2 mt-0.5">
-                                                <p className="text-[8px] uppercase tracking-widest text-[#666666] font-bold">
-                                                    {order.items?.length || 0} db
-                                                </p>
-                                                {isBankTransfer && (
-                                                    isPaid ? (
-                                                        <span className="text-[8px] text-emerald-400 font-bold uppercase tracking-wider">● Fizetve</span>
-                                                    ) : (
-                                                        <span className="text-[8px] text-amber-400 font-bold uppercase tracking-wider">● Utalásra vár</span>
-                                                    )
-                                                )}
-                                            </div>
+                                            <p className="text-[9px] uppercase tracking-widest text-[#888888] font-bold mt-0.5">
+                                                {order.items?.length || 0} db
+                                            </p>
                                         </div>
                                         <div className={`p-1.5 rounded-full transition-all ${isExpanded ? 'bg-gold/10 text-gold rotate-180' : 'text-gold/20 group-hover:text-gold/40'}`}>
                                             <ChevronDown className="h-3 w-3" />
@@ -429,21 +440,29 @@ export default function OrdersPage() {
                                                     <div className="bg-gold/5 border border-gold/20 p-6 rounded space-y-6">
                                                         <div className="flex justify-between items-center border-b border-gold/10 pb-4">
                                                             <h4 className="text-xs uppercase tracking-[0.4em] text-gold font-black flex items-center gap-2">
-                                                                <MapPin className="h-3.5 w-3.5" />
-                                                                Szállítási cím
+                                                                {isLocalPickup ? <MapPin className="h-3.5 w-3.5" /> : <Truck className="h-3.5 w-3.5" />}
+                                                                {isLocalPickup ? 'Helybeni átvétel (Üzletben)' : 'Szállítási adatok'}
                                                             </h4>
-                                                            <button 
-                                                                onClick={() => copyToClipboard(`${order.shippingInfo?.address || order.shipping?.address || ''}`)}
-                                                                className="text-[10px] uppercase font-bold text-gold/60 hover:text-gold flex items-center gap-1 transition-all"
-                                                            >
-                                                                <Copy className="h-3 w-3" /> Cím másolása
-                                                            </button>
+                                                            {!isLocalPickup && (
+                                                                <button 
+                                                                    onClick={() => copyToClipboard(`${order.shippingInfo?.postcode || ''} ${order.shippingInfo?.city || ''}, ${order.shippingInfo?.address || order.shipping?.address || ''}`)}
+                                                                    className="text-[10px] uppercase font-bold text-gold/60 hover:text-gold flex items-center gap-1 transition-all"
+                                                                >
+                                                                    <Copy className="h-3 w-3" /> Cím másolása
+                                                                </button>
+                                                            )}
                                                         </div>
                                                         <div className="space-y-1 text-sm text-ivory/80">
+                                                            <p className="text-xs font-black uppercase tracking-wider text-gold mb-2">
+                                                                {isLocalPickup ? 'Átvétel módja: Személyes átvétel az üzletben (1056 Budapest, Molnár u. 23.)' : `Szállítás módja: ${shippingMethodName || 'Házhozszállítás'}`}
+                                                            </p>
                                                             <p className="font-bold text-ivory">{order.customerInfo?.fullName}</p>
-                                                            <p>{order.shippingInfo?.postcode || ''} {order.shippingInfo?.city || ''}</p>
-                                                            <p>{order.shippingInfo?.address || order.shipping?.address || '-'}</p>
-                                                            <p className="text-xs text-gold/70 pt-2">Mód: {order.shippingInfo?.method || order.shipping?.method || 'Házhozszállítás'}</p>
+                                                            {!isLocalPickup && (
+                                                                <>
+                                                                    <p>{order.shippingInfo?.postcode || ''} {order.shippingInfo?.city || ''}</p>
+                                                                    <p>{order.shippingInfo?.address || order.shipping?.address || '-'}</p>
+                                                                </>
+                                                            )}
                                                         </div>
 
                                                         {/* Billing Info */}
