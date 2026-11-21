@@ -35,13 +35,18 @@ export default function TextManager() {
         return 'ui';
     };
 
-    // Get all unique keys from HU and EN (should be identical)
-    const keys = Object.keys(translations.HU);
+    // Get all unique keys from HU and EN safely
+    const huMap = translations?.HU || {};
+    const enMap = translations?.EN || {};
+    const keys = Array.from(new Set([...Object.keys(huMap), ...Object.keys(enMap)]));
     
     const filteredKeys = keys.filter(key => {
-        const matchesSearch = key.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                             translations.HU[key].toLowerCase().includes(searchQuery.toLowerCase()) ||
-                             translations.EN[key].toLowerCase().includes(searchQuery.toLowerCase());
+        const q = (searchQuery || '').toLowerCase();
+        const huVal = typeof huMap[key] === 'string' ? huMap[key] : '';
+        const enVal = typeof enMap[key] === 'string' ? enMap[key] : '';
+        const matchesSearch = key.toLowerCase().includes(q) || 
+                             huVal.toLowerCase().includes(q) ||
+                             enVal.toLowerCase().includes(q);
         
         const matchesTab = activeTab === 'all' || getCategoryForKey(key) === activeTab;
         
@@ -130,7 +135,7 @@ export default function TextManager() {
                                     <Globe className="h-3 w-3 text-[#c9a56a]" /> Magyar (HU)
                                 </label>
                                 <textarea 
-                                    value={translations.HU[key]}
+                                    value={typeof huMap[key] === 'string' ? huMap[key] : ''}
                                     onChange={(e) => handleUpdate('HU', key, e.target.value)}
                                     className="w-full bg-transparent border-none p-0 text-[13px] font-serif italic text-[#fdfdf3] outline-none h-auto min-h-[40px] resize-none leading-relaxed"
                                     rows={1}
@@ -160,7 +165,7 @@ export default function TextManager() {
                                     <Globe className="h-3 w-3 text-[#666666]" /> Angol (EN)
                                 </label>
                                 <textarea 
-                                    value={translations.EN[key]}
+                                    value={typeof enMap[key] === 'string' ? enMap[key] : ''}
                                     onChange={(e) => handleUpdate('EN', key, e.target.value)}
                                     className="w-full bg-transparent border-none p-0 text-[13px] font-serif italic text-[#999999] outline-none h-auto min-h-[40px] resize-none leading-relaxed"
                                     rows={1}
