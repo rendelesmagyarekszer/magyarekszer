@@ -1,0 +1,701 @@
+{
+  "availableStones": [
+    "stone_borostyan",
+    "stone_olivin",
+    "stone_citrin",
+    "stone_granat",
+    "stone_hegyikristaly",
+    "stone_holdko",
+    "stone_igazgyongy"
+  ],
+  "allStonesMaster": [
+    "stone_borostyan",
+    "stone_olivin",
+    "stone_citrin",
+    "stone_granat",
+    "stone_hegyikristaly",
+    "stone_holdko",
+    "stone_igazgyongy"
+  ],
+  "stonePrices": {
+    "stone_borostyan": 0,
+    "stone_olivin": 0,
+    "stone_citrin": 0,
+    "stone_granat": 0,
+    "stone_hegyikristaly": 0,
+    "stone_holdko": 3000,
+    "stone_igazgyongy": 3000
+  },
+  "ankerPrices": {
+    "40": 13000,
+    "42": 14000,
+    "45": 15000,
+    "50": 17000,
+    "55": 19000
+  },
+  "barbaraPrices": {
+    "40": 13000,
+    "42": 14000,
+    "45": 15000,
+    "50": 17000,
+    "55": 19000
+  },
+  "extraServices": [
+    {
+      "id": "cast_1",
+      "category": "casting",
+      "name": "Ezüst",
+      "desc": "925 Sterling ezüst öntés kiváló felületi minőséggel.",
+      "price": "Telefonos érdeklődésre",
+      "icon": "Gem"
+    },
+    {
+      "id": "cast_2",
+      "category": "casting",
+      "name": "Arany",
+      "desc": "14k és 18k sárga, fehér és vörös arany öntés.",
+      "price": "Telefonos érdeklődésre"
+    },
+    {
+      "id": "cast_3",
+      "category": "casting",
+      "name": "Szilícium Bronz",
+      "desc": "Művészeti és dísztárgyak precíziós bronz öntése.",
+      "price": "Telefonos érdeklődésre",
+      "icon": "Activity"
+    },
+    {
+      "id": "dig_1",
+      "category": "digital",
+      "name": "3D Ékszer Tervezés",
+      "desc": "Fotorealisztikus látványtervek és precíz 3D modellezés.",
+      "price": "Hamarosan",
+      "icon": "Cpu"
+    },
+    {
+      "id": "dig_2",
+      "category": "digital",
+      "name": "3D Print (Viasz/Gyanta)",
+      "desc": "Nagy felbontású 3D nyomtatás közvetlen öntéshez.",
+      "price": "Hamarosan",
+      "icon": "Layers"
+    },
+    {
+      "id": "dig_3",
+      "category": "digital",
+      "name": "Printmarás",
+      "desc": "Precíziós CNC marás viaszból vagy fémből.",
+      "price": "Hamarosan",
+      "icon": "Cog"
+    },
+    {
+      "id": "dig_4",
+      "category": "digital",
+      "name": "Tárgy Gumizás",
+      "desc": "Szilikon horganyzás és gumi szerszám készítés szériagyártáshoz.",
+      "price": "Hamarosan",
+      "icon": "Shield"
+    },
+    {
+      "id": "work_1",
+      "category": "workshop",
+      "name": "Forrasztás & Összeállítás",
+      "desc": "Precíziós láng és lézer forrasztás minden nemesfémhez.",
+      "price": "Érdeklődésre",
+      "icon": "Workflow"
+    },
+    {
+      "id": "work_2",
+      "category": "workshop",
+      "name": "Polírozás & Tisztítás",
+      "desc": "Magasfényű polírozás és ultrahangos tisztítás.",
+      "price": "Érdeklődésre",
+      "icon": "Sparkles"
+    },
+    {
+      "id": "work_3",
+      "category": "workshop",
+      "name": "Ékszer Javítás & Felújítás",
+      "desc": "Törött ékszerek javítása, kőpótlás és teljeskörű felújítás.",
+      "price": "Vizuális felmérés",
+      "icon": "Hammer"
+    },
+    {
+      "id": "spec_1",
+      "category": "specialty",
+      "name": "Aranyozás & Ezüstözés",
+      "desc": "Galvanikus felületkezelés 24k arany és 999 ezüst bevonattal.",
+      "price": "Napi ár alapján",
+      "icon": "Database"
+    },
+    {
+      "id": "spec_2",
+      "category": "specialty",
+      "name": "Kegytárgyak és egyéb régiségek restaurálása",
+      "desc": "Antik és egyházi fémkeresztek, kelyhek, oltárdíszek restaurálása.",
+      "price": "Egyedi ajánlat",
+      "icon": "Cross"
+    }
+  ],
+  "premiumBoxPrice": 1500,
+  "imageSettings": {
+    "anker_chain": "",
+    "barbara_chain": "",
+    "standard_box": "",
+    "premium_box": "",
+    "cat_modern-ekszerek": "/uploads/1794656048674_levego1003.jpg",
+    "cat_fulbevalok": "/uploads/1794655971001_1788422018717_keszthelyi_harmaslevel_f.jpeg",
+    "cat_noi-lancok": "/uploads/1794655905299_1779388108365_magyar_naprozsa.jpg",
+    "cat_karkotok": "/uploads/1794655861091_636Koves_temesi_eletfa_karkoto_kicsi.jpg",
+    "cat_karperecek": "/uploads/1794655990704_1789401971481_711nagykovestulipperec1kicsi.jpg",
+    "cat_eljegyzesi-es-karikagyuruk": "/uploads/1794656033943_922domborubelsoorokke_kkgy2_kicsi.jpg",
+    "cat_eljegyzesi-gyuruk": "/uploads/1794656061634_833nagykovessztgykicsi.jpg",
+    "cat_szobrok-es-disztargyak": "/uploads/1794656077932_1789470366514_turulszobor_896.jpg",
+    "cat_medalok-es-talizmanok": "/uploads/1794655896585_1779218537776_nagy_istenfalevel.jpg",
+    "cat_gyuruk": "/uploads/1794656013886_835noiszekelytulpkkgykicsi.jpg"
+  },
+  "customJewelry": [
+    {
+      "id": "crest_rings",
+      "title": "Családi címeres pecsétgyűrű",
+      "description": "Tradicionális kézi véséssel készülő, generációkon átívelő családi ereklyék nemesfémből.",
+      "images": [],
+      "isFeatured": true
+    },
+    {
+      "id": "engagement_rings",
+      "title": "Egyedi eljegyzési gyűrű",
+      "description": "Személyre szabott tervezés naturális és laboratóriumi gyémántokkal, különleges pillanatokhoz.",
+      "images": [],
+      "isFeatured": true
+    }
+  ],
+  "shippingSettings": {
+    "foxpostEnabled": false,
+    "foxpostPrice": 1500,
+    "mplHomeEnabled": true,
+    "mplHomePrice": 3000,
+    "mplBoxEnabled": false,
+    "mplBoxPrice": 3000,
+    "localPickupEnabled": true,
+    "localPickupPrice": 0,
+    "freeShippingEnabled": true,
+    "freeShippingThreshold": 20000,
+    "deliveryAdvancePaymentOnly": true
+  },
+  "translations": {
+    "HU": {
+      "cart": "Kosár",
+      "account": "Fiókom",
+      "search_placeholder": "Keresés az ékszerek között...",
+      "categories": "Kategóriák",
+      "all_jewelry": "Összes Ékszer",
+      "add_to_cart": "Kosárba",
+      "added": "Hozzáadva!",
+      "checkout": "Pénztár",
+      "total": "Összesen",
+      "shipping": "Szállítás",
+      "product_count": "termék található",
+      "no_results": "Sajnos nem találtunk a keresésnek megfelelő ékszert.",
+      "search_results": "Keresési eredmények",
+      "subtotal": "Részösszeg",
+      "shipping_placeholder": "A következő lépésben választható",
+      "go_to_checkout": "Tovább a pénztárhoz",
+      "checkout_title": "Pénztár és Szállítás",
+      "personal_data": "Személyes Adatok",
+      "shipping_method": "Szállítási Mód",
+      "payment_method": "Fizetési Mód",
+      "order_summary": "Összesítés",
+      "place_order": "Rendelés leadása",
+      "success_title": "Sikeres megrendelés",
+      "success_desc": "Köszönjük bizalmát! Megerősítő e-mailt küldtünk a rendelés adataival.",
+      "slogan": "Szkíta-Hun-Magyar tradicionális ékszerek",
+      "est": "Alapítva: 2002",
+      "choose_category": "Válasszon kategóriát",
+      "tradition": "Tradíció • Minőség • Ötvösművészet",
+      "description": "Leírás",
+      "size": "Méret",
+      "chain_request": "Kér hozzá láncot?",
+      "chain_length": "Lánc hossza",
+      "wrist_size": "Csukló méret (cm)",
+      "no_customization": "Ennél a terméknél nem szükséges méretet megadni.",
+      "clear_data": "Adatok törlése",
+      "back_to_catalog": "Vissza a válogatáshoz",
+      "back_to_products": "Vissza a termékekhez",
+      "open_hours": "nyitvatartás",
+      "about": "bemutatkozás",
+      "gallery": "egyedi ékszerek",
+      "contact": "elérhetőség",
+      "privacy": "adatvédelem",
+      "terms": "rendelési feltételek",
+      "mission": "egyéb szolgáltatásaink",
+      "sorting": "Rendezés:",
+      "default_sort": "Alapértelmezett",
+      "price_asc": "Ár szerint növekvő",
+      "price_desc": "Ár szerint csökkenő",
+      "handcrafted_collection": "Egyedi kézműves kollekció",
+      "coming_soon": "Hamarosan érkezik...",
+      "delete": "Törlés",
+      "empty_cart": "A kosár üres",
+      "look_around": "Nézz körül különleges ékszereink között!",
+      "workshop_security": "Tradicionális Műhely & Biztonságos Fizetés",
+      "home": "Főoldal",
+      "sku": "Cikkszám",
+      "weight": "Súly",
+      "history_title": "Eredete és Története",
+      "cat_medalok-es-talizmanok": "Medálok és talizmánok",
+      "cat_noi-lancok": "Női láncok",
+      "cat_fulbevalok": "Fülbevalók",
+      "cat_karkotok": "Karkötők",
+      "cat_karperecek": "Karperecek",
+      "cat_gyuruk": "Gyűrűk",
+      "cat_eljegyzesi-es-karikagyuruk": "Eljegyzési és karikagyűrűk",
+      "cat_szobrok-es-disztargyak": "Szobrok és dísztárgyak",
+      "cat_modern-ekszerek": "Modern ékszerek",
+      "order_gold": "Szeretném aranyból",
+      "gold_request_title": "Arany Ékszer Megrendelés",
+      "full_name": "Az Ön neve",
+      "send_request": "Kérés küldése e-mailben",
+      "gold_template_intro": "Tisztelt MagyarÉkszer!",
+      "gold_template_body": "Szeretném megrendelni az alábbi terméket arany kivitelben:",
+      "gold_template_outro": "Kérem vegyék fel velem a kapcsolatot a megadott e-mail címen a részletekkel és az árajánlattal kapcsolatban.",
+      "message_label": "Üzenet tartalma",
+      "stone_citrin_1775678068509": "Citrin",
+      "stone_sötét_holdkő_1775678110141": "SöTÉT olivin",
+      "stone_olivin": "Olivin",
+      "stone_olivin_1793565512675": "olivin",
+      "stone_borostyan": "Borostyán",
+      "stone_citrin": "Citrin",
+      "stone_granat": "Gránát",
+      "stone_hegyikristaly": "Hegyikristály",
+      "stone_holdko": "Holdkő",
+      "stone_igazgyongy": "Igazgyöngy",
+      "page_open_hours_content": "Hétfő - Csütörtök: 10:00 - 17:00\nPéntek: 10:00 - 16:00\nEbédidő: 12:00 - 12:30\nSzombat - Vasárnap: Zárva",
+      "free_shipping_banner": "20 000 Ft feletti rendelés esetén a házhozszállítás díjmentes.",
+      "free_shipping_reached": "A megrendelésedhez a szállítás díjtalan!",
+      "free_shipping_remaining": "Még {amount} hiányzik az ingyenes szállításhoz.",
+      "free_shipping_badge": "INGYENES (20 000 Ft felett)"
+    },
+    "EN": {
+      "cart": "Cart",
+      "account": "My Account",
+      "search_placeholder": "Search for jewelry...",
+      "categories": "Categories",
+      "all_jewelry": "All Jewelry",
+      "add_to_cart": "Add to Cart",
+      "added": "Added!",
+      "checkout": "Checkout",
+      "total": "Total",
+      "shipping": "Shipping",
+      "product_count": "products found",
+      "no_results": "Sorry, we couldn't find any jewelry matching your search.",
+      "search_results": "Search Results",
+      "subtotal": "Subtotal",
+      "shipping_placeholder": "Select in next step",
+      "go_to_checkout": "Proceed to Checkout",
+      "checkout_title": "Checkout & Shipping",
+      "personal_data": "Personal Details",
+      "shipping_method": "Shipping Method",
+      "payment_method": "Payment Method",
+      "order_summary": "Order Summary",
+      "place_order": "Place Order",
+      "success_title": "Order Successful",
+      "success_desc": "Thank you for your trust! We have sent a confirmation email with your order details.",
+      "slogan": "Scythian-Hun-Hungarian Traditional Jewelry",
+      "est": "Established: 2002",
+      "choose_category": "Choose a Category",
+      "tradition": "Tradition • Quality • Goldsmith Art",
+      "description": "Description",
+      "size": "Size",
+      "chain_request": "Add a chain?",
+      "chain_length": "Chain Length",
+      "wrist_size": "Wrist size (cm)",
+      "no_customization": "No size selection required for this item.",
+      "clear_data": "Clear Data",
+      "back_to_catalog": "Back to catalog",
+      "back_to_products": "Back to products",
+      "open_hours": "opening hours",
+      "about": "about us",
+      "gallery": "gallery",
+      "contact": "contact",
+      "privacy": "privacy policy",
+      "terms": "terms & conditions",
+      "mission": "other services",
+      "sorting": "Sort:",
+      "default_sort": "Default",
+      "price_asc": "Price: Low to High",
+      "price_desc": "Price: High to Low",
+      "handcrafted_collection": "Exclusive Handcrafted Collection",
+      "coming_soon": "Coming soon...",
+      "delete": "Delete",
+      "empty_cart": "Your cart is empty",
+      "look_around": "Browse our unique collections!",
+      "workshop_security": "Traditional Workshop & Secure Payment",
+      "home": "Home",
+      "sku": "SKU",
+      "weight": "Weight",
+      "history_title": "Origin & History",
+      "cat_medalok-es-talizmanok": "Pendants & Talismans",
+      "cat_noi-lancok": "Ladies' Chains",
+      "cat_fulbevalok": "Earrings",
+      "cat_karkotok": "Bracelets",
+      "cat_karperecek": "Bangles",
+      "cat_gyuruk": "Rings",
+      "cat_eljegyzesi-es-karikagyuruk": "Engagement & Wedding Rings",
+      "cat_szobrok-es-disztargyak": "Sculptures & Decor",
+      "cat_modern-ekszerek": "Modern Jewelry",
+      "order_gold": "Request in Gold",
+      "gold_request_title": "Order in Gold",
+      "full_name": "Your Name",
+      "send_request": "Send Request via Email",
+      "gold_template_intro": "Dear MagyarÉkszer!",
+      "gold_template_body": "I would like to order the following product in gold:",
+      "gold_template_outro": "Please contact me regarding the details and a price quote.",
+      "message_label": "Message Content",
+      "stone_citrin_1775678068509": "citrine",
+      "stone_sötét_holdkő_1775678110141": "SöTÉT olivin",
+      "stone_olivin": "Olivine",
+      "stone_olivin_1793565512675": "olivin",
+      "stone_borostyan": "Amber",
+      "stone_citrin": "Citrine",
+      "stone_granat": "Garnet",
+      "stone_hegyikristaly": "Rock crystal",
+      "stone_holdko": "Moonstone",
+      "stone_igazgyongy": "Pearl",
+      "page_open_hours_content": "Monday - Thursday: 10:00 - 17:00\nFriday: 10:00 - 16:00\nLunch break: 12:00 - 12:30\nSaturday - Sunday: Closed",
+      "free_shipping_banner": "Free delivery on orders over 20,000 HUF.",
+      "free_shipping_reached": "Shipping is free for your order.",
+      "free_shipping_remaining": "{amount} more for free shipping.",
+      "free_shipping_badge": "FREE (over 20,000 HUF)"
+    }
+  },
+  "collections": [],
+  "vacationMode": {
+    "isActive": false,
+    "returnDate": "május 18"
+  },
+  "notifications": [
+    {
+      "id": "notif_1794946597657",
+      "date": "2026-11-17T20:16:37.657Z",
+      "subject": "Új rendelés érkezett: b",
+      "customerName": "b",
+      "customerEmail": "havrillabori@gmail.com",
+      "shipping": {
+        "postcode": "102",
+        "city": "budapest",
+        "address": "1028",
+        "method": "MPL Házhozszállítás"
+      },
+      "billing": {
+        "isCompany": false,
+        "name": "b",
+        "postcode": "102",
+        "city": "budapest",
+        "address": "1028"
+      },
+      "items": [
+        {
+          "name": "Magos levél függő",
+          "quantity": 1,
+          "price": 39000,
+          "customization": ""
+        },
+        {
+          "name": "Magyar naprózsa",
+          "quantity": 1,
+          "price": 75000,
+          "customization": "Zománc: Kék, Kő: Hegyikristály"
+        }
+      ],
+      "total": 117000,
+      "premiumBox": false,
+      "marketingConsent": false
+    },
+    {
+      "id": "notif_1782233008832",
+      "date": "2026-06-23T16:43:28.832Z",
+      "subject": "Új rendelés érkezett: hh",
+      "customerName": "hh",
+      "customerEmail": "havrillaborbala@gmail.com",
+      "shipping": {
+        "postcode": "Budapest",
+        "city": "ee",
+        "address": "FOXPOST A-BOX Bp. 02. ker. Csatárka BENU Gyógyszertár - 1025 Budapest, 1025 Budapest, II, 02 Csatárka utca 51.",
+        "method": "Foxpost Csomagautomata"
+      },
+      "billing": {
+        "isCompany": false,
+        "name": "hh",
+        "postcode": "Budapest",
+        "city": "ee",
+        "address": "1028"
+      },
+      "items": [
+        {
+          "name": "Trianon 100  / Újdonság",
+          "quantity": 1,
+          "price": 40000,
+          "customization": "48-es méret"
+        }
+      ],
+      "total": 41500,
+      "premiumBox": false,
+      "marketingConsent": true
+    },
+    {
+      "id": "notif_1782231905583",
+      "date": "2026-06-23T16:25:05.583Z",
+      "subject": "Új rendelés érkezett: bori",
+      "customerName": "bori",
+      "customerEmail": "havrillaborbala@gmail.com",
+      "shipping": {
+        "postcode": "1025",
+        "city": "bp",
+        "address": "Allee Csomagautomata (MPL001) - 1117 Budapest, Október huszonharmadika u. 8-10.",
+        "method": "MPL Csomagautomata"
+      },
+      "billing": {
+        "isCompany": false,
+        "name": "bori",
+        "postcode": "1025",
+        "city": "bp",
+        "address": "batyu"
+      },
+      "items": [
+        {
+          "name": "Kishegyesi lovas lánc",
+          "quantity": 1,
+          "price": 55000,
+          "customization": "45 cm lánccal (kolié), Zománc: Kék, Kő: SöTÉT olivin"
+        }
+      ],
+      "total": 58000,
+      "premiumBox": false,
+      "marketingConsent": true
+    },
+    {
+      "id": "notif_1778089179618",
+      "date": "2026-05-06T17:39:39.618Z",
+      "subject": "Új rendelés érkezett: tqe",
+      "customerName": "tqe",
+      "customerEmail": "ga@sw",
+      "shipping": {
+        "postcode": "va",
+        "city": "av",
+        "address": "va",
+        "method": "MPL Házhozszállítás"
+      },
+      "billing": {
+        "isCompany": false,
+        "name": "tqe",
+        "postcode": "va",
+        "city": "av",
+        "address": "va"
+      },
+      "items": [],
+      "total": 3000,
+      "premiumBox": false,
+      "marketingConsent": true
+    },
+    {
+      "id": "notif_1778088749966",
+      "date": "2026-05-06T17:32:29.966Z",
+      "subject": "Új rendelés érkezett: fewf",
+      "customerName": "fewf",
+      "customerEmail": "wfff@dwf",
+      "shipping": {
+        "postcode": "dq",
+        "city": "dq",
+        "address": "qd",
+        "method": "MPL Házhozszállítás"
+      },
+      "billing": {
+        "isCompany": false,
+        "name": "fewf",
+        "postcode": "dq",
+        "city": "dq",
+        "address": "qd"
+      },
+      "items": [],
+      "total": 3000,
+      "premiumBox": false,
+      "marketingConsent": true
+    },
+    {
+      "id": "notif_1777925693157",
+      "date": "2026-05-04T20:14:53.157Z",
+      "subject": "Új rendelés érkezett: jn",
+      "customerName": "jn",
+      "customerEmail": "hhgg@hhjjj.xn--v-1ga",
+      "shipping": {
+        "postcode": "012",
+        "city": "buhu",
+        "address": "uguh",
+        "method": "MPL Házhozszállítás"
+      },
+      "billing": {
+        "isCompany": false,
+        "name": "jn",
+        "postcode": "012",
+        "city": "buhu",
+        "address": "uguh"
+      },
+      "items": [
+        {
+          "name": "Szkíta farkas karperec",
+          "quantity": 1,
+          "price": 98000,
+          "customization": "16 cm-es méret"
+        }
+      ],
+      "total": 101000,
+      "premiumBox": false,
+      "marketingConsent": true
+    },
+    {
+      "id": "notif_1777925629442",
+      "date": "2026-05-04T20:13:49.442Z",
+      "subject": "Új rendelés érkezett: bori",
+      "customerName": "bori",
+      "customerEmail": "hhh@gmail.co",
+      "shipping": {
+        "postcode": "1102",
+        "city": "jn",
+        "address": "jji",
+        "method": "MPL Házhozszállítás"
+      },
+      "billing": {
+        "isCompany": false,
+        "name": "bori",
+        "postcode": "1102",
+        "city": "jn",
+        "address": "jji"
+      },
+      "items": [
+        {
+          "name": "Keszthelyi hármaslevél lánc",
+          "quantity": 1,
+          "price": 50000,
+          "customization": "45 cm lánccal (kolié), Kő: Borostyán"
+        },
+        {
+          "name": "Nagy  zöldhalompusztai  csodaszarvas",
+          "quantity": 1,
+          "price": 60000,
+          "customization": "45 cm ezüst lánccal (Anker típus)"
+        }
+      ],
+      "total": 113000,
+      "premiumBox": false,
+      "marketingConsent": true
+    },
+    {
+      "id": "notif_1775721756500",
+      "date": "2026-04-09T08:02:36.500Z",
+      "subject": "Új rendelés érkezett: kakkakaka",
+      "customerName": "kakkakaka",
+      "customerEmail": "kakak@hhh",
+      "shipping": {
+        "postcode": "1026",
+        "city": "bp",
+        "address": "Mammut Csomagautomata (HU1004) - 1024 Budapest, Lövőház u. 2-6.",
+        "method": "MPL Csomagautomata"
+      },
+      "billing": {
+        "isCompany": false,
+        "name": "kakkakaka",
+        "postcode": "1026",
+        "city": "bp",
+        "address": "lalalal utca 3"
+      },
+      "items": [
+        {
+          "name": "Keszthelyi hármaslevél függő",
+          "quantity": 2,
+          "price": 49000
+        },
+        {
+          "name": "Köves fagyöngy függő",
+          "quantity": 1,
+          "price": 45000,
+          "customization": "Kő: Hegyikristály"
+        },
+        {
+          "name": "Fagyöngy gyűrű",
+          "quantity": 1,
+          "price": 40000,
+          "customization": "52-es méret"
+        }
+      ],
+      "total": 176850
+    },
+    {
+      "id": "notif_1775720318078",
+      "date": "2026-04-09T07:38:38.078Z",
+      "subject": "Új rendelés érkezett: j",
+      "customerName": "j",
+      "customerEmail": "bh@hj-v",
+      "shipping": {
+        "postcode": "m ",
+        "city": " m",
+        "address": " m",
+        "method": "MPL Csomagautomata"
+      },
+      "billing": {
+        "isCompany": false,
+        "name": "j",
+        "postcode": "m ",
+        "city": " m",
+        "address": " m"
+      },
+      "items": [
+        {
+          "name": "Fehér sólyom",
+          "quantity": 1,
+          "price": 32000
+        },
+        {
+          "name": "Keszthelyi hármaslevél gyűrű",
+          "quantity": 1,
+          "price": 55000,
+          "customization": "Egyedi méret: 51"
+        },
+        {
+          "name": "Keszthelyi hármaslevél lánc",
+          "quantity": 1,
+          "price": 50000,
+          "customization": "45 cm lánccal (kolié), Kő: Hegyikristály"
+        }
+      ],
+      "total": 134750
+    }
+  ],
+  "coupons": [],
+  "globalLeatherColors": [
+    {
+      "color": "Fekete",
+      "imageUrl": ""
+    },
+    {
+      "color": "Világos barna",
+      "imageUrl": ""
+    },
+    {
+      "color": "Sötét barna",
+      "imageUrl": ""
+    }
+  ],
+  "globalEnamelColors": [
+    "Aranybarna",
+    "Földbarna",
+    "Fekete",
+    "Fehér",
+    "Erdélyi kék",
+    "Búzavirág kék",
+    "Fenyőzöld",
+    "Fűzöld",
+    "Olívazöld",
+    "Borvörös"
+  ]
+}

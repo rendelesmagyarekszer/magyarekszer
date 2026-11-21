@@ -594,6 +594,7 @@ export const ConfigProvider = ({
     const [notifications, setNotifications] = useState<any[]>(initialSettings?.notifications || []);
     const [coupons, setCoupons] = useState<Coupon[]>(initialSettings?.coupons || []);
     const [isLoaded, setIsLoaded] = useState(false);
+    const liveSyncDoneRef = React.useRef(false);
     const [ankerPrices, setAnkerPrices] = useState<Record<string, number>>(initialSettings?.ankerPrices || DEFAULT_ANKER_PRICES);
     const [barbaraPrices, setBarbaraPrices] = useState<Record<string, number>>(initialSettings?.barbaraPrices || DEFAULT_BARBARA_PRICES);
     const [globalEnamelColors, setGlobalEnamelColors] = useState<string[]>(initialSettings?.globalEnamelColors || [
@@ -772,7 +773,8 @@ export const ConfigProvider = ({
             }
         }
 
-        const initializeProducts = async () => {
+        const initializeLiveServerData = async () => {
+            // 1. Set fast initial products first
             if (initialProducts && initialProducts.length > 0) {
                 setProducts(initialProducts);
             } else if (savedProducts) {
@@ -781,22 +783,73 @@ export const ConfigProvider = ({
                 } catch (e) {
                     setProducts(initialProductsData);
                 }
-            } else {
-                try {
-                    const res = await fetch('/data/products.json', { cache: 'no-store' });
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (Array.isArray(data) && data.length > 0) {
-                            setProducts(data);
-                            return;
+            }
+
+            // 2. Always fetch latest live products from server (Mediacenter PHP or static JSON)
+            try {
+                let prodRes = await fetch(`/api/save-products.php?t=${Date.now()}`, { cache: 'no-store' });
+                if (!prodRes.ok) {
+                    prodRes = await fetch(`/data/products.json?t=${Date.now()}`, { cache: 'no-store' });
+                }
+                if (prodRes.ok) {
+                    const liveProducts = await prodRes.json();
+                    if (Array.isArray(liveProducts) && liveProducts.length > 0) {
+                        setProducts(liveProducts);
+                    }
+                }
+            } catch (err) {}
+
+            // 3. Always fetch latest live settings from server (Mediacenter PHP)
+            try {
+                let setRes = await fetch(`/api/settings.php?t=${Date.now()}`, { cache: 'no-store' });
+                if (!setRes.ok) {
+                    setRes = await fetch(`/data/settings.json?t=${Date.now()}`, { cache: 'no-store' });
+                }
+                if (setRes.ok) {
+                    const live = await setRes.json();
+                    if (live && typeof live === 'object') {
+                        if (Array.isArray(live.availableStones) && live.availableStones.length > 0) {
+                            setAvailableStones(Array.from(new Set(live.availableStones)));
+                        }
+                        if (Array.isArray(live.allStonesMaster) && live.allStonesMaster.length > 0) {
+                            setAllStonesMaster(Array.from(new Set(live.allStonesMaster)));
+                        }
+                        if (live.stonePrices && typeof live.stonePrices === 'object' && Object.keys(live.stonePrices).length > 0) {
+                            setStonePrices(live.stonePrices);
+                        }
+                        if (live.ankerPrices && typeof live.ankerPrices === 'object') setAnkerPrices(live.ankerPrices);
+                        if (live.barbaraPrices && typeof live.barbaraPrices === 'object') setBarbaraPrices(live.barbaraPrices);
+                        if (Array.isArray(live.extraServices)) setExtraServices(live.extraServices);
+                        if (typeof live.premiumBoxPrice === 'number') setPremiumBoxPrice(live.premiumBoxPrice);
+                        if (live.imageSettings && typeof live.imageSettings === 'object') setImageSettings(live.imageSettings);
+                        if (Array.isArray(live.customJewelry)) setCustomJewelry(live.customJewelry);
+                        if (live.shippingSettings && typeof live.shippingSettings === 'object') {
+                            setShippingSettings({ ...DEFAULT_SHIPPING_SETTINGS, ...live.shippingSettings });
+                        }
+                        if (live.translations && typeof live.translations === 'object') {
+                            setDynamicTranslations(prev => ({
+                                HU: { ...translations.HU, ...(prev.HU || {}), ...(live.translations.HU || {}) },
+                                EN: { ...translations.EN, ...(prev.EN || {}), ...(live.translations.EN || {}) }
+                            }));
+                        }
+                        if (Array.isArray(live.collections)) setCollections(live.collections);
+                        if (live.vacationMode && typeof live.vacationMode === 'object') setVacationMode(live.vacationMode);
+                        if (Array.isArray(live.notifications)) setNotifications(live.notifications);
+                        if (Array.isArray(live.coupons)) setCoupons(live.coupons);
+                        if (Array.isArray(live.globalLeatherColors) && live.globalLeatherColors.length > 0) {
+                            setGlobalLeatherColors(live.globalLeatherColors);
+                        }
+                        if (Array.isArray(live.globalEnamelColors) && live.globalEnamelColors.length > 0) {
+                            setGlobalEnamelColors(live.globalEnamelColors);
                         }
                     }
-                } catch (err) {}
-                setProducts(initialProductsData);
-            }
+                }
+            } catch (err) {}
+
+            liveSyncDoneRef.current = true;
         };
 
-        initializeProducts();
+        initializeLiveServerData();
 
         if (savedTranslations) {
             try {
@@ -958,29 +1011,48 @@ export const ConfigProvider = ({
             localStorage.setItem('magyarekszer_shippingSettings', JSON.stringify(shippingSettings));
 
             const syncTimer = setTimeout(() => {
-                if (typeof window !== 'undefined') {
-                    fetch('/api/admin/settings', {
+                if (typeof window !== 'undefined' && liveSyncDoneRef.current) {
+                    const isAdminSession = window.location.pathname.startsWith('/admin')
+                        && sessionStorage.getItem('magyarekszer_admin_auth') === 'true';
+                    if (!isAdminSession) return;
+
+                    const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'GabMar5048';
+                    const payload = JSON.stringify({
+                        availableStones,
+                        allStonesMaster,
+                        stonePrices,
+                        ankerPrices,
+                        barbaraPrices,
+                        extraServices,
+                        premiumBoxPrice,
+                        imageSettings,
+                        customJewelry,
+                        shippingSettings,
+                        translations: dynamicTranslations,
+                        collections,
+                        vacationMode,
+                        notifications,
+                        coupons,
+                        globalLeatherColors,
+                        globalEnamelColors
+                    });
+
+                    fetch('/api/settings.php', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            availableStones,
-                            allStonesMaster,
-                            stonePrices,
-                            ankerPrices,
-                            barbaraPrices,
-                            extraServices,
-                            premiumBoxPrice,
-                            imageSettings,
-                            customJewelry,
-                            shippingSettings,
-                            translations: dynamicTranslations,
-                            collections,
-                            vacationMode,
-                            notifications,
-                            coupons,
-                            globalLeatherColors
-                        })
-                    }).catch(console.error);
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Admin-Password': adminPassword
+                        },
+                        body: payload
+                    }).then(res => {
+                        if (!res.ok) throw new Error('PHP settings save failed');
+                    }).catch(() => {
+                        fetch('/api/admin/settings', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: payload
+                        }).catch(console.error);
+                    });
                 }
             }, 600);
             return () => clearTimeout(syncTimer);
@@ -1072,11 +1144,24 @@ export const ConfigProvider = ({
                 next = [...prev, p];
             }
             if (typeof window !== 'undefined') {
-                fetch('/api/admin/save-products', {
+                const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'GabMar5048';
+                const payload = JSON.stringify({ products: next });
+                fetch('/api/save-products.php', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ products: next })
-                }).catch(console.error);
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Admin-Password': adminPassword
+                    },
+                    body: payload
+                }).then(res => {
+                    if (!res.ok) throw new Error('PHP save-products failed');
+                }).catch(() => {
+                    fetch('/api/admin/save-products', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: payload
+                    }).catch(console.error);
+                });
             }
             return next;
         });
@@ -1086,11 +1171,24 @@ export const ConfigProvider = ({
         setProducts(prev => {
             const next = prev.filter(p => p.id !== id);
             if (typeof window !== 'undefined') {
-                fetch('/api/admin/save-products', {
+                const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'GabMar5048';
+                const payload = JSON.stringify({ products: next });
+                fetch('/api/save-products.php', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ products: next })
-                }).catch(console.error);
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Admin-Password': adminPassword
+                    },
+                    body: payload
+                }).then(res => {
+                    if (!res.ok) throw new Error('PHP save-products failed');
+                }).catch(() => {
+                    fetch('/api/admin/save-products', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: payload
+                    }).catch(console.error);
+                });
             }
             return next;
         });

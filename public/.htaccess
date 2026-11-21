@@ -12,6 +12,9 @@
   RewriteRule ^api/send-order-email/?$ api/send-order-email.php [L]
   RewriteRule ^api/orders/?$ api/orders.php [L]
   RewriteRule ^api/check-kh-emails/?$ api/check-kh-emails.php [L]
+  RewriteRule ^api/admin/save-products/?$ api/save-products.php [L]
+  RewriteRule ^api/admin/settings/?$ api/settings.php [L]
+  RewriteRule ^api/upload/?$ api/upload.php [L]
 
   # 1. Ha a kért fájl vagy mappa létezik, közvetlenül azt szolgáljuk ki
   RewriteCond %{REQUEST_FILENAME} -f [OR]
