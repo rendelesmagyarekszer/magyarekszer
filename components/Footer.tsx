@@ -24,7 +24,7 @@ const Footer = () => {
                             {t('tradition_footer')}
                         </p>
                         <div className="flex items-center gap-6 pt-4">
-                            <a href="https://facebook.com/magyarekszer" target="_blank" className="text-gold/40 hover:text-gold transition-colors">
+                            <a href="https://www.facebook.com/profile.php?id=100063609730515" target="_blank" rel="noopener noreferrer" className="text-gold/40 hover:text-gold transition-colors">
                                 <FacebookIcon className="h-5 w-5" />
                             </a>
                             <a href="#" className="text-gold/40 hover:text-gold transition-colors">

@@ -94,7 +94,7 @@ export default function ContactPage() {
                         </div>
 
                         <div className="flex items-center gap-10">
-                            <a href="https://facebook.com/magyarekszer" target="_blank" className="text-ivory/40 hover:text-gold transition-colors flex items-center gap-3 group">
+                            <a href="https://www.facebook.com/profile.php?id=100063609730515" target="_blank" rel="noopener noreferrer" className="text-ivory/40 hover:text-gold transition-colors flex items-center gap-3 group">
                                 <FacebookIcon className="h-5 w-5 opacity-60 group-hover:opacity-100" />
                                 <span className="text-[10px] uppercase tracking-[0.3em] font-black">Facebook</span>
                             </a>
