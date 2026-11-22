@@ -54,28 +54,6 @@ if (!move_uploaded_file($file['tmp_name'], $targetPath)) {
     exit;
 }
 
-// Automatic web optimization for uploaded JPEGs (resize max 1400px, quality 80%)
-if (in_array($ext, ['jpg', 'jpeg'], true) && function_exists('imagecreatefromjpeg')) {
-    $img = @imagecreatefromjpeg($targetPath);
-    if ($img) {
-        $w = imagesx($img);
-        $h = imagesy($img);
-        $maxDim = 1400;
-        if ($w > $maxDim || $h > $maxDim) {
-            $ratio = min($maxDim / $w, $maxDim / $h);
-            $newW = (int)round($w * $ratio);
-            $newH = (int)round($h * $ratio);
-            $resized = imagecreatetruecolor($newW, $newH);
-            imagecopyresampled($resized, $img, 0, 0, 0, 0, $newW, $newH, $w, $h);
-            imagedestroy($img);
-            $img = $resized;
-        }
-        @imageinterlace($img, true); // Progressive JPEG
-        @imagejpeg($img, $targetPath, 80);
-        imagedestroy($img);
-    }
-}
-
 echo json_encode([
     'success' => true,
     'url' => '/uploads/' . $fileName

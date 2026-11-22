@@ -46,6 +46,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         @mkdir($dir, 0755, true);
     }
 
+    // Keep automatic backup before overwriting
+    if (file_exists($productsFile)) {
+        @copy($productsFile, $dir . '/products.backup.json');
+    }
+
     // Write atomically via temp file
     $json = json_encode($data['products'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
     $written = @file_put_contents($productsFile, $json, LOCK_EX);
