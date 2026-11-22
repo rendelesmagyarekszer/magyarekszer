@@ -46,7 +46,9 @@ export default function AdminDashboard() {
         updateShippingSettings
     } = useConfig();
     
-    const { allOrders: orders } = useAuth();
+    const { allOrders: localOrders } = useAuth();
+    const [serverOrders, setServerOrders] = useState<any[]>([]);
+    const [salesSearch, setSalesSearch] = useState('');
     
     const [newStoneHu, setNewStoneHu] = useState('');
     const [newStoneEn, setNewStoneEn] = useState('');
@@ -72,8 +74,33 @@ export default function AdminDashboard() {
     useEffect(() => {
         if (typeof window !== 'undefined') {
             setTrafficStats(getTrafficData());
+            fetch(`/api/orders.php?t=${Date.now()}`, { cache: 'no-store' })
+                .then(res => res.ok ? res.json() : null)
+                .then(data => {
+                    if (data && data.success && Array.isArray(data.orders)) {
+                        setServerOrders(data.orders);
+                    }
+                })
+                .catch(() => {});
         }
     }, [showAnalytics]);
+
+    // Merge server orders + local orders (deduplicated by id, newest first)
+    const orders = React.useMemo(() => {
+        const map = new Map<string, any>();
+        [...serverOrders, ...localOrders].forEach((o: any) => {
+            if (!o) return;
+            const key = o.id || `${o.date}_${o.total}_${o.customerInfo?.email || ''}`;
+            if (!map.has(key)) {
+                map.set(key, o);
+            }
+        });
+        return Array.from(map.values()).sort((a, b) => {
+            const ta = new Date(a.date || 0).getTime();
+            const tb = new Date(b.date || 0).getTime();
+            return tb - ta;
+        });
+    }, [serverOrders, localOrders]);
 
     // Sales Statistics Calculation
     const productSales: Record<string, { quantity: number, revenue: number, image?: string }> = {};
@@ -85,34 +112,37 @@ export default function AdminDashboard() {
     const currentMonthKey = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
 
     orders.forEach(order => {
-        const date = new Date(order.date);
-        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-        const yearKey = `${date.getFullYear()}`;
+        const date = new Date(order.date || Date.now());
+        const monthKey = isNaN(date.getTime()) ? currentMonthKey : `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        const yearKey = isNaN(date.getTime()) ? `${new Date().getFullYear()}` : `${date.getFullYear()}`;
+        const orderTotal = Number(order.total) || 0;
         
-        totalRevenue += order.total;
+        totalRevenue += orderTotal;
 
         // Monthly
         if (!monthlySales[monthKey]) monthlySales[monthKey] = { revenue: 0, orders: 0 };
-        monthlySales[monthKey].revenue += order.total;
+        monthlySales[monthKey].revenue += orderTotal;
         monthlySales[monthKey].orders += 1;
 
         // Yearly
         if (!yearlySales[yearKey]) yearlySales[yearKey] = { revenue: 0, orders: 0 };
-        yearlySales[yearKey].revenue += order.total;
+        yearlySales[yearKey].revenue += orderTotal;
         yearlySales[yearKey].orders += 1;
 
         // Products
         if (order.items && Array.isArray(order.items)) {
-            order.items.forEach(item => {
-                const name = item.name;
+            order.items.forEach((item: any) => {
+                const name = item.name || 'Ismeretlen termék';
+                const qty = Number(item.quantity) || 1;
+                const price = Number(item.price) || 0;
                 if (!productSales[name]) productSales[name] = { quantity: 0, revenue: 0, image: item.image };
-                productSales[name].quantity += item.quantity;
-                productSales[name].revenue += (item.price * item.quantity);
+                productSales[name].quantity += qty;
+                productSales[name].revenue += (price * qty);
 
                 if (monthKey === currentMonthKey) {
                     if (!monthlyProductSales[name]) monthlyProductSales[name] = { quantity: 0, revenue: 0, image: item.image };
-                    monthlyProductSales[name].quantity += item.quantity;
-                    monthlyProductSales[name].revenue += (item.price * item.quantity);
+                    monthlyProductSales[name].quantity += qty;
+                    monthlyProductSales[name].revenue += (price * qty);
                 }
             });
         }
@@ -970,6 +1000,97 @@ export default function AdminDashboard() {
                                                         ))}
                                                     </div>
                                                 </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Detailed Who Ordered What Breakdown */}
+                                        <div className="space-y-6 pt-6 border-t border-gold/10">
+                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                                <div className="flex items-center gap-4">
+                                                    <h3 className="text-xs font-black uppercase tracking-[0.4em] text-gold">Ki mit rendelt? (Összes vásárlás)</h3>
+                                                    <span className="text-[11px] font-bold text-ivory/40">({orders.length} db)</span>
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Keresés vevő vagy ékszer neve alapján..."
+                                                    value={salesSearch}
+                                                    onChange={(e) => setSalesSearch(e.target.value)}
+                                                    className="bg-[#0d0902] border border-gold/20 px-4 py-2 text-xs text-ivory placeholder-ivory/30 outline-none focus:border-gold w-full sm:w-80 rounded"
+                                                />
+                                            </div>
+
+                                            <div className="space-y-4">
+                                                {(() => {
+                                                    const q = salesSearch.trim().toLowerCase();
+                                                    const filtered = orders.filter((o: any) => {
+                                                        if (!q) return true;
+                                                        const custName = (o.customerInfo?.fullName || '').toLowerCase();
+                                                        const custEmail = (o.customerInfo?.email || '').toLowerCase();
+                                                        const itemsText = (o.items || []).map((i: any) => `${i.name || ''} ${i.selectedCustomization || ''}`).join(' ').toLowerCase();
+                                                        return custName.includes(q) || custEmail.includes(q) || itemsText.includes(q);
+                                                    });
+
+                                                    if (filtered.length === 0) {
+                                                        return (
+                                                            <p className="text-xs uppercase tracking-widest text-[#555] font-black text-center py-12 italic">
+                                                                Nincs találat a vásárlások között
+                                                            </p>
+                                                        );
+                                                    }
+
+                                                    return filtered.map((order: any, idx: number) => {
+                                                        const shippingMethodName = order.shippingInfo?.method || order.shipping?.method || '';
+                                                        const isPickup = order.shippingType === 'local-pickup'
+                                                            || order.shippingInfo?.type === 'local-pickup'
+                                                            || shippingMethodName.toLowerCase().includes('személyes')
+                                                            || shippingMethodName.toLowerCase().includes('üzlet');
+                                                        return (
+                                                            <div key={order.id || idx} className="p-5 bg-black/40 border border-gold/10 hover:border-gold/30 rounded-xl space-y-4 transition-all">
+                                                                <div className="flex flex-wrap items-start justify-between gap-3 border-b border-gold/10 pb-3">
+                                                                    <div className="space-y-1">
+                                                                        <p className="text-base font-serif text-ivory font-bold">
+                                                                            {order.customerInfo?.fullName || 'Vendég'}
+                                                                        </p>
+                                                                        <p className="text-[11px] text-ivory/50">
+                                                                            {order.customerInfo?.email || '-'}{order.customerInfo?.phone ? ` • ${order.customerInfo.phone}` : ''}
+                                                                        </p>
+                                                                    </div>
+                                                                    <div className="text-right space-y-1">
+                                                                        <p className="text-lg font-black text-gold">{formatPrice(Number(order.total) || 0)}</p>
+                                                                        <p className="text-[10px] text-ivory/40 uppercase tracking-wider">
+                                                                            {order.date ? new Date(order.date).toLocaleString('hu-HU') : '-'}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="space-y-2">
+                                                                    {(order.items || []).map((item: any, iIdx: number) => (
+                                                                        <div key={iIdx} className="flex items-center justify-between gap-4 text-xs bg-white/[0.03] px-3 py-2 rounded">
+                                                                            <div className="min-w-0">
+                                                                                <span className="font-bold text-ivory">{item.name}</span>
+                                                                                {item.selectedCustomization && (
+                                                                                    <span className="text-gold/80 italic ml-2">({item.selectedCustomization})</span>
+                                                                                )}
+                                                                            </div>
+                                                                            <div className="shrink-0 text-right text-ivory/70">
+                                                                                <span className="font-bold">{item.quantity || 1} db</span> • <span className="text-gold">{formatPrice((Number(item.price) || 0) * (Number(item.quantity) || 1))}</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+
+                                                                <div className="flex flex-wrap items-center gap-2 pt-1 text-[10px] uppercase font-bold tracking-wider">
+                                                                    <span className="px-2 py-0.5 rounded bg-gold/10 text-gold border border-gold/20">
+                                                                        {isPickup ? 'Helybeni átvétel (Üzletben)' : `Szállítás: ${shippingMethodName || 'Házhozszállítás'}`}
+                                                                    </span>
+                                                                    <span className="px-2 py-0.5 rounded bg-white/5 text-ivory/70 border border-white/10">
+                                                                        {order.paymentMethod || 'Előre utalás'}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    });
+                                                })()}
                                             </div>
                                         </div>
                                     </div>
