@@ -48,12 +48,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     return (
         <div className="premium-card group flex flex-col p-3 sm:p-4 h-full">
             {/* Image Container */}
-            <div className="aspect-square w-full relative mb-3 sm:mb-6 overflow-hidden rounded-lg">
+            <div className="aspect-square w-full relative mb-3 sm:mb-6 overflow-hidden rounded-lg bg-[#1a1105]">
                 <Link href={`/product/${product.id}`}>
                     <Image 
                         src={product.image} 
                         alt={language === 'EN' && product.nameEn ? product.nameEn : product.name} 
                         fill 
+                        loading="lazy"
+                        decoding="async"
                         sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                         className="object-cover group-hover:scale-105 transition-transform duration-1000"
                     />

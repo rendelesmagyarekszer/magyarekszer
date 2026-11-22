@@ -57,6 +57,8 @@ const HomeCategoryRow = () => {
                                 <img
                                     src={finalImage}
                                     alt={t(`cat_${category.slug}`)}
+                                    loading="lazy"
+                                    decoding="async"
                                     className={`object-cover transition-opacity duration-700 ${isDimmed ? 'opacity-40' : 'opacity-100'}`}
                                     style={{ position: 'absolute', inset: 0, objectFit: 'cover', width: '100%', height: '100%' }}
                                 />
