@@ -40,7 +40,7 @@ export default function FogyasztoBaratEmbed({ type }: FogyasztoBaratEmbedProps) 
     }, [type]);
 
     return (
-        <div className="bg-[#fdfdf3] text-[#1a1005] rounded-2xl p-6 sm:p-10 shadow-2xl border border-gold/30 min-h-[320px] overflow-x-auto">
+        <div className="bg-[#1e1408] text-[#fdfdf3] rounded-2xl p-6 sm:p-10 shadow-2xl border border-gold/25 min-h-[320px] overflow-x-auto">
             <div ref={containerRef} className="fbarat-container w-full" />
         </div>
     );
