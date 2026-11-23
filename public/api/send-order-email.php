@@ -131,19 +131,54 @@ function dispatch_order_email($to, $subject, $htmlBody, $smtpUser, $smtpPass, $f
     return $sent;
 }
 
-// Generate items HTML rows
+// Load products catalog as fallback lookup for SKU / weight if not passed
+$productLookup = [];
+$catalogFile = __DIR__ . '/../data/products.json';
+if (file_exists($catalogFile)) {
+    $catalogJson = json_decode(@file_get_contents($catalogFile), true);
+    if (is_array($catalogJson)) {
+        foreach ($catalogJson as $cp) {
+            if (!empty($cp['id'])) {
+                $productLookup[(string)$cp['id']] = $cp;
+            }
+        }
+    }
+}
+
+// Generate items HTML rows with SKU, weight, customization, unit price & total
 $itemRows = '';
 if (!empty($order['items']) && is_array($order['items'])) {
     foreach ($order['items'] as $item) {
+        $itemId = (string)($item['id'] ?? '');
+        $catalogItem = $productLookup[$itemId] ?? null;
+
         $name = htmlspecialchars($item['name'] ?? '', ENT_QUOTES, 'UTF-8');
-        $custom = !empty($item['selectedCustomization']) ? ' <em style="color:#c9a56a;">(' . htmlspecialchars($item['selectedCustomization'], ENT_QUOTES, 'UTF-8') . ')</em>' : '';
+        $skuVal = trim($item['sku'] ?? ($catalogItem['sku'] ?? ''));
+        $weightVal = trim($item['weight'] ?? ($catalogItem['weight'] ?? ''));
+        $customVal = trim($item['selectedCustomization'] ?? '');
+
+        $metaParts = [];
+        if ($skuVal !== '') {
+            $metaParts[] = '<span style="color:#c9a56a;font-weight:bold;">Cikkszám: ' . htmlspecialchars($skuVal, ENT_QUOTES, 'UTF-8') . '</span>';
+        }
+        if ($weightVal !== '') {
+            $metaParts[] = 'Súly: ' . htmlspecialchars($weightVal, ENT_QUOTES, 'UTF-8');
+        }
+        $metaHtml = !empty($metaParts) ? '<div style="font-size:11px;color:#aaa;margin-top:3px;">' . implode(' &nbsp;|&nbsp; ', $metaParts) . '</div>' : '';
+        $customHtml = $customVal !== '' ? '<div style="font-size:11px;color:#e5c78f;font-style:italic;margin-top:3px;">Opciók: ' . htmlspecialchars($customVal, ENT_QUOTES, 'UTF-8') . '</div>' : '';
+
         $qty = (int)($item['quantity'] ?? 1);
-        $linePrice = formatPrice(($item['price'] ?? 0) * $qty);
+        $unitPrice = (float)($item['price'] ?? 0);
+        $linePrice = formatPrice($unitPrice * $qty);
 
         $itemRows .= '<tr>'
-            . '<td style="padding:8px 12px;border-bottom:1px solid #2a1f08;">' . $name . $custom . '</td>'
-            . '<td style="padding:8px 12px;border-bottom:1px solid #2a1f08;text-align:center;">' . $qty . '</td>'
-            . '<td style="padding:8px 12px;border-bottom:1px solid #2a1f08;text-align:right;color:#c9a56a;font-weight:bold;">' . $linePrice . '</td>'
+            . '<td style="padding:10px 12px;border-bottom:1px solid #2a1f08;vertical-align:top;">'
+            . '<div style="font-weight:bold;color:#fdfdf3;">' . $name . '</div>'
+            . $metaHtml
+            . $customHtml
+            . '</td>'
+            . '<td style="padding:10px 12px;border-bottom:1px solid #2a1f08;text-align:center;vertical-align:top;">' . $qty . ' db</td>'
+            . '<td style="padding:10px 12px;border-bottom:1px solid #2a1f08;text-align:right;color:#c9a56a;font-weight:bold;vertical-align:top;white-space:nowrap;">' . $linePrice . '</td>'
             . '</tr>';
     }
 }
@@ -218,7 +253,10 @@ $storeEmailHtml = '<!DOCTYPE html>
         </table>
 
         <table style="width:100%;margin-bottom:32px;">
+            ' . (!empty($order['id']) ? '<tr><td style="padding:4px 0;color:#999;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;">Rendelés azonosító:</td><td style="padding:4px 0;text-align:right;font-size:12px;color:#fdfdf3;font-weight:bold;">' . htmlspecialchars($order['id'], ENT_QUOTES, 'UTF-8') . '</td></tr>' : '') . '
             <tr><td style="padding:4px 0;color:#999;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;">Átvétel / Postázás:</td><td style="padding:4px 0;text-align:right;font-size:12px;color:#c9a56a;font-weight:bold;">' . $deliveryTypeLabel . '</td></tr>
+            <tr><td style="padding:4px 0;color:#999;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;">Szállítási díj:</td><td style="padding:4px 0;text-align:right;font-size:12px;">' . ((isset($order['shippingCost']) && (float)$order['shippingCost'] > 0) ? formatPrice($order['shippingCost']) : 'Díjtalan (0 Ft)') . '</td></tr>
+            ' . (!empty($order['discountAmount']) && (float)$order['discountAmount'] > 0 ? '<tr><td style="padding:4px 0;color:#999;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;">Kedvezmény' . (!empty($order['couponCode']) ? ' (' . htmlspecialchars($order['couponCode'], ENT_QUOTES, 'UTF-8') . ')' : '') . ':</td><td style="padding:4px 0;text-align:right;font-size:12px;color:#4ade80;font-weight:bold;">-' . formatPrice($order['discountAmount']) . '</td></tr>' : '') . '
             <tr><td colspan="2" style="border-top:1px solid #c9a56a22;padding-top:12px;"></td></tr>
             <tr><td style="padding:4px 0;color:#c9a56a;font-size:18px;font-weight:bold;letter-spacing:0.05em;">Összesen:</td><td style="padding:4px 0;text-align:right;color:#c9a56a;font-size:18px;font-weight:bold;">' . $totalFormatted . '</td></tr>
         </table>

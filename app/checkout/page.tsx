@@ -232,12 +232,18 @@ export default function CheckoutPage() {
             id: generatedOrderId,
             items: cartItems.map(item => ({
                 id: item.id,
+                sku: item.sku || '',
+                weight: item.weight || '',
+                category: item.category || '',
                 name: item.name,
                 price: item.price,
                 quantity: item.quantity,
                 image: item.image,
                 selectedCustomization: item.selectedCustomization
             })),
+            shippingCost: shipping.price,
+            couponCode: appliedCoupon?.code || '',
+            discountAmount: discountAmount || 0,
             total: finalTotal,
             comment: formData.comment,
             customerInfo: {
