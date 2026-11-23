@@ -1,12 +1,24 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { useConfig } from './ConfigProvider';
 import { ShieldCheck, Mail, Phone, MapPin } from 'lucide-react';
 
 const Footer = () => {
     const { t } = useConfig();
+
+    useEffect(() => {
+        if (typeof document !== 'undefined' && document.getElementById('fbarat') === null) {
+            const hst = document.createElement('script');
+            hst.src = 'https://admin.fogyasztobarat.hu/h-api.js';
+            hst.type = 'text/javascript';
+            hst.setAttribute('data-id', 'ENB7UDI0');
+            hst.setAttribute('id', 'fbarat');
+            hst.async = true;
+            document.body.appendChild(hst);
+        }
+    }, []);
 
     return (
         <footer className="bg-[#0d0902] border-t border-gold/10 pt-24 pb-12 px-6">
@@ -52,6 +64,7 @@ const Footer = () => {
                             <li><Link href="/privacy" className="text-[11px] uppercase tracking-[0.2em] text-ivory/40 hover:text-gold transition-colors font-bold">{t('privacy')}</Link></li>
                             <li><Link href="/shipping" className="text-[11px] uppercase tracking-[0.2em] text-ivory/40 hover:text-gold transition-colors font-bold">{t('shipping')}</Link></li>
                             <li><Link href="/terms" className="text-[11px] uppercase tracking-[0.2em] text-ivory/40 hover:text-gold transition-colors font-bold">{t('terms')}</Link></li>
+                            <li><Link href="/fogyasztobarat" className="text-[11px] uppercase tracking-[0.2em] text-ivory/40 hover:text-gold transition-colors font-bold">Képes Fogyasztói Tájékoztató</Link></li>
                         </ul>
                     </div>
 
