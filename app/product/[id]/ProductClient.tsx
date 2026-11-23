@@ -790,7 +790,7 @@ export default function ProductClient({ product: serverProduct, initialCollectio
                                         <span className="text-gold font-black">2 darabot 5% kedvezménnyel</span>, vagy <span className="text-gold font-black border-b border-gold/50">3 darabot 10% kedvezménnyel</span>!
                                     </p>
                                 </div>
-                                <div className="grid grid-cols-2 gap-6 lg:gap-8">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
                                     {activeCollectionProducts.map((p) => (
                                         <Link key={p.id} href={`/product/${p.id}`} className="group block bg-black/20 p-4 rounded-2xl border border-gold/5 hover:border-gold/20 transition-all shadow-md">
                                             <div className="relative aspect-square overflow-hidden rounded-xl mb-6 shadow-lg">

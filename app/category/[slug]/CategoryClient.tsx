@@ -74,7 +74,7 @@ export default function CategoryClient({ slug }: CategoryClientProps) {
                         </div>
                         
                         {filteredAndSortedProducts.length > 0 ? (
-                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-y-16 gap-x-8">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-y-8 sm:gap-y-10 gap-x-4 sm:gap-x-6">
                                 {filteredAndSortedProducts.map((product) => (
                                     <ProductCard key={product.id} product={product} />
                                 ))}
