@@ -1050,20 +1050,32 @@ export default function CheckoutPage() {
                                         </label>
                                     </div>
 
-                                    <div className="flex items-start gap-4 p-4 bg-[#c9a56a]/5 border border-[#c9a56a]/10 rounded-xl">
+                                    <div className={`flex items-start gap-4 p-4 rounded-xl border transition-all ${!termsAccepted ? 'bg-[#c9a56a]/10 border-[#c9a56a]/40' : 'bg-emerald-500/10 border-emerald-500/30'}`}>
                                         <div className="pt-1">
                                             <input 
                                                 type="checkbox" 
                                                 id="termsAccepted"
+                                                required
                                                 checked={termsAccepted}
-                                                onChange={(e) => setTermsAccepted(e.target.checked)}
+                                                onChange={(e) => {
+                                                    setTermsAccepted(e.target.checked);
+                                                    if (e.target.checked && formErrors === t('checkout_error_terms')) {
+                                                        setFormErrors(null);
+                                                    }
+                                                }}
                                                 className="w-5 h-5 border-[#c9a56a]/40 bg-[#150e03] accent-[#c9a56a] cursor-pointer"
                                             />
                                         </div>
                                         <label htmlFor="termsAccepted" className="text-xs font-serif text-[#fdfdf3] leading-relaxed cursor-pointer select-none">
-                                            Elolvastam és elfogadom az <Link href="/terms" className="text-[#c9a56a] underline hover:text-[#b08d55] mx-1">Általános Szerződési Feltételeket</Link> és az <Link href="/privacy" className="text-[#c9a56a] underline hover:text-[#b08d55] mx-1">Adatkezelési Tájékoztatót</Link>. *
+                                            Elolvastam és elfogadom az <Link href="/terms" target="_blank" className="text-[#c9a56a] underline hover:text-[#b08d55] mx-1">Általános Szerződési Feltételeket (ÁSZF)</Link> és az <Link href="/privacy" target="_blank" className="text-[#c9a56a] underline hover:text-[#b08d55] mx-1">Adatkezelési Tájékoztatót</Link>. <span className="text-red-400 font-bold">*</span>
                                         </label>
                                     </div>
+
+                                    {!termsAccepted && (
+                                        <p className="text-[11px] text-[#c9a56a]/80 text-center font-bold tracking-wide">
+                                            A megrendelés leadásához kérjük, pipálja ki az ÁSZF elfogadását!
+                                        </p>
+                                    )}
 
                                     {formErrors && (
                                         <div className="mb-6 p-4 border border-red-500/30 bg-red-500/10 rounded-xl text-red-500 font-bold text-center text-sm uppercase tracking-widest">
@@ -1072,7 +1084,12 @@ export default function CheckoutPage() {
                                     )}
                                     <button 
                                         type="submit"
-                                        className="w-full bg-[#c9a56a] text-[#150e03] py-6 font-black uppercase tracking-[0.4em] text-sm hover:bg-[#b08d55] transition-all shadow-xl shadow-[#c9a56a]/10 active:scale-[0.98]"
+                                        disabled={!termsAccepted}
+                                        className={`w-full py-6 font-black uppercase tracking-[0.4em] text-sm transition-all shadow-xl ${
+                                            termsAccepted
+                                                ? 'bg-[#c9a56a] text-[#150e03] hover:bg-[#b08d55] shadow-[#c9a56a]/10 active:scale-[0.98] cursor-pointer'
+                                                : 'bg-[#c9a56a]/25 text-[#fdfdf3]/40 cursor-not-allowed'
+                                        }`}
                                     >
                                         {t('place_order')}
                                     </button>
