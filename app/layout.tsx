@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Inter, Cormorant_Garamond, Libre_Bodoni, Playfair_Display, Great_Vibes } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
@@ -88,6 +89,18 @@ export default function RootLayout({
   return (
     <html lang="hu">
       <body className={`${inter.variable} ${serif.variable} ${script.variable} ${elegant.variable} ${bodoni.variable} font-sans antialiased text-ivory bg-deep-brown`}>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-BH60F2411Y"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-BH60F2411Y');
+          `}
+        </Script>
         <ConfigProvider initialProducts={initialProducts} initialSettings={initialSettings}>
           <AuthProvider>
             <CartProvider>
