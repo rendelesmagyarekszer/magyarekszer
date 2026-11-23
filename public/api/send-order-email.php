@@ -157,8 +157,39 @@ if (!empty($order['premiumBox'])) {
 $fullName = htmlspecialchars($order['customerInfo']['fullName'] ?? 'Kedves Vásárló', ENT_QUOTES, 'UTF-8');
 $customerEmail = trim($order['customerInfo']['email'] ?? '');
 $customerPhone = htmlspecialchars($order['customerInfo']['phone'] ?? '-', ENT_QUOTES, 'UTF-8');
-$shippingMethod = htmlspecialchars($order['shipping']['method'] ?? '-', ENT_QUOTES, 'UTF-8');
-$shippingAddress = htmlspecialchars($order['shipping']['address'] ?? '-', ENT_QUOTES, 'UTF-8');
+$shippingMethod = htmlspecialchars($order['shipping']['method'] ?? $order['shippingInfo']['method'] ?? '-', ENT_QUOTES, 'UTF-8');
+$shipPostcode = trim($order['shipping']['postcode'] ?? $order['shippingInfo']['postcode'] ?? '');
+$shipCity = trim($order['shipping']['city'] ?? $order['shippingInfo']['city'] ?? '');
+$shipStreet = trim($order['shipping']['address'] ?? $order['shippingInfo']['address'] ?? '');
+
+$isPickup = (($order['shippingType'] ?? $order['shipping']['type'] ?? $order['shippingInfo']['type'] ?? '') === 'local-pickup')
+    || (stripos($shippingMethod, 'személyes') !== false)
+    || (stripos($shippingMethod, 'üzlet') !== false)
+    || (stripos($shippingMethod, 'pickup') !== false);
+
+$deliveryTypeLabel = $isPickup
+    ? 'SZEMÉLYES ÁTVÉTEL (Üzletben: 1056 Budapest, Molnár u. 23.)'
+    : 'POSTÁZÁS / KISZÁLLÍTÁS (' . $shippingMethod . ')';
+
+if ($isPickup) {
+    $fullShippingAddress = 'Személyes átvétel az üzletben (1056 Budapest, Molnár u. 23.)';
+} else {
+    $prefix = trim($shipPostcode . ' ' . $shipCity);
+    if (!empty($prefix) && stripos($shipStreet, $shipPostcode) === false) {
+        $fullShippingAddress = trim($prefix . ', ' . $shipStreet, ', ');
+    } else {
+        $fullShippingAddress = !empty($shipStreet) ? $shipStreet : ($prefix ?: '-');
+    }
+}
+$shippingAddress = htmlspecialchars($fullShippingAddress, ENT_QUOTES, 'UTF-8');
+
+$billName = htmlspecialchars($order['billing']['name'] ?? $order['billingInfo']['name'] ?? $fullName, ENT_QUOTES, 'UTF-8');
+$billPostcode = trim($order['billing']['postcode'] ?? $order['billingInfo']['postcode'] ?? '');
+$billCity = trim($order['billing']['city'] ?? $order['billingInfo']['city'] ?? '');
+$billStreet = trim($order['billing']['address'] ?? $order['billingInfo']['address'] ?? '');
+$billTax = htmlspecialchars($order['billing']['taxNumber'] ?? $order['billingInfo']['taxNumber'] ?? '', ENT_QUOTES, 'UTF-8');
+$fullBillingAddress = htmlspecialchars(trim(trim($billPostcode . ' ' . $billCity) . ', ' . $billStreet, ', ') ?: '-', ENT_QUOTES, 'UTF-8');
+
 $paymentMethod = htmlspecialchars($order['paymentMethod'] ?? '-', ENT_QUOTES, 'UTF-8');
 $orderComment = !empty($order['comment']) ? htmlspecialchars($order['comment'], ENT_QUOTES, 'UTF-8') : '';
 $totalFormatted = formatPrice($order['total'] ?? 0);
@@ -187,12 +218,16 @@ $storeEmailHtml = '<!DOCTYPE html>
         </table>
 
         <table style="width:100%;margin-bottom:32px;">
-            <tr><td style="padding:4px 0;color:#999;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;">Szállítás:</td><td style="padding:4px 0;text-align:right;font-size:12px;">' . $shippingMethod . '</td></tr>
+            <tr><td style="padding:4px 0;color:#999;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;">Átvétel / Postázás:</td><td style="padding:4px 0;text-align:right;font-size:12px;color:#c9a56a;font-weight:bold;">' . $deliveryTypeLabel . '</td></tr>
             <tr><td colspan="2" style="border-top:1px solid #c9a56a22;padding-top:12px;"></td></tr>
             <tr><td style="padding:4px 0;color:#c9a56a;font-size:18px;font-weight:bold;letter-spacing:0.05em;">Összesen:</td><td style="padding:4px 0;text-align:right;color:#c9a56a;font-size:18px;font-weight:bold;">' . $totalFormatted . '</td></tr>
         </table>
 
         <div style="margin-bottom:16px;">
+            <div style="background:#1a1005;border:1px solid #c9a56a44;padding:20px;border-radius:4px;margin-bottom:16px;">
+                <p style="color:#c9a56a;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;margin:0 0 10px;">Átvétel / Szállítás módja</p>
+                <p style="margin:4px 0;font-size:15px;font-weight:bold;color:#fdfdf3;">' . $deliveryTypeLabel . '</p>
+            </div>
             <div style="background:#1a1005;border:1px solid #c9a56a22;padding:20px;border-radius:4px;margin-bottom:16px;">
                 <p style="color:#c9a56a;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;margin:0 0 12px;">Vásárló adatai</p>
                 <p style="margin:4px 0;font-size:13px;"><strong>' . $fullName . '</strong></p>
@@ -200,8 +235,14 @@ $storeEmailHtml = '<!DOCTYPE html>
                 <p style="margin:4px 0;font-size:13px;color:#999;">📞 ' . $customerPhone . '</p>
             </div>
             <div style="background:#1a1005;border:1px solid #c9a56a22;padding:20px;border-radius:4px;margin-bottom:16px;">
-                <p style="color:#c9a56a;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;margin:0 0 12px;">Szállítási cím</p>
-                <p style="margin:4px 0;font-size:13px;">' . $shippingAddress . '</p>
+                <p style="color:#c9a56a;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;margin:0 0 12px;">' . ($isPickup ? 'Átvétel helye' : 'Szállítási / Postázási cím') . '</p>
+                <p style="margin:4px 0;font-size:14px;font-weight:bold;">' . $shippingAddress . '</p>
+            </div>
+            <div style="background:#1a1005;border:1px solid #c9a56a22;padding:20px;border-radius:4px;margin-bottom:16px;">
+                <p style="color:#c9a56a;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;margin:0 0 12px;">Vevő címe / Számlázási adatok</p>
+                <p style="margin:4px 0;font-size:13px;"><strong>' . $billName . '</strong></p>
+                <p style="margin:4px 0;font-size:13px;">' . $fullBillingAddress . '</p>'
+                . ($billTax !== '' ? '<p style="margin:4px 0;font-size:13px;color:#c9a56a;">Adószám: ' . $billTax . '</p>' : '') . '
             </div>
             <div style="background:#1a1005;border:1px solid #c9a56a22;padding:20px;border-radius:4px;margin-bottom:16px;">
                 <p style="color:#c9a56a;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;margin:0 0 12px;">Fizetési mód</p>
@@ -280,7 +321,8 @@ $customerEmailHtml = '<!DOCTYPE html>
 </html>';
 
 $dateStr = date('Y. m. d.');
-$storeSubject = "🛒 Új rendelés: {$fullName} – {$dateStr}";
+$deliveryTag = $isPickup ? 'SZEMÉLYES ÁTVÉTEL' : 'POSTÁZÁS';
+$storeSubject = "Új rendelés [{$deliveryTag}]: {$fullName} – {$dateStr}";
 $customerSubject = 'Köszönjük rendelését! – MagyarÉkszer';
 
 // 1. Dispatch to Store
