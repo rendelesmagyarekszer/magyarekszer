@@ -1064,19 +1064,36 @@ export default function AdminDashboard() {
                                                                 </div>
 
                                                                 <div className="space-y-2">
-                                                                    {(order.items || []).map((item: any, iIdx: number) => (
-                                                                        <div key={iIdx} className="flex items-center justify-between gap-4 text-xs bg-white/[0.03] px-3 py-2 rounded">
-                                                                            <div className="min-w-0">
-                                                                                <span className="font-bold text-ivory">{item.name}</span>
-                                                                                {item.selectedCustomization && (
-                                                                                    <span className="text-gold/80 italic ml-2">({item.selectedCustomization})</span>
-                                                                                )}
+                                                                    {(order.items || []).map((item: any, iIdx: number) => {
+                                                                        const matchedProd = products.find(p => String(p.id) === String(item.id) || p.name === item.name);
+                                                                        const itemSku = item.sku || matchedProd?.sku;
+                                                                        const itemImg = item.image || matchedProd?.image;
+                                                                        return (
+                                                                            <div key={iIdx} className="flex items-center justify-between gap-4 text-xs bg-white/[0.03] px-3 py-2 rounded">
+                                                                                <div className="flex items-center gap-3 min-w-0">
+                                                                                    {itemImg && (
+                                                                                        <img src={itemImg} alt={item.name} className="h-10 w-10 rounded object-cover shrink-0 border border-gold/20" />
+                                                                                    )}
+                                                                                    <div className="min-w-0">
+                                                                                        <div className="flex flex-wrap items-center gap-2">
+                                                                                            <span className="font-bold text-ivory">{item.name}</span>
+                                                                                            {itemSku && (
+                                                                                                <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-gold/15 text-gold border border-gold/30">
+                                                                                                    Cikkszám: {itemSku}
+                                                                                                </span>
+                                                                                            )}
+                                                                                        </div>
+                                                                                        {item.selectedCustomization && (
+                                                                                            <span className="text-gold/80 italic block mt-0.5">({item.selectedCustomization})</span>
+                                                                                        )}
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div className="shrink-0 text-right text-ivory/70">
+                                                                                    <span className="font-bold">{item.quantity || 1} db</span> • <span className="text-gold">{formatPrice((Number(item.price) || 0) * (Number(item.quantity) || 1))}</span>
+                                                                                </div>
                                                                             </div>
-                                                                            <div className="shrink-0 text-right text-ivory/70">
-                                                                                <span className="font-bold">{item.quantity || 1} db</span> • <span className="text-gold">{formatPrice((Number(item.price) || 0) * (Number(item.quantity) || 1))}</span>
-                                                                            </div>
-                                                                        </div>
-                                                                    ))}
+                                                                        );
+                                                                    })}
                                                                 </div>
 
                                                                 <div className="flex flex-wrap items-center gap-2 pt-1 text-[10px] uppercase font-bold tracking-wider">

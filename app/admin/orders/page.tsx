@@ -28,7 +28,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 export default function OrdersPage() {
     const { allOrders: localOrders, updateOrderStatus: updateLocalOrderStatus, markOrderAsViewed } = useAuth();
-    const { formatPrice, t, addNotification } = useConfig();
+    const { formatPrice, t, addNotification, products } = useConfig();
     const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
     const [serverOrders, setServerOrders] = useState<any[]>([]);
     const [isCheckingBank, setIsCheckingBank] = useState(false);
@@ -398,25 +398,36 @@ export default function OrdersPage() {
                                                     <div className="space-y-4">
                                                         <h4 className="text-xs uppercase tracking-[0.4em] text-gold font-black border-b border-gold/10 pb-3">Megrendelt termékek</h4>
                                                         <div className="space-y-3">
-                                                            {(order.items || []).map((item: any, idx: number) => (
-                                                                <div key={idx} className="flex items-center gap-4 p-3 bg-white/5 border border-white/5 rounded">
-                                                                    {item.image && (
-                                                                        <div className="h-12 w-12 bg-black relative shrink-0 rounded overflow-hidden">
-                                                                            <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
-                                                                        </div>
-                                                                    )}
-                                                                    <div className="flex-1 min-w-0">
-                                                                        <h5 className="text-sm font-serif text-ivory truncate">{item.name}</h5>
-                                                                        {item.selectedCustomization && (
-                                                                            <p className="text-xs text-gold/80 italic mt-0.5">{item.selectedCustomization}</p>
+                                                            {(order.items || []).map((item: any, idx: number) => {
+                                                                const matchedProd = products.find(p => String(p.id) === String(item.id) || p.name === item.name);
+                                                                const itemSku = item.sku || matchedProd?.sku;
+                                                                return (
+                                                                    <div key={idx} className="flex items-center gap-4 p-3 bg-white/5 border border-white/5 rounded">
+                                                                        {item.image && (
+                                                                            <div className="h-14 w-14 bg-black relative shrink-0 rounded overflow-hidden border border-gold/20">
+                                                                                <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                                                                            </div>
                                                                         )}
+                                                                        <div className="flex-1 min-w-0">
+                                                                            <div className="flex flex-wrap items-center gap-2">
+                                                                                <h5 className="text-sm font-serif text-ivory truncate">{item.name}</h5>
+                                                                                {itemSku && (
+                                                                                    <span className="px-2 py-0.5 rounded text-[10px] font-black tracking-wider bg-gold/15 text-gold border border-gold/30 shrink-0">
+                                                                                        Cikkszám: {itemSku}
+                                                                                    </span>
+                                                                                )}
+                                                                            </div>
+                                                                            {item.selectedCustomization && (
+                                                                                <p className="text-xs text-gold/80 italic mt-0.5">{item.selectedCustomization}</p>
+                                                                            )}
+                                                                        </div>
+                                                                        <div className="text-right shrink-0">
+                                                                            <p className="text-xs text-ivory font-bold">{item.quantity} db</p>
+                                                                            <p className="text-xs text-gold font-bold">{formatPrice(item.price * item.quantity)}</p>
+                                                                        </div>
                                                                     </div>
-                                                                    <div className="text-right">
-                                                                        <p className="text-xs text-ivory font-bold">{item.quantity} db</p>
-                                                                        <p className="text-xs text-gold font-bold">{formatPrice(item.price * item.quantity)}</p>
-                                                                    </div>
-                                                                </div>
-                                                            ))}
+                                                                );
+                                                            })}
                                                             {order.premiumBox && (
                                                                 <div className="flex items-center justify-between p-3 bg-gold/5 border border-gold/20 rounded text-xs text-gold">
                                                                     <span>⭐ Prémium Díszdoboz</span>
