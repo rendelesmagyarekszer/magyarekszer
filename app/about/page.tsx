@@ -51,7 +51,7 @@ export default function AboutPage() {
             {/* Footer */}
             <footer className="py-20 bg-[#0d0902] border-t border-gold/5">
                 <div className="max-w-[1400px] mx-auto px-4 text-center">
-                    <p className="text-[9px] text-gold/20 tracking-[0.5em] font-black uppercase">MAGYAR ÉKSZER &copy; 2024 • TRADÍCIÓ</p>
+                    <p className="text-[9px] text-gold/20 tracking-[0.5em] font-black uppercase">MAGYAR ÉKSZER &copy; 2002 • TRADÍCIÓ</p>
                 </div>
             </footer>
         </main>
