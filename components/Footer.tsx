@@ -87,8 +87,9 @@ const Footer = () => {
                         </div>
                         <div className="space-y-2">
                             <p className="text-gold/60 font-black">Tárhelyszolgáltató</p>
-                            <p>Név: Google Cloud Platform</p>
-                            <p>Cím: 1600 Amphitheatre Pkwy, Mountain View, CA 94043, USA</p>
+                            <p>Név: MediaCenter Hungary Kft.</p>
+                            <p>Cím: 6000 Kecskemét, Erkel Ferenc utca 5.</p>
+                            <p>E-mail: mediacenter@mediacenter.hu</p>
                         </div>
                     </div>
                     
