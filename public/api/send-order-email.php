@@ -32,7 +32,63 @@ function formatPrice($num) {
     return number_format((float)$num, 0, ',', ' ') . ' Ft';
 }
 
-function send_smtp_socket($to, $subject, $htmlBody, $smtpUser, $smtpPass, $fromName = 'MagyarÉkszer') {
+function fetch_remote_pdf($url) {
+    if (function_exists('curl_init')) {
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 8);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        $data = curl_exec($ch);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        if ($code === 200 && !empty($data) && strlen($data) > 100) {
+            return $data;
+        }
+    }
+    $ctx = stream_context_create(['http' => ['timeout' => 8], 'ssl' => ['verify_peer' => false, 'verify_peer_name' => false]]);
+    $data = @file_get_contents($url, false, $ctx);
+    if (!empty($data) && strlen($data) > 100) {
+        return $data;
+    }
+    return null;
+}
+
+function build_mime_message($htmlBody, $attachments = []) {
+    if (empty($attachments)) {
+        return [
+            'contentType' => 'text/html; charset=UTF-8',
+            'transferEncoding' => 'base64',
+            'body' => chunk_split(base64_encode($htmlBody))
+        ];
+    }
+
+    $boundary = '==Multipart_Boundary_x' . md5(uniqid((string)mt_rand(), true)) . 'x';
+    $body = "--{$boundary}\r\n";
+    $body .= "Content-Type: text/html; charset=UTF-8\r\n";
+    $body .= "Content-Transfer-Encoding: base64\r\n\r\n";
+    $body .= chunk_split(base64_encode($htmlBody)) . "\r\n";
+
+    foreach ($attachments as $att) {
+        $filename = $att['filename'];
+        $mime = $att['mime'] ?? 'application/pdf';
+        $encodedName = '=?UTF-8?B?' . base64_encode($filename) . '?=';
+        $body .= "--{$boundary}\r\n";
+        $body .= "Content-Type: {$mime}; name=\"{$encodedName}\"\r\n";
+        $body .= "Content-Transfer-Encoding: base64\r\n";
+        $body .= "Content-Disposition: attachment; filename=\"{$filename}\"\r\n\r\n";
+        $body .= chunk_split(base64_encode($att['content'])) . "\r\n";
+    }
+    $body .= "--{$boundary}--\r\n";
+
+    return [
+        'contentType' => "multipart/mixed; boundary=\"{$boundary}\"",
+        'transferEncoding' => null,
+        'body' => $body
+    ];
+}
+
+function send_smtp_socket($to, $subject, $htmlBody, $smtpUser, $smtpPass, $fromName = 'MagyarÉkszer', $attachments = []) {
     $timeout = 10;
     $socket = @fsockopen('ssl://smtp.gmail.com', 465, $errno, $errstr, $timeout);
     if (!$socket) {
@@ -85,19 +141,20 @@ function send_smtp_socket($to, $subject, $htmlBody, $smtpUser, $smtpPass, $fromN
 
     $encodedSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
     $encodedFromName = '=?UTF-8?B?' . base64_encode($fromName) . '?=';
+    $mime = build_mime_message($htmlBody, $attachments);
 
     $headers = "MIME-Version: 1.0\r\n";
-    $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
-    $headers .= "Content-Transfer-Encoding: base64\r\n";
+    $headers .= "Content-Type: " . $mime['contentType'] . "\r\n";
+    if ($mime['transferEncoding']) {
+        $headers .= "Content-Transfer-Encoding: " . $mime['transferEncoding'] . "\r\n";
+    }
     $headers .= "From: " . $encodedFromName . " <" . $smtpUser . ">\r\n";
     $headers .= "Reply-To: " . $smtpUser . "\r\n";
     $headers .= "To: <" . $to . ">\r\n";
     $headers .= "Subject: " . $encodedSubject . "\r\n";
     $headers .= "Date: " . date('r') . "\r\n";
 
-    $body = chunk_split(base64_encode($htmlBody));
-
-    $write($headers . "\r\n" . $body . "\r\n.");
+    $write($headers . "\r\n" . $mime['body'] . "\r\n.");
     $res = $read();
 
     $write("QUIT");
@@ -107,26 +164,28 @@ function send_smtp_socket($to, $subject, $htmlBody, $smtpUser, $smtpPass, $fromN
     return (substr($res, 0, 3) === '250');
 }
 
-function send_fallback_mail($to, $subject, $htmlBody, $fromEmail, $fromName = 'MagyarÉkszer') {
+function send_fallback_mail($to, $subject, $htmlBody, $fromEmail, $fromName = 'MagyarÉkszer', $attachments = []) {
     $encodedSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
     $encodedFromName = '=?UTF-8?B?' . base64_encode($fromName) . '?=';
+    $mime = build_mime_message($htmlBody, $attachments);
 
     $headers = [];
     $headers[] = 'MIME-Version: 1.0';
-    $headers[] = 'Content-Type: text/html; charset=UTF-8';
-    $headers[] = 'Content-Transfer-Encoding: base64';
+    $headers[] = 'Content-Type: ' . $mime['contentType'];
+    if ($mime['transferEncoding']) {
+        $headers[] = 'Content-Transfer-Encoding: ' . $mime['transferEncoding'];
+    }
     $headers[] = 'From: ' . $encodedFromName . ' <' . $fromEmail . '>';
     $headers[] = 'Reply-To: ' . $fromEmail;
     $headers[] = 'X-Mailer: PHP/' . phpversion();
 
-    $body = chunk_split(base64_encode($htmlBody));
-    return @mail($to, $encodedSubject, $body, implode("\r\n", $headers));
+    return @mail($to, $encodedSubject, $mime['body'], implode("\r\n", $headers));
 }
 
-function dispatch_order_email($to, $subject, $htmlBody, $smtpUser, $smtpPass, $fromName = 'MagyarÉkszer') {
-    $sent = send_smtp_socket($to, $subject, $htmlBody, $smtpUser, $smtpPass, $fromName);
+function dispatch_order_email($to, $subject, $htmlBody, $smtpUser, $smtpPass, $fromName = 'MagyarÉkszer', $attachments = []) {
+    $sent = send_smtp_socket($to, $subject, $htmlBody, $smtpUser, $smtpPass, $fromName, $attachments);
     if (!$sent) {
-        $sent = send_fallback_mail($to, $subject, $htmlBody, $smtpUser, $fromName);
+        $sent = send_fallback_mail($to, $subject, $htmlBody, $smtpUser, $fromName, $attachments);
     }
     return $sent;
 }
@@ -346,6 +405,13 @@ $customerEmailHtml = '<!DOCTYPE html>
 
         ' . $transferBlock . '
 
+        <div style="background:#1a1005;border:1px solid #c9a56a22;padding:20px;border-radius:4px;margin-bottom:24px;">
+            <p style="color:#c9a56a;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;margin:0 0 12px;">Csatolt és letölthető jogi dokumentumok (PDF)</p>
+            <p style="margin:6px 0;font-size:12px;">• <a href="https://admin.fogyasztobarat.hu/my-pdf.php?params=aszf/ENB7UDI0/aszf.pdf" style="color:#c9a56a;text-decoration:underline;">Általános szerződési feltételek (ÁSZF)</a></p>
+            <p style="margin:6px 0;font-size:12px;">• <a href="https://admin.fogyasztobarat.hu/my-pdf.php?params=at/ENB7UDI0/adatvedelmi.pdf" style="color:#c9a56a;text-decoration:underline;">Adatvédelmi nyilatkozat</a></p>
+            <p style="margin:6px 0;font-size:12px;">• <a href="https://admin.fogyasztobarat.hu/my-pdf.php?params=em/ENB7UDI0/elallasi.pdf" style="color:#c9a56a;text-decoration:underline;">Elállási nyilatkozat</a></p>
+        </div>
+
         <div style="border-top:1px solid #c9a56a22;padding-top:24px;margin-top:8px;text-align:center;">
             <p style="color:#999;font-size:12px;margin:0 0 8px;">Kérdése van? Keressen minket:</p>
             <p style="color:#c9a56a;font-size:13px;margin:0 0 4px;">📞 +36 20 807 4841</p>
@@ -366,10 +432,26 @@ $customerSubject = 'Köszönjük rendelését! – MagyarÉkszer';
 // 1. Dispatch to Store
 $storeSent = dispatch_order_email($STORE_EMAIL, $storeSubject, $storeEmailHtml, $GMAIL_USER, $GMAIL_APP_PASSWORD, "MagyarÉkszer Webshop");
 
-// 2. Dispatch to Customer
+// 2. Dispatch to Customer with official Fogyasztó Barát PDF attachments
 $customerSent = false;
 if (!empty($customerEmail) && filter_var($customerEmail, FILTER_VALIDATE_EMAIL)) {
-    $customerSent = dispatch_order_email($customerEmail, $customerSubject, $customerEmailHtml, $GMAIL_USER, $GMAIL_APP_PASSWORD, "MagyarÉkszer");
+    $legalPdfSpecs = [
+        ['filename' => 'aszf.pdf', 'url' => 'https://admin.fogyasztobarat.hu/my-pdf.php?params=aszf/ENB7UDI0/aszf.pdf'],
+        ['filename' => 'adatvedelmi.pdf', 'url' => 'https://admin.fogyasztobarat.hu/my-pdf.php?params=at/ENB7UDI0/adatvedelmi.pdf'],
+        ['filename' => 'elallasi.pdf', 'url' => 'https://admin.fogyasztobarat.hu/my-pdf.php?params=em/ENB7UDI0/elallasi.pdf']
+    ];
+    $customerAttachments = [];
+    foreach ($legalPdfSpecs as $spec) {
+        $pdfBytes = fetch_remote_pdf($spec['url']);
+        if ($pdfBytes !== null) {
+            $customerAttachments[] = [
+                'filename' => $spec['filename'],
+                'mime' => 'application/pdf',
+                'content' => $pdfBytes
+            ];
+        }
+    }
+    $customerSent = dispatch_order_email($customerEmail, $customerSubject, $customerEmailHtml, $GMAIL_USER, $GMAIL_APP_PASSWORD, "MagyarÉkszer", $customerAttachments);
 }
 
 // 3. Save order record to persistent orders.json
