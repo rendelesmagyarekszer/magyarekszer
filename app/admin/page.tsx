@@ -370,12 +370,34 @@ export default function AdminDashboard() {
                                 Foxpost Csomagautomata Bekapcsolása
                             </label>
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-2 pb-6 border-b border-gold/10">
                             <label className="text-[11px] uppercase tracking-widest text-[#c9a56a] font-black block">Foxpost Díj (Ft)</label>
                             <input 
                                 type="number"
                                 value={shippingSettings?.foxpostPrice ?? 1500}
                                 onChange={(e) => updateShippingSettings({ ...shippingSettings, foxpostPrice: parseInt(e.target.value) || 0 })}
+                                className="w-full bg-black/50 border border-gold/30 text-ivory p-4 text-sm font-bold uppercase tracking-widest focus:outline-none focus:border-gold"
+                            />
+                        </div>
+
+                        <div className="flex items-center gap-4 border-b border-gold/10 pb-4 pt-2">
+                            <input 
+                                type="checkbox"
+                                id="glsToggle"
+                                checked={shippingSettings?.glsEnabled ?? false}
+                                onChange={(e) => updateShippingSettings({ ...shippingSettings, glsEnabled: e.target.checked })}
+                                className="w-6 h-6 accent-gold cursor-pointer"
+                            />
+                            <label htmlFor="glsToggle" className="text-base uppercase tracking-widest font-black cursor-pointer text-gold">
+                                GLS Szállítás Bekapcsolása
+                            </label>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[11px] uppercase tracking-widest text-[#c9a56a] font-black block">GLS Szállítási Díj (Ft)</label>
+                            <input 
+                                type="number"
+                                value={shippingSettings?.glsPrice ?? 2500}
+                                onChange={(e) => updateShippingSettings({ ...shippingSettings, glsPrice: parseInt(e.target.value) || 0 })}
                                 className="w-full bg-black/50 border border-gold/30 text-ivory p-4 text-sm font-bold uppercase tracking-widest focus:outline-none focus:border-gold"
                             />
                         </div>

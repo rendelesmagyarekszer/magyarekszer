@@ -75,6 +75,20 @@ export default function CheckoutPage() {
         });
     }
 
+    if (shippingSettings?.glsEnabled === true) {
+        const origPrice = shippingSettings?.glsPrice ?? 2500;
+        baseShippingOptions.push({
+            id: 'gls-delivery',
+            name: language === 'EN' ? 'GLS Home Delivery' : 'GLS Házhozszállítás',
+            price: isFreeShipping ? 0 : origPrice,
+            originalPrice: origPrice,
+            icon: Truck,
+            description: language === 'EN'
+                ? 'Fast and reliable home delivery via GLS courier.'
+                : 'Gyors és megbízható házhozszállítás GLS futárszolgálattal.'
+        });
+    }
+
     if (shippingSettings?.localPickupEnabled !== false) {
         baseShippingOptions.push({
             id: 'local-pickup',

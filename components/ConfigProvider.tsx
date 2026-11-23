@@ -29,6 +29,8 @@ export interface CustomJewelryCategory {
 export interface ShippingSettings {
     foxpostEnabled: boolean;
     foxpostPrice: number;
+    glsEnabled?: boolean;
+    glsPrice?: number;
     mplHomeEnabled: boolean;
     mplHomePrice: number;
     mplBoxEnabled: boolean;
@@ -98,6 +100,8 @@ interface ConfigContextType {
 const DEFAULT_SHIPPING_SETTINGS: ShippingSettings = {
     foxpostEnabled: false,
     foxpostPrice: 1500,
+    glsEnabled: false,
+    glsPrice: 2500,
     mplHomeEnabled: true,
     mplHomePrice: 3000,
     mplBoxEnabled: false,
