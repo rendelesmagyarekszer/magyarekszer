@@ -74,11 +74,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                     </span>
                 </div>
                 
-                <Link href={`/product/${product.id}`} className="hover:text-gold transition-colors block mb-1.5 sm:mb-2">
+                <Link href={`/product/${product.id}`} className="hover:text-gold transition-colors block mb-1">
                     <h3 className="text-xs sm:text-base md:text-lg font-serif text-ivory tracking-wide leading-snug line-clamp-2 min-h-[2.4em]">
                         {language === 'EN' && product.nameEn ? product.nameEn : product.name}
                     </h3>
                 </Link>
+
+                {product.sku && (
+                    <p className="text-[10px] sm:text-xs text-ivory/50 tracking-wider mb-1.5">
+                        {language === 'EN' ? 'SKU:' : 'Cikkszám:'} <span className="text-gold/80 font-bold">{product.sku}</span>
+                    </p>
+                )}
                 
                 {product.isGoldOnly || product.isGoldEngagementRing ? (
                     <p className="text-[10px] sm:text-sm font-bold gold-text mb-3 sm:mb-6 mt-1 uppercase tracking-wider md:tracking-widest text-gold/80 leading-snug">
