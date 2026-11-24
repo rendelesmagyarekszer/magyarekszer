@@ -9,7 +9,7 @@ import { categories as defaultCategories } from '@/lib/data';
 
 export default function SettingsPage() {
     const { 
-        ankerPrices, barbaraPrices, updateChainPrice, 
+        ankerPrices, barbaraPrices, barbaraChainEnabled, setBarbaraChainEnabled, updateChainPrice, 
         globalEnamelColors, updateGlobalEnamelColors,
         globalLeatherColors, updateGlobalLeatherColors,
         extraServices, updateExtraServices, deleteExtraService,
@@ -348,10 +348,33 @@ export default function SettingsPage() {
 
                 {/* Barbara Pricing */}
                 <div className="bg-[#150e03] border border-[#c9a56a]/10 p-8 rounded-2xl space-y-6">
-                    <div className="flex items-center gap-3">
-                        <LinkIcon className="h-5 w-5 text-[#c9a56a]" />
-                        <h2 className="text-base font-serif uppercase tracking-[0.2em] text-[#fdfdf3]">Barbara Lánc Árak</h2>
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                            <LinkIcon className="h-5 w-5 text-[#c9a56a]" />
+                            <h2 className="text-base font-serif uppercase tracking-[0.2em] text-[#fdfdf3]">Barbara Lánc Árak</h2>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                const next = !barbaraChainEnabled;
+                                setBarbaraChainEnabled(next);
+                                setMessage(next ? 'Barbara lánc újra elérhető a webshopban!' : 'Barbara lánc ideiglenesen elrejtve a webshopban.');
+                                setTimeout(() => setMessage(null), 3000);
+                            }}
+                            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${
+                                barbaraChainEnabled
+                                    ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/25'
+                                    : 'bg-red-500/15 border-red-500/40 text-red-400 hover:bg-red-500/25'
+                            }`}
+                        >
+                            {barbaraChainEnabled ? '● Elérhető (Aktív)' : '○ Elfogyott (Elrejtve)'}
+                        </button>
                     </div>
+                    {!barbaraChainEnabled && (
+                        <p className="text-xs text-red-300/80 bg-red-500/5 border border-red-500/20 rounded-xl px-4 py-3">
+                            A Barbara lánc jelenleg nem választható a medáloknál. Ha újra lesz készleten, a fenti gombbal egy kattintással visszakapcsolható!
+                        </p>
+                    )}
                     
                     <div className="space-y-4">
                         {Object.keys(localBarbara).sort().map((len) => (

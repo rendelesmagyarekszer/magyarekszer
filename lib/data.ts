@@ -57,6 +57,7 @@ export interface AdminSettings {
     stonePrices?: Record<string, number>;
     ankerPrices?: Record<string, number>;
     barbaraPrices?: Record<string, number>;
+    barbaraChainEnabled?: boolean;
     extraServices?: any[];
     premiumBoxPrice?: number;
     imageSettings?: Record<string, string>;
