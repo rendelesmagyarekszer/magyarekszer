@@ -19,7 +19,7 @@ export default function ProductClient({ product: serverProduct, initialCollectio
     const { 
         products, collections, language, t, formatPrice, currency,
         ankerPrices, thickAnkerPrices, barbaraPrices, barbaraChainEnabled, vacationMode,
-        availableStones, stonePrices, imageSettings, globalEnamelColors, globalLeatherColors
+        availableStones, stonePrices, stoneImages, imageSettings, globalEnamelColors, globalLeatherColors
     } = useConfig();
     
     // Find enriched version from config (localStorage) or fallback to server prop
@@ -706,13 +706,38 @@ export default function ProductClient({ product: serverProduct, initialCollectio
                                     {isKoves && (
                                         <div className="space-y-4">
                                             <label className="flex items-center text-[10px] uppercase tracking-[0.4em] font-black text-gold">{t('stone_selection')}</label>
-                                            <div className="flex flex-wrap gap-2">
+                                            <div className="flex flex-wrap gap-2.5">
                                                 {stoneOptions.map((stoneKey, idx) => {
                                                     const price = effectiveStonePrices[stoneKey] !== undefined ? effectiveStonePrices[stoneKey] : (effectiveStonePrices[stoneKey.toLowerCase()] !== undefined ? effectiveStonePrices[stoneKey.toLowerCase()] : 0);
+                                                    const stoneImg = stoneImages?.[stoneKey] || stoneImages?.[stoneKey.toLowerCase()] || '';
+                                                    const isSelected = selectedStone === stoneKey;
                                                     return (
-                                                        <button key={`${stoneKey}_${idx}`} onClick={() => setSelectedStone(stoneKey)} className={`px-4 py-3 rounded-xl text-[10px] uppercase font-black border transition-all flex flex-col items-center gap-1 min-w-[80px] ${selectedStone === stoneKey ? 'bg-gold border-gold text-deep-brown shadow-lg' : 'border-gold/30 text-gold/80 bg-gold/5 hover:border-gold/50'}`}>
-                                                            <span>{t(stoneKey)}</span>
-                                                            <span className="text-[8px] opacity-60 font-medium whitespace-nowrap">{price > 0 ? `+${formatPrice(price)}` : '0 Ft'}</span>
+                                                        <button
+                                                            key={`${stoneKey}_${idx}`}
+                                                            type="button"
+                                                            onClick={() => setSelectedStone(stoneKey)}
+                                                            className={`group rounded-xl border transition-all flex flex-col items-center justify-center text-center cursor-pointer ${
+                                                                stoneImg ? 'p-2 w-[82px] sm:w-[90px]' : 'px-4 py-3 min-w-[82px]'
+                                                            } ${
+                                                                isSelected
+                                                                    ? stoneImg
+                                                                        ? 'bg-gold/15 border-gold text-gold shadow-[0_0_14px_rgba(201,165,106,0.3)]'
+                                                                        : 'bg-gold border-gold text-deep-brown shadow-lg'
+                                                                    : 'border-gold/25 text-gold/85 bg-black/30 hover:border-gold/60 hover:bg-gold/5'
+                                                            }`}
+                                                        >
+                                                            {stoneImg && (
+                                                                <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-lg overflow-hidden mb-1.5 bg-black/40 border relative shrink-0 ${isSelected ? 'border-gold ring-1 ring-gold/60' : 'border-gold/20'}`}>
+                                                                    <img
+                                                                        src={stoneImg}
+                                                                        alt={t(stoneKey)}
+                                                                        loading="lazy"
+                                                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                                                    />
+                                                                </div>
+                                                            )}
+                                                            <span className="text-[9px] uppercase font-black tracking-wider leading-tight line-clamp-2">{t(stoneKey)}</span>
+                                                            <span className="text-[8px] opacity-65 font-medium whitespace-nowrap mt-0.5">{price > 0 ? `+${formatPrice(price)}` : '0 Ft'}</span>
                                                         </button>
                                                     );
                                                 })}

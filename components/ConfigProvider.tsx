@@ -67,8 +67,10 @@ interface ConfigContextType {
     setAvailableStones: (s: string[] | ((prev: string[]) => string[])) => void;
     allStonesMaster: string[];
     stonePrices: Record<string, number>;
+    stoneImages: Record<string, string>;
     addStone: (huName: string, enName: string, price: number) => void;
     updateStonePrice: (key: string, price: number) => void;
+    updateStoneImage: (key: string, url: string) => void;
     deleteStone: (key: string) => void;
     notifications: any[];
     addNotification: (n: any) => void;
@@ -598,6 +600,7 @@ export const ConfigProvider = ({
     const [allStonesMaster, setAllStonesMaster] = useState<string[]>(initialSettings?.allStonesMaster || ALL_STONES);
     const [availableStones, setAvailableStones] = useState<string[]>(initialSettings?.availableStones || ALL_STONES);
     const [stonePrices, setStonePrices] = useState<Record<string, number>>(initialSettings?.stonePrices || {});
+    const [stoneImages, setStoneImages] = useState<Record<string, string>>(initialSettings?.stoneImages || {});
     const [notifications, setNotifications] = useState<any[]>(initialSettings?.notifications || []);
     const [coupons, setCoupons] = useState<Coupon[]>(initialSettings?.coupons || []);
     const [isLoaded, setIsLoaded] = useState(false);
@@ -736,6 +739,10 @@ export const ConfigProvider = ({
         const savedStonePrices = localStorage.getItem('magyarekszer_stonePrices')
             || localStorage.getItem('magyarekszer_stone_prices')
             || localStorage.getItem('stonePrices');
+        const savedStoneImages = localStorage.getItem('magyarekszer_stoneImages');
+        if (savedStoneImages) {
+            try { setStoneImages(JSON.parse(savedStoneImages)); } catch (e) {}
+        }
         const savedNotifications = localStorage.getItem('magyarekszer_notifications');
         const savedCoupons = localStorage.getItem('magyarekszer_coupons');
         const savedShippingSettings = localStorage.getItem('magyarekszer_shippingSettings');
@@ -832,6 +839,9 @@ export const ConfigProvider = ({
                         }
                         if (live.stonePrices && typeof live.stonePrices === 'object' && Object.keys(live.stonePrices).length > 0) {
                             setStonePrices(live.stonePrices);
+                        }
+                        if (live.stoneImages && typeof live.stoneImages === 'object') {
+                            setStoneImages(live.stoneImages);
                         }
                         if (live.ankerPrices && typeof live.ankerPrices === 'object') setAnkerPrices(live.ankerPrices);
                         if (live.thickAnkerPrices && typeof live.thickAnkerPrices === 'object') setThickAnkerPrices(live.thickAnkerPrices);
@@ -1018,6 +1028,7 @@ export const ConfigProvider = ({
             localStorage.setItem('magyarekszer_stonePrices', JSON.stringify(stonePrices));
             localStorage.setItem('magyarekszer_stone_prices', JSON.stringify(stonePrices));
             localStorage.setItem('stonePrices', JSON.stringify(stonePrices));
+            localStorage.setItem('magyarekszer_stoneImages', JSON.stringify(stoneImages));
             localStorage.setItem('magyarekszer_notifications', JSON.stringify(notifications));
             localStorage.setItem('magyarekszer_coupons', JSON.stringify(coupons));
             localStorage.setItem('magyarekszer_global_enamel_colors', JSON.stringify(globalEnamelColors));
@@ -1043,6 +1054,7 @@ export const ConfigProvider = ({
                         availableStones,
                         allStonesMaster,
                         stonePrices,
+                        stoneImages,
                         ankerPrices,
                         thickAnkerPrices,
                         barbaraPrices,
@@ -1081,7 +1093,7 @@ export const ConfigProvider = ({
             }, 600);
             return () => clearTimeout(syncTimer);
         }
-    }, [products, dynamicTranslations, collections, vacationMode, availableStones, allStonesMaster, stonePrices, notifications, coupons, globalEnamelColors, globalLeatherColors, extraServices, premiumBoxPrice, imageSettings, customJewelry, shippingSettings, ankerPrices, thickAnkerPrices, barbaraPrices, barbaraChainEnabled, isLoaded]);
+    }, [products, dynamicTranslations, collections, vacationMode, availableStones, allStonesMaster, stonePrices, stoneImages, notifications, coupons, globalEnamelColors, globalLeatherColors, extraServices, premiumBoxPrice, imageSettings, customJewelry, shippingSettings, ankerPrices, thickAnkerPrices, barbaraPrices, barbaraChainEnabled, isLoaded]);
 
     const formatPrice = (priceHuf: number | undefined | null) => {
         if (priceHuf === undefined || priceHuf === null || isNaN(priceHuf)) return '';
@@ -1282,6 +1294,24 @@ export const ConfigProvider = ({
         });
     };
 
+    const updateStoneImage = (key: string, url: string) => {
+        setStoneImages(prev => {
+            const next = { ...prev };
+            if (url) {
+                next[key] = url;
+            } else {
+                delete next[key];
+            }
+            try {
+                localStorage.setItem('magyarekszer_stoneImages', JSON.stringify(next));
+            } catch (e) {}
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new Event('stonesUpdated'));
+            }
+            return next;
+        });
+    };
+
     const deleteStone = (key: string) => {
         setAllStonesMaster(prev => {
             const next = prev.filter(k => k !== key);
@@ -1361,8 +1391,10 @@ export const ConfigProvider = ({
             setAvailableStones: updateAvailableStones,
             allStonesMaster,
             stonePrices,
+            stoneImages,
             addStone,
             updateStonePrice,
+            updateStoneImage,
             deleteStone,
             notifications,
             addNotification,

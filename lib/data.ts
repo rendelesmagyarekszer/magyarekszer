@@ -55,6 +55,7 @@ export interface AdminSettings {
     availableStones?: string[];
     allStonesMaster?: string[];
     stonePrices?: Record<string, number>;
+    stoneImages?: Record<string, string>;
     ankerPrices?: Record<string, number>;
     thickAnkerPrices?: Record<string, number>;
     barbaraPrices?: Record<string, number>;

@@ -17,7 +17,10 @@ import {
     Users,
     ExternalLink,
     Trash2,
-    Edit2
+    Edit2,
+    Upload,
+    Loader2,
+    Image as ImageIcon
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -39,8 +42,10 @@ export default function AdminDashboard() {
         addStone, 
         deleteStone,
         updateStonePrice,
+        updateStoneImage,
         updateTranslation,
         stonePrices,
+        stoneImages,
         collections,
         shippingSettings,
         updateShippingSettings
@@ -56,8 +61,31 @@ export default function AdminDashboard() {
     const [isAddingStone, setIsAddingStone] = useState(false);
     const [editingStoneKey, setEditingStoneKey] = useState<string | null>(null);
     const [editingNameKey, setEditingNameKey] = useState<string | null>(null);
+    const [uploadingStoneKey, setUploadingStoneKey] = useState<string | null>(null);
     const [tempPrice, setTempPrice] = useState<string>('');
     const [tempName, setTempName] = useState<string>('');
+
+    const handleStoneImageUpload = async (stoneKey: string, file: File) => {
+        setUploadingStoneKey(stoneKey);
+        try {
+            const fd = new FormData();
+            fd.append('file', file);
+            let res = await fetch('/api/upload.php', { method: 'POST', body: fd });
+            if (!res.ok) {
+                res = await fetch('/api/upload', { method: 'POST', body: fd });
+            }
+            const data = await res.json();
+            if (data.success && data.url) {
+                updateStoneImage(stoneKey, data.url);
+            } else {
+                alert(data.error || 'Feltöltési hiba (JPG, PNG, WEBP engedélyezett, max 15 MB).');
+            }
+        } catch (err) {
+            alert('Hálózati hiba a kép feltöltésekor.');
+        } finally {
+            setUploadingStoneKey(null);
+        }
+    };
     const [showAnalytics, setShowAnalytics] = useState(false);
     const [analyticsTab, setAnalyticsTab] = useState<'traffic' | 'sales'>('sales');
     const [bestSellersTab, setBestSellersTab] = useState<'all' | 'month'>('all');
@@ -540,10 +568,12 @@ export default function AdminDashboard() {
                     {Array.from(new Set(allStonesMaster)).map(stoneKey => {
                         const isAvailable = availableStones.includes(stoneKey);
                         const price = stonePrices[stoneKey] ?? 0;
+                        const stoneImg = stoneImages?.[stoneKey] || '';
+                        const isUploadingThis = uploadingStoneKey === stoneKey;
                         return (
                             <div
                                 key={stoneKey}
-                                className={`p-4 border transition-all flex flex-col items-center justify-between gap-3 relative group ${isAvailable ? 'border-gold bg-gold/10' : 'border-gold/10 bg-black/40 opacity-50 grayscale'}`}
+                                className={`p-4 border transition-all flex flex-col items-center justify-between gap-3 relative group rounded-xl ${isAvailable ? 'border-gold bg-gold/10' : 'border-gold/10 bg-black/40 opacity-50 grayscale'}`}
                             >
                                 <button
                                     type="button"
@@ -552,6 +582,55 @@ export default function AdminDashboard() {
                                     }}
                                     className="w-full h-full absolute inset-0 z-0 cursor-pointer"
                                 />
+
+                                {/* Stone Square Image Upload */}
+                                <div className="relative z-20 pointer-events-auto">
+                                    <label
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="w-14 h-14 rounded-lg overflow-hidden border border-gold/30 bg-black/50 flex items-center justify-center cursor-pointer hover:border-gold transition-all group/img relative shadow-md"
+                                        title={stoneImg ? 'Kép cseréje' : 'Kép feltöltése ehhez a kőhöz'}
+                                    >
+                                        <input
+                                            type="file"
+                                            accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+                                            className="hidden"
+                                            disabled={isUploadingThis}
+                                            onChange={(e) => {
+                                                const f = e.target.files?.[0];
+                                                if (f) handleStoneImageUpload(stoneKey, f);
+                                                e.target.value = '';
+                                            }}
+                                        />
+                                        {isUploadingThis ? (
+                                            <Loader2 className="h-4 w-4 text-gold animate-spin" />
+                                        ) : stoneImg ? (
+                                            <>
+                                                <img src={stoneImg} alt={t(stoneKey)} className="w-full h-full object-cover" />
+                                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
+                                                    <Upload className="h-3.5 w-3.5 text-gold" />
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="flex flex-col items-center gap-0.5 text-gold/40 group-hover/img:text-gold transition-colors">
+                                                <ImageIcon className="h-4 w-4" />
+                                                <span className="text-[7px] font-black uppercase tracking-wider">Kép</span>
+                                            </div>
+                                        )}
+                                    </label>
+                                    {stoneImg && !isUploadingThis && (
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                updateStoneImage(stoneKey, '');
+                                            }}
+                                            className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-black border border-red-500/60 text-red-400 hover:bg-red-500 hover:text-white flex items-center justify-center transition-all"
+                                            title="Kép törlése"
+                                        >
+                                            <X className="h-2.5 w-2.5" />
+                                        </button>
+                                    )}
+                                </div>
                                 
                                 <div className="flex flex-col items-center gap-2 relative z-10 pointer-events-none">
                                     {editingNameKey === stoneKey ? (
