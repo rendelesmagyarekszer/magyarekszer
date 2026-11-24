@@ -44,7 +44,7 @@ export default function ProductClient({ product: serverProduct, initialCollectio
     const [useCustomLeather, setUseCustomLeather] = useState(false);
     
     const [accessoryType, setAccessoryType] = useState<'chain' | 'leather' | 'none'>('none');
-    const [chainLength, setChainLength] = useState<'40' | '42' | '45' | '50' | '55'>('45');
+    const [chainLength, setChainLength] = useState<'40' | '42' | '45' | '50' | '55' | '60'>('45');
     const [chainType, setChainType] = useState<'anker' | 'thick_anker' | 'barbara'>('anker');
 
     React.useEffect(() => {
@@ -156,13 +156,22 @@ export default function ProductClient({ product: serverProduct, initialCollectio
     }, [isKolie, chainLength]);
 
     const isMedalCategory = product?.category === 'medalok-es-talizmanok';
-    const availableChainLengths = (isMedalCategory && !isKolie) ? ['40', '45', '50'] : ['40', '42', '45', '50', '55'];
+    const availableChainLengths = (isMedalCategory && !isKolie)
+        ? (accessoryType === 'chain' && chainType === 'thick_anker'
+            ? ['50', '55', '60']
+            : ['40', '45', '50'])
+        : ['40', '42', '45', '50', '55'];
 
     React.useEffect(() => {
-        if (isMedalCategory && !isKolie && !['40', '45', '50'].includes(chainLength)) {
-            setChainLength('45');
+        if (isMedalCategory && !isKolie) {
+            const validLengths = (accessoryType === 'chain' && chainType === 'thick_anker')
+                ? ['50', '55', '60']
+                : ['40', '45', '50'];
+            if (!validLengths.includes(chainLength)) {
+                setChainLength(accessoryType === 'chain' && chainType === 'thick_anker' ? '50' : '45');
+            }
         }
-    }, [isMedalCategory, isKolie, chainLength]);
+    }, [isMedalCategory, isKolie, accessoryType, chainType, chainLength]);
 
     const isKoves = product.allowsStone || product.name.toLowerCase().includes('köves') || product.name.toLowerCase().includes('koves');
     const isWeddingPair = (product.category === 'eljegyzesi-es-karikagyuruk' || product.category === 'eljegyzesi-gyuruk') && product.price === 89000;

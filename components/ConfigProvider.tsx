@@ -126,6 +126,12 @@ const DEFAULT_ANKER_PRICES = {
     '55': 19000
 };
 
+const DEFAULT_THICK_ANKER_PRICES: Record<string, number> = {
+    '50': 17000,
+    '55': 19000,
+    '60': 21000
+};
+
 const DEFAULT_BARBARA_PRICES = {
     '40': 13000,
     '42': 14000,
@@ -606,7 +612,7 @@ export const ConfigProvider = ({
     const [isLoaded, setIsLoaded] = useState(false);
     const liveSyncDoneRef = React.useRef(false);
     const [ankerPrices, setAnkerPrices] = useState<Record<string, number>>(initialSettings?.ankerPrices || DEFAULT_ANKER_PRICES);
-    const [thickAnkerPrices, setThickAnkerPrices] = useState<Record<string, number>>(initialSettings?.thickAnkerPrices || DEFAULT_ANKER_PRICES);
+    const [thickAnkerPrices, setThickAnkerPrices] = useState<Record<string, number>>({ ...DEFAULT_THICK_ANKER_PRICES, ...(initialSettings?.thickAnkerPrices || {}) });
     const [barbaraPrices, setBarbaraPrices] = useState<Record<string, number>>(initialSettings?.barbaraPrices || DEFAULT_BARBARA_PRICES);
     const [barbaraChainEnabled, setBarbaraChainEnabled] = useState<boolean>(initialSettings?.barbaraChainEnabled ?? false);
     const [globalEnamelColors, setGlobalEnamelColors] = useState<string[]>(initialSettings?.globalEnamelColors || [
@@ -756,7 +762,7 @@ export const ConfigProvider = ({
         const savedBoxPrice = localStorage.getItem('magyarekszer_premium_box_price');
  
         if (savedAnker) setAnkerPrices(JSON.parse(savedAnker));
-        if (savedThickAnker) setThickAnkerPrices(JSON.parse(savedThickAnker));
+        if (savedThickAnker) setThickAnkerPrices({ ...DEFAULT_THICK_ANKER_PRICES, ...JSON.parse(savedThickAnker) });
         if (savedBarbara) setBarbaraPrices(JSON.parse(savedBarbara));
         if (savedBarbaraEnabled !== null) {
             try { setBarbaraChainEnabled(JSON.parse(savedBarbaraEnabled)); } catch (e) {}
@@ -844,7 +850,7 @@ export const ConfigProvider = ({
                             setStoneImages(live.stoneImages);
                         }
                         if (live.ankerPrices && typeof live.ankerPrices === 'object') setAnkerPrices(live.ankerPrices);
-                        if (live.thickAnkerPrices && typeof live.thickAnkerPrices === 'object') setThickAnkerPrices(live.thickAnkerPrices);
+                        if (live.thickAnkerPrices && typeof live.thickAnkerPrices === 'object') setThickAnkerPrices({ ...DEFAULT_THICK_ANKER_PRICES, ...live.thickAnkerPrices });
                         if (live.barbaraPrices && typeof live.barbaraPrices === 'object') setBarbaraPrices(live.barbaraPrices);
                         if (typeof live.barbaraChainEnabled === 'boolean') setBarbaraChainEnabled(live.barbaraChainEnabled);
                         if (Array.isArray(live.extraServices)) setExtraServices(live.extraServices);

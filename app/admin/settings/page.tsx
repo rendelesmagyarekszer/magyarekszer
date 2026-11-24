@@ -361,13 +361,13 @@ export default function SettingsPage() {
                     </div>
                     
                     <div className="space-y-4">
-                        {Object.keys(localThickAnker).sort().map((len) => (
+                        {['50', '55', '60'].map((len) => (
                             <div key={`thick-anker-${len}`} className="flex items-center justify-between gap-4 p-4 bg-[#0d0902] rounded-xl border border-[#c9a56a]/5">
                                 <span className="text-base font-black text-[#c9a56a] uppercase tracking-widest">{len} cm</span>
                                 <div className="flex items-center gap-3">
                                     <input 
                                         type="number" 
-                                        value={localThickAnker[len]}
+                                        value={localThickAnker[len] ?? 0}
                                         onChange={(e) => setLocalThickAnker({ ...localThickAnker, [len]: parseInt(e.target.value) || 0 })}
                                         className="bg-[#150e03] border border-[#c9a56a]/20 p-3 rounded-lg text-right text-base text-[#fdfdf3] outline-none focus:border-[#c9a56a] w-32 font-serif"
                                     />
