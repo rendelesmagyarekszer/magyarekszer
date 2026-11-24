@@ -18,7 +18,7 @@ export default function ProductClient({ product: serverProduct, initialCollectio
     const { addToCart } = useCart();
     const { 
         products, collections, language, t, formatPrice, currency,
-        ankerPrices, barbaraPrices, barbaraChainEnabled, vacationMode,
+        ankerPrices, thickAnkerPrices, barbaraPrices, barbaraChainEnabled, vacationMode,
         availableStones, stonePrices, imageSettings, globalEnamelColors, globalLeatherColors
     } = useConfig();
     
@@ -45,7 +45,7 @@ export default function ProductClient({ product: serverProduct, initialCollectio
     
     const [accessoryType, setAccessoryType] = useState<'chain' | 'leather' | 'none'>('none');
     const [chainLength, setChainLength] = useState<'40' | '42' | '45' | '50' | '55'>('45');
-    const [chainType, setChainType] = useState<'anker' | 'barbara'>('anker');
+    const [chainType, setChainType] = useState<'anker' | 'thick_anker' | 'barbara'>('anker');
 
     React.useEffect(() => {
         if (!barbaraChainEnabled && chainType === 'barbara') {
@@ -156,12 +156,23 @@ export default function ProductClient({ product: serverProduct, initialCollectio
     }, [isKolie, chainLength]);
 
     const isMedalCategory = product?.category === 'medalok-es-talizmanok';
+    const availableChainLengths = (isMedalCategory && !isKolie) ? ['40', '45', '50'] : ['40', '42', '45', '50', '55'];
+
+    React.useEffect(() => {
+        if (isMedalCategory && !isKolie && !['40', '45', '50'].includes(chainLength)) {
+            setChainLength('45');
+        }
+    }, [isMedalCategory, isKolie, chainLength]);
+
     const isKoves = product.allowsStone || product.name.toLowerCase().includes('köves') || product.name.toLowerCase().includes('koves');
     const isWeddingPair = (product.category === 'eljegyzesi-es-karikagyuruk' || product.category === 'eljegyzesi-gyuruk') && product.price === 89000;
 
     const getChainPriceOptions = () => {
         if (isMedalCategory && chainType === 'barbara') {
             return barbaraPrices;
+        }
+        if (isMedalCategory && chainType === 'thick_anker') {
+            return thickAnkerPrices;
         }
         return ankerPrices;
     };
@@ -196,7 +207,8 @@ export default function ProductClient({ product: serverProduct, initialCollectio
             } else {
                 if (accessoryType === 'chain') {
                     if (isMedalCategory) {
-                        parts.push(`${chainLength} cm ezüst lánccal (${chainType === 'barbara' ? 'Barbara' : 'Anker'} típus)`);
+                        const chainTypeLabel = chainType === 'barbara' ? 'Barbara' : chainType === 'thick_anker' ? 'Vastag Anker' : 'Vékony Anker';
+                        parts.push(`${chainLength} cm ezüst lánccal (${chainTypeLabel} típus)`);
                     } else {
                         parts.push(`${chainLength} cm ezüst lánccal`);
                     }
@@ -576,14 +588,18 @@ export default function ProductClient({ product: serverProduct, initialCollectio
                                                      {!isKolie && accessoryType === 'chain' && isMedalCategory && (
                                                         <div className="mb-10 space-y-4">
                                                             <label className="flex items-center text-[10px] uppercase tracking-[0.4em] font-black text-gold">Lánc Típusa</label>
-                                                            <div className={`grid ${barbaraChainEnabled ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
+                                                            <div className={`grid ${barbaraChainEnabled ? 'grid-cols-3' : 'grid-cols-2'} gap-4`}>
                                                                 <div className="relative">
-                                                                    <button onClick={() => setChainType('anker')} className={`w-full py-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${chainType === 'anker' ? 'border-gold bg-gold/10 text-gold shadow-lg' : 'border-gold/10 text-ivory/40'}`}>Anker</button>
-                                                                    <button type="button" onClick={(e) => { e.preventDefault(); setPreviewModal({ isOpen: true, src: imageSettings.anker_chain, title: 'Anker típusú lánc' }); }} className="absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 bg-[#150e03] border border-gold/40 p-1.5 sm:p-2 rounded-full text-gold group-hover:scale-110 shadow-xl z-10"><Eye className="h-3 w-3 sm:h-3.5 sm:w-3.5" /></button>
+                                                                    <button onClick={() => setChainType('anker')} className={`w-full py-4 px-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${chainType === 'anker' ? 'border-gold bg-gold/10 text-gold shadow-lg' : 'border-gold/10 text-ivory/40'}`}>Vékony Anker</button>
+                                                                    <button type="button" onClick={(e) => { e.preventDefault(); setPreviewModal({ isOpen: true, src: imageSettings.anker_chain, title: 'Vékony Anker típusú lánc' }); }} className="absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 bg-[#150e03] border border-gold/40 p-1.5 sm:p-2 rounded-full text-gold group-hover:scale-110 shadow-xl z-10"><Eye className="h-3 w-3 sm:h-3.5 sm:w-3.5" /></button>
+                                                                </div>
+                                                                <div className="relative">
+                                                                    <button onClick={() => setChainType('thick_anker')} className={`w-full py-4 px-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${chainType === 'thick_anker' ? 'border-gold bg-gold/10 text-gold shadow-lg' : 'border-gold/10 text-ivory/40'}`}>Vastag Anker</button>
+                                                                    <button type="button" onClick={(e) => { e.preventDefault(); setPreviewModal({ isOpen: true, src: imageSettings.thick_anker_chain || imageSettings.anker_chain, title: 'Vastag Anker típusú lánc' }); }} className="absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 bg-[#150e03] border border-gold/40 p-1.5 sm:p-2 rounded-full text-gold group-hover:scale-110 shadow-xl z-10"><Eye className="h-3 w-3 sm:h-3.5 sm:w-3.5" /></button>
                                                                 </div>
                                                                 {barbaraChainEnabled && (
                                                                     <div className="relative">
-                                                                        <button onClick={() => setChainType('barbara')} className={`w-full py-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${chainType === 'barbara' ? 'border-gold bg-gold/10 text-gold shadow-lg' : 'border-gold/10 text-ivory/40'}`}>Barbara</button>
+                                                                        <button onClick={() => setChainType('barbara')} className={`w-full py-4 px-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${chainType === 'barbara' ? 'border-gold bg-gold/10 text-gold shadow-lg' : 'border-gold/10 text-ivory/40'}`}>Barbara</button>
                                                                         <button type="button" onClick={(e) => { e.preventDefault(); setPreviewModal({ isOpen: true, src: imageSettings.barbara_chain, title: 'Barbara típusú lánc' }); }} className="absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 bg-[#150e03] border border-gold/40 p-1.5 sm:p-2 rounded-full text-gold group-hover:scale-110 shadow-xl z-10"><Eye className="h-3 w-3 sm:h-3.5 sm:w-3.5" /></button>
                                                                     </div>
                                                                 )}
@@ -593,7 +609,7 @@ export default function ProductClient({ product: serverProduct, initialCollectio
                                                     
                                                     <label className="flex items-center text-[10px] uppercase tracking-[0.4em] font-black text-gold">{t('accessory_length')}</label>
                                                     <div className="flex flex-wrap gap-2">
-                                                        {['40', '42', '45', '50', '55'].map((len) => (
+                                                        {availableChainLengths.map((len) => (
                                                             <button key={len} onClick={() => { setChainLength(len as any); if (accessoryType === 'leather') setUseCustomLeather(false); }} className={`py-3 px-4 rounded-lg text-[10px] font-black transition-all border relative flex-1 min-w-[18%] ${(!useCustomLeather && chainLength === len) ? 'border-gold bg-gold text-deep-brown shadow-lg' : 'border-gold/10 text-ivory/40'}`}>
                                                                 {len} cm
                                                                 {!isKolie && (accessoryType === 'chain' || (accessoryType === 'leather' && leatherHasClasp)) && (

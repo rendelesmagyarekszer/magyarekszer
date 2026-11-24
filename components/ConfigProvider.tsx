@@ -76,10 +76,11 @@ interface ConfigContextType {
     saveCoupon: (c: Coupon) => void;
     deleteCoupon: (code: string) => void;
     ankerPrices: Record<string, number>;
+    thickAnkerPrices: Record<string, number>;
     barbaraPrices: Record<string, number>;
     barbaraChainEnabled: boolean;
     setBarbaraChainEnabled: (enabled: boolean) => void;
-    updateChainPrice: (type: 'anker' | 'barbara', length: string, price: number) => void;
+    updateChainPrice: (type: 'anker' | 'thick_anker' | 'barbara', length: string, price: number) => void;
     globalEnamelColors: string[];
     updateGlobalEnamelColors: (colors: string[]) => void;
     globalLeatherColors: { color: string; imageUrl?: string }[];
@@ -602,6 +603,7 @@ export const ConfigProvider = ({
     const [isLoaded, setIsLoaded] = useState(false);
     const liveSyncDoneRef = React.useRef(false);
     const [ankerPrices, setAnkerPrices] = useState<Record<string, number>>(initialSettings?.ankerPrices || DEFAULT_ANKER_PRICES);
+    const [thickAnkerPrices, setThickAnkerPrices] = useState<Record<string, number>>(initialSettings?.thickAnkerPrices || DEFAULT_ANKER_PRICES);
     const [barbaraPrices, setBarbaraPrices] = useState<Record<string, number>>(initialSettings?.barbaraPrices || DEFAULT_BARBARA_PRICES);
     const [barbaraChainEnabled, setBarbaraChainEnabled] = useState<boolean>(initialSettings?.barbaraChainEnabled ?? false);
     const [globalEnamelColors, setGlobalEnamelColors] = useState<string[]>(initialSettings?.globalEnamelColors || [
@@ -625,6 +627,7 @@ export const ConfigProvider = ({
     const [premiumBoxPrice, setPremiumBoxPrice] = useState<number>(initialSettings?.premiumBoxPrice ?? 1500);
     const [imageSettings, setImageSettings] = useState<Record<string, string>>(initialSettings?.imageSettings || {
         anker_chain: '',
+        thick_anker_chain: '',
         barbara_chain: '',
         standard_box: '',
         premium_box: ''
@@ -737,6 +740,7 @@ export const ConfigProvider = ({
         const savedCoupons = localStorage.getItem('magyarekszer_coupons');
         const savedShippingSettings = localStorage.getItem('magyarekszer_shippingSettings');
         const savedAnker = localStorage.getItem('magyarekszer_prices_anker');
+        const savedThickAnker = localStorage.getItem('magyarekszer_prices_thick_anker');
         const savedBarbara = localStorage.getItem('magyarekszer_prices_barbara');
         const savedBarbaraEnabled = localStorage.getItem('magyarekszer_barbara_chain_enabled');
         const savedEnamel = localStorage.getItem('magyarekszer_global_enamel_colors');
@@ -745,6 +749,7 @@ export const ConfigProvider = ({
         const savedBoxPrice = localStorage.getItem('magyarekszer_premium_box_price');
  
         if (savedAnker) setAnkerPrices(JSON.parse(savedAnker));
+        if (savedThickAnker) setThickAnkerPrices(JSON.parse(savedThickAnker));
         if (savedBarbara) setBarbaraPrices(JSON.parse(savedBarbara));
         if (savedBarbaraEnabled !== null) {
             try { setBarbaraChainEnabled(JSON.parse(savedBarbaraEnabled)); } catch (e) {}
@@ -829,6 +834,7 @@ export const ConfigProvider = ({
                             setStonePrices(live.stonePrices);
                         }
                         if (live.ankerPrices && typeof live.ankerPrices === 'object') setAnkerPrices(live.ankerPrices);
+                        if (live.thickAnkerPrices && typeof live.thickAnkerPrices === 'object') setThickAnkerPrices(live.thickAnkerPrices);
                         if (live.barbaraPrices && typeof live.barbaraPrices === 'object') setBarbaraPrices(live.barbaraPrices);
                         if (typeof live.barbaraChainEnabled === 'boolean') setBarbaraChainEnabled(live.barbaraChainEnabled);
                         if (Array.isArray(live.extraServices)) setExtraServices(live.extraServices);
@@ -1021,6 +1027,9 @@ export const ConfigProvider = ({
             localStorage.setItem('magyarekszer_image_settings', JSON.stringify(imageSettings));
             localStorage.setItem('magyarekszer_custom_jewelry', JSON.stringify(customJewelry));
             localStorage.setItem('magyarekszer_shippingSettings', JSON.stringify(shippingSettings));
+            localStorage.setItem('magyarekszer_prices_anker', JSON.stringify(ankerPrices));
+            localStorage.setItem('magyarekszer_prices_thick_anker', JSON.stringify(thickAnkerPrices));
+            localStorage.setItem('magyarekszer_prices_barbara', JSON.stringify(barbaraPrices));
             localStorage.setItem('magyarekszer_barbara_chain_enabled', JSON.stringify(barbaraChainEnabled));
 
             const syncTimer = setTimeout(() => {
@@ -1035,6 +1044,7 @@ export const ConfigProvider = ({
                         allStonesMaster,
                         stonePrices,
                         ankerPrices,
+                        thickAnkerPrices,
                         barbaraPrices,
                         barbaraChainEnabled,
                         extraServices,
@@ -1071,7 +1081,7 @@ export const ConfigProvider = ({
             }, 600);
             return () => clearTimeout(syncTimer);
         }
-    }, [products, dynamicTranslations, collections, vacationMode, availableStones, allStonesMaster, stonePrices, notifications, coupons, globalEnamelColors, globalLeatherColors, extraServices, premiumBoxPrice, imageSettings, customJewelry, shippingSettings, ankerPrices, barbaraPrices, barbaraChainEnabled, isLoaded]);
+    }, [products, dynamicTranslations, collections, vacationMode, availableStones, allStonesMaster, stonePrices, notifications, coupons, globalEnamelColors, globalLeatherColors, extraServices, premiumBoxPrice, imageSettings, customJewelry, shippingSettings, ankerPrices, thickAnkerPrices, barbaraPrices, barbaraChainEnabled, isLoaded]);
 
     const formatPrice = (priceHuf: number | undefined | null) => {
         if (priceHuf === undefined || priceHuf === null || isNaN(priceHuf)) return '';
@@ -1105,13 +1115,13 @@ export const ConfigProvider = ({
         setCustomJewelry(categories);
     };
 
-    const updateChainPrice = (type: 'anker' | 'barbara', length: string, price: number) => {
+    const updateChainPrice = (type: 'anker' | 'thick_anker' | 'barbara', length: string, price: number) => {
         if (type === 'anker') {
-            const newPrices = { ...ankerPrices, [length]: price };
-            setAnkerPrices(newPrices);
+            setAnkerPrices(prev => ({ ...prev, [length]: price }));
+        } else if (type === 'thick_anker') {
+            setThickAnkerPrices(prev => ({ ...prev, [length]: price }));
         } else {
-            const newPrices = { ...barbaraPrices, [length]: price };
-            setBarbaraPrices(newPrices);
+            setBarbaraPrices(prev => ({ ...prev, [length]: price }));
         }
     };
  
@@ -1360,6 +1370,7 @@ export const ConfigProvider = ({
             saveCoupon,
             deleteCoupon,
             ankerPrices,
+            thickAnkerPrices,
             barbaraPrices,
             barbaraChainEnabled,
             setBarbaraChainEnabled,

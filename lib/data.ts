@@ -56,6 +56,7 @@ export interface AdminSettings {
     allStonesMaster?: string[];
     stonePrices?: Record<string, number>;
     ankerPrices?: Record<string, number>;
+    thickAnkerPrices?: Record<string, number>;
     barbaraPrices?: Record<string, number>;
     barbaraChainEnabled?: boolean;
     extraServices?: any[];

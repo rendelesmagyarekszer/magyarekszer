@@ -9,7 +9,7 @@ import { categories as defaultCategories } from '@/lib/data';
 
 export default function SettingsPage() {
     const { 
-        ankerPrices, barbaraPrices, barbaraChainEnabled, setBarbaraChainEnabled, updateChainPrice, 
+        ankerPrices, thickAnkerPrices, barbaraPrices, barbaraChainEnabled, setBarbaraChainEnabled, updateChainPrice, 
         globalEnamelColors, updateGlobalEnamelColors,
         globalLeatherColors, updateGlobalLeatherColors,
         extraServices, updateExtraServices, deleteExtraService,
@@ -20,6 +20,7 @@ export default function SettingsPage() {
     } = useConfig();
     
     const [localAnker, setLocalAnker] = useState(ankerPrices);
+    const [localThickAnker, setLocalThickAnker] = useState(thickAnkerPrices);
     const [localBarbara, setLocalBarbara] = useState(barbaraPrices);
     const [localEnamelColors, setLocalEnamelColors] = useState(globalEnamelColors);
     const [newColor, setNewColor] = useState('');
@@ -43,6 +44,7 @@ export default function SettingsPage() {
     React.useEffect(() => {
         if (isLoaded) {
             setLocalAnker(ankerPrices);
+            setLocalThickAnker(thickAnkerPrices);
             setLocalBarbara(barbaraPrices);
             setLocalEnamelColors(globalEnamelColors);
             setLocalLeatherColors(globalLeatherColors || []);
@@ -51,14 +53,19 @@ export default function SettingsPage() {
             setLocalImageSettings(imageSettings);
             setLocalCustomJewelry(customJewelry);
         }
-    }, [isLoaded, ankerPrices, barbaraPrices, globalEnamelColors, globalLeatherColors, extraServices, premiumBoxPrice, imageSettings, customJewelry]);
+    }, [isLoaded, ankerPrices, thickAnkerPrices, barbaraPrices, globalEnamelColors, globalLeatherColors, extraServices, premiumBoxPrice, imageSettings, customJewelry]);
 
     const handleSave = () => {
         setIsSaving(true);
         
-        // Save Anker
+        // Save Vékony Anker
         Object.entries(localAnker).forEach(([len, price]) => {
             updateChainPrice('anker', len, price);
+        });
+
+        // Save Vastag Anker
+        Object.entries(localThickAnker).forEach(([len, price]) => {
+            updateChainPrice('thick_anker', len, price);
         });
 
         // Save Barbara
@@ -320,24 +327,49 @@ export default function SettingsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                {/* Anker Pricing */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                {/* Vékony Anker Pricing */}
                 <div className="bg-[#150e03] border border-[#c9a56a]/10 p-8 rounded-2xl space-y-6">
                     <div className="flex items-center gap-3">
                         <LinkIcon className="h-5 w-5 text-[#c9a56a]" />
-                        <h2 className="text-base font-serif uppercase tracking-[0.2em] text-[#fdfdf3]">Anker Lánc Árak</h2>
+                        <h2 className="text-base font-serif uppercase tracking-[0.2em] text-[#fdfdf3]">Vékony Anker Lánc Árak</h2>
                     </div>
                     
                     <div className="space-y-4">
                         {Object.keys(localAnker).sort().map((len) => (
-                            <div key={`anker-${len}`} className="flex items-center justify-between gap-6 p-4 bg-[#0d0902] rounded-xl border border-[#c9a56a]/5">
+                            <div key={`anker-${len}`} className="flex items-center justify-between gap-4 p-4 bg-[#0d0902] rounded-xl border border-[#c9a56a]/5">
                                 <span className="text-base font-black text-[#c9a56a] uppercase tracking-widest">{len} cm</span>
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-3">
                                     <input 
                                         type="number" 
                                         value={localAnker[len]}
                                         onChange={(e) => setLocalAnker({ ...localAnker, [len]: parseInt(e.target.value) || 0 })}
-                                        className="bg-[#150e03] border border-[#c9a56a]/20 p-4 rounded-lg text-right text-base text-[#fdfdf3] outline-none focus:border-[#c9a56a] w-40 font-serif"
+                                        className="bg-[#150e03] border border-[#c9a56a]/20 p-3 rounded-lg text-right text-base text-[#fdfdf3] outline-none focus:border-[#c9a56a] w-32 font-serif"
+                                    />
+                                    <span className="text-sm text-[#666666] font-bold uppercase tracking-widest">Ft</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Vastag Anker Pricing */}
+                <div className="bg-[#150e03] border border-[#c9a56a]/10 p-8 rounded-2xl space-y-6">
+                    <div className="flex items-center gap-3">
+                        <LinkIcon className="h-5 w-5 text-[#c9a56a]" />
+                        <h2 className="text-base font-serif uppercase tracking-[0.2em] text-[#fdfdf3]">Vastag Anker Lánc Árak</h2>
+                    </div>
+                    
+                    <div className="space-y-4">
+                        {Object.keys(localThickAnker).sort().map((len) => (
+                            <div key={`thick-anker-${len}`} className="flex items-center justify-between gap-4 p-4 bg-[#0d0902] rounded-xl border border-[#c9a56a]/5">
+                                <span className="text-base font-black text-[#c9a56a] uppercase tracking-widest">{len} cm</span>
+                                <div className="flex items-center gap-3">
+                                    <input 
+                                        type="number" 
+                                        value={localThickAnker[len]}
+                                        onChange={(e) => setLocalThickAnker({ ...localThickAnker, [len]: parseInt(e.target.value) || 0 })}
+                                        className="bg-[#150e03] border border-[#c9a56a]/20 p-3 rounded-lg text-right text-base text-[#fdfdf3] outline-none focus:border-[#c9a56a] w-32 font-serif"
                                     />
                                     <span className="text-sm text-[#666666] font-bold uppercase tracking-widest">Ft</span>
                                 </div>
@@ -575,9 +607,15 @@ export default function SettingsPage() {
                         <h3 className="text-xs uppercase tracking-widest text-[#c9a56a]/60 font-black px-4 border-l-2 border-[#c9a56a]/40">Lánc típusok</h3>
                         <div className="space-y-4">
                             <AdminImageUpload 
-                                label="Anker lánc kép"
+                                label="Vékony Anker lánc kép"
                                 value={localImageSettings.anker_chain}
                                 onChange={(val) => setLocalImageSettings({ ...localImageSettings, anker_chain: val })}
+                                helperText="URL vagy közvetlen feltöltés"
+                            />
+                            <AdminImageUpload 
+                                label="Vastag Anker lánc kép"
+                                value={localImageSettings.thick_anker_chain || ''}
+                                onChange={(val) => setLocalImageSettings({ ...localImageSettings, thick_anker_chain: val })}
                                 helperText="URL vagy közvetlen feltöltés"
                             />
                             <AdminImageUpload 
