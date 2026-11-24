@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { useConfig } from '@/components/ConfigProvider';
 import { 
@@ -16,26 +16,66 @@ import {
     ShoppingBag,
     Building2,
     Copy,
-    UserCircle2
+    UserCircle2,
+    RefreshCw
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 
 export default function CustomersPage() {
-    const { allOrders, allUsers } = useAuth();
+    const { allOrders: localOrders, allUsers } = useAuth();
     const { formatPrice, t } = useConfig();
+    const [serverOrders, setServerOrders] = useState<any[]>([]);
+    const [isLoadingOrders, setIsLoadingOrders] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState<'date' | 'name'>('date');
     const [selectedCustomerEmail, setSelectedCustomerEmail] = useState<string | null>(null);
 
-    // Aggregate unique customers from both registerd users and orders (guest checkouts)
+    const fetchServerOrders = async () => {
+        setIsLoadingOrders(true);
+        try {
+            const res = await fetch('/api/orders.php?t=' + Date.now());
+            if (res.ok) {
+                const data = await res.json();
+                if (data.success && Array.isArray(data.orders)) {
+                    setServerOrders(data.orders);
+                }
+            }
+        } catch (e) {
+            // Local fallback
+        } finally {
+            setIsLoadingOrders(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchServerOrders();
+    }, []);
+
+    // Merge server and local orders (avoiding duplicates by id)
+    const allOrders = useMemo(() => {
+        if (serverOrders.length === 0) return localOrders;
+        const map = new Map<string, any>();
+        serverOrders.forEach((o: any) => {
+            if (o?.id) map.set(o.id, o);
+        });
+        localOrders.forEach((o: any) => {
+            if (o?.id && !map.has(o.id)) map.set(o.id, o);
+        });
+        return Array.from(map.values());
+    }, [serverOrders, localOrders]);
+
+    // Aggregate unique customers from both registered users and orders (guest checkouts)
     const customers = useMemo(() => {
         const customerMap = new Map<string, any>();
 
         // 1. Add registered users
         allUsers.forEach((user: any) => {
-            customerMap.set(user.email, {
-                email: user.email,
+            const rawEmail = (user.email || '').trim();
+            if (!rawEmail) return;
+            const key = rawEmail.toLowerCase();
+            customerMap.set(key, {
+                email: rawEmail,
                 fullName: user.fullName || 'Névtelen Felhasználó',
                 phone: user.phone || '',
                 orders: [],
@@ -46,10 +86,11 @@ export default function CustomersPage() {
 
         // 2. Aggregate from orders
         allOrders.forEach((order: any) => {
-            const email = order.customerInfo?.email || order.userId;
-            if (!email) return;
+            const rawEmail = (order.customerInfo?.email || order.userId || '').trim();
+            if (!rawEmail) return;
+            const key = rawEmail.toLowerCase();
 
-            const existing = customerMap.get(email);
+            const existing = customerMap.get(key);
             const orderDate = new Date(order.date);
 
             if (existing) {
@@ -63,8 +104,8 @@ export default function CustomersPage() {
                     existing.lastBilling = order.billingInfo;
                 }
             } else {
-                customerMap.set(email, {
-                    email: email,
+                customerMap.set(key, {
+                    email: rawEmail,
                     fullName: order.customerInfo?.fullName || 'Vendég',
                     phone: order.customerInfo?.phone || '',
                     orders: [order],
@@ -82,17 +123,18 @@ export default function CustomersPage() {
                 const dateB = b.lastOrderDate ? new Date(b.lastOrderDate).getTime() : 0;
                 return dateB - dateA; // Most recent first
             } else {
-                return a.fullName.localeCompare(b.fullName, 'hu');
+                return (a.fullName || '').localeCompare(b.fullName || '', 'hu');
             }
         });
     }, [allOrders, allUsers, sortBy]);
 
     const filteredCustomers = customers.filter(c => 
-        c.fullName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        c.email.toLowerCase().includes(searchQuery.toLowerCase())
+        (c.fullName || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+        (c.email || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (c.phone || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const activeCustomer = customers.find(c => c.email === selectedCustomerEmail);
+    const activeCustomer = customers.find(c => c.email.toLowerCase() === selectedCustomerEmail?.toLowerCase());
 
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
@@ -108,6 +150,16 @@ export default function CustomersPage() {
                 </div>
                 {!selectedCustomerEmail && (
                     <div className="flex flex-col md:flex-row gap-6 items-center">
+                        <button
+                            onClick={fetchServerOrders}
+                            disabled={isLoadingOrders}
+                            className="flex items-center gap-2 px-4 py-3 bg-[#150e03] border border-gold/10 text-[11px] uppercase tracking-widest font-black text-gold/70 hover:text-gold hover:border-gold/40 transition-all"
+                            title="Vásárlók frissítése a szerverről"
+                        >
+                            <RefreshCw className={`h-3.5 w-3.5 ${isLoadingOrders ? 'animate-spin' : ''}`} />
+                            Frissítés
+                        </button>
+
                         {/* Sort Buttons */}
                         <div className="flex bg-[#150e03] border border-gold/10 p-1">
                             <button 
@@ -245,12 +297,20 @@ export default function CustomersPage() {
                                             <div className="space-y-1">
                                                 <p className="text-[11px] font-black text-[#444] uppercase tracking-widest">Utolsó cím</p>
                                                 <p className="text-base font-serif text-ivory/80">
-                                                    {activeCustomer.lastShipping.postcode} {activeCustomer.lastShipping.city}<br/>
+                                                    {(activeCustomer.lastShipping.postcode || activeCustomer.lastShipping.city) && (
+                                                        <>
+                                                            {[activeCustomer.lastShipping.postcode, activeCustomer.lastShipping.city].filter(Boolean).join(' ')}
+                                                            <br />
+                                                        </>
+                                                    )}
                                                     {activeCustomer.lastShipping.address}
                                                 </p>
                                             </div>
                                             <button 
-                                                onClick={() => copyToClipboard(`${activeCustomer.lastShipping.postcode} ${activeCustomer.lastShipping.city}, ${activeCustomer.lastShipping.address}`)}
+                                                onClick={() => copyToClipboard([
+                                                    [activeCustomer.lastShipping.postcode, activeCustomer.lastShipping.city].filter(Boolean).join(' '),
+                                                    activeCustomer.lastShipping.address
+                                                ].filter(Boolean).join(', '))}
                                                 className="text-[11px] uppercase font-black text-gold/40 hover:text-gold flex items-center gap-2 transition-all"
                                             >
                                                 <Copy className="h-3 w-3" />
@@ -276,7 +336,12 @@ export default function CustomersPage() {
                                                 )}
                                                 <p className="text-base font-black uppercase tracking-widest text-ivory">{activeCustomer.lastBilling.name}</p>
                                                 <p className="text-base font-serif text-ivory/80">
-                                                    {activeCustomer.lastBilling.postcode} {activeCustomer.lastBilling.city}<br/>
+                                                    {(activeCustomer.lastBilling.postcode || activeCustomer.lastBilling.city) && (
+                                                        <>
+                                                            {[activeCustomer.lastBilling.postcode, activeCustomer.lastBilling.city].filter(Boolean).join(' ')}
+                                                            <br />
+                                                        </>
+                                                    )}
                                                     {activeCustomer.lastBilling.address}
                                                 </p>
                                             </div>
@@ -289,7 +354,11 @@ export default function CustomersPage() {
                                             <button 
                                                 onClick={() => {
                                                     const b = activeCustomer.lastBilling;
-                                                    copyToClipboard(`${b.name}\n${b.postcode} ${b.city}, ${b.address}${b.taxNumber ? `\nAdószám: ${b.taxNumber}` : ''}`);
+                                                    const addr = [
+                                                        [b.postcode, b.city].filter(Boolean).join(' '),
+                                                        b.address
+                                                    ].filter(Boolean).join(', ');
+                                                    copyToClipboard(`${b.name}\n${addr}${b.taxNumber ? `\nAdószám: ${b.taxNumber}` : ''}`);
                                                 }}
                                                 className="text-[11px] uppercase font-black text-gold/40 hover:text-gold flex items-center gap-2 transition-all"
                                             >
@@ -319,7 +388,7 @@ export default function CustomersPage() {
                                             </div>
                                             <div className="flex-1 space-y-2">
                                                 <div className="flex items-center gap-4">
-                                                    <span className="text-sm font-black text-ivory uppercase tracking-widest">#{order.id.slice(-6).toUpperCase()}</span>
+                                                    <span className="text-sm font-black text-ivory uppercase tracking-widest">#{String(order.id || '').slice(-6).toUpperCase()}</span>
                                                     <span className={`text-[10px] font-black uppercase px-2 py-0.5 border ${
                                                         order.status === 'delivered' ? 'border-green-500/30 text-green-400 bg-green-500/5' : 
                                                         order.status === 'shipped' ? 'border-blue-500/30 text-blue-400 bg-blue-500/5' : 
@@ -327,7 +396,7 @@ export default function CustomersPage() {
                                                     }`}>{order.status}</span>
                                                 </div>
                                                 <p className="text-sm text-ivory/60 font-serif italic">
-                                                    {order.items.map((it: any) => `${it.quantity}x ${it.name}`).join(', ')}
+                                                    {(order.items || []).map((it: any) => `${it.quantity}x ${it.name}`).join(', ')}
                                                 </p>
                                             </div>
                                             <div className="text-right shrink-0">
