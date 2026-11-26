@@ -30,15 +30,27 @@ export default function OrdersPage() {
     const { allOrders: localOrders, updateOrderStatus: updateLocalOrderStatus, markOrderAsViewed } = useAuth();
     const { formatPrice, t, addNotification, products } = useConfig();
     const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+    const [viewedOrderIds, setViewedOrderIds] = useState<string[]>([]);
     const [serverOrders, setServerOrders] = useState<any[]>([]);
     const [isCheckingBank, setIsCheckingBank] = useState(false);
     const [bankCheckMessage, setBankCheckMessage] = useState<string | null>(null);
     const [updatingPaymentId, setUpdatingPaymentId] = useState<string | null>(null);
 
+    // Load locally remembered viewed orders on mount
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem('magyarekszer_viewed_orders');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (Array.isArray(parsed)) setViewedOrderIds(parsed);
+            }
+        } catch (e) {}
+    }, []);
+
     // Fetch server orders
     const fetchServerOrders = async () => {
         try {
-            const res = await fetch('/api/orders.php');
+            const res = await fetch('/api/orders.php?t=' + Date.now());
             if (res.ok) {
                 const data = await res.json();
                 if (data.success && Array.isArray(data.orders)) {
@@ -65,6 +77,20 @@ export default function OrdersPage() {
     const toggleOrder = (id: string) => {
         if (expandedOrder !== id) {
             markOrderAsViewed(id);
+            setViewedOrderIds(prev => {
+                if (prev.includes(id)) return prev;
+                const next = [...prev, id];
+                try {
+                    localStorage.setItem('magyarekszer_viewed_orders', JSON.stringify(next));
+                } catch (e) {}
+                return next;
+            });
+            // Persist viewed state on server as well
+            fetch('/api/orders.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orderId: id, viewed: true })
+            }).catch(() => {});
         }
         setExpandedOrder(expandedOrder === id ? null : id);
     };
@@ -201,6 +227,7 @@ export default function OrdersPage() {
                 ) : (
                     combinedOrders.map((order) => {
                         const isExpanded = expandedOrder === order.id;
+                        const isViewed = Boolean(order.viewed) || viewedOrderIds.includes(order.id);
                         const StatusIcon = getStatusIcon(order.status || 'pending');
                         const isBankTransfer = (order.paymentMethod || '').toLowerCase().includes('utal');
                         const isPaid = order.paymentStatus === 'paid';
@@ -215,28 +242,53 @@ export default function OrdersPage() {
                         return (
                             <div 
                                 key={order.id} 
-                                className={`bg-[#150e03] border transition-all ${isExpanded ? 'border-gold shadow-2xl scale-[1.01]' : 'border-gold/10 hover:border-gold/30'}`}
+                                className={`rounded-xl border transition-all overflow-hidden ${
+                                    isExpanded
+                                        ? 'bg-[#20160a] border-gold ring-2 ring-gold/60 shadow-[0_0_40px_rgba(201,165,106,0.22)]'
+                                        : isViewed
+                                            ? 'bg-emerald-950/35 border-emerald-500/45 border-l-4 border-l-emerald-400 hover:border-emerald-400/80'
+                                            : 'bg-[#150e03] border-gold/25 border-l-4 border-l-gold hover:border-gold/60'
+                                }`}
                             >
-                                {/* Order Header - SLEEK & COMPACT LIST ROW */}
+                                {/* Order Header */}
                                 <div 
-                                    className="p-4 flex flex-wrap sm:flex-nowrap items-center justify-between gap-4 cursor-pointer group hover:bg-gold/5 transition-colors"
+                                    className={`p-5 flex flex-wrap sm:flex-nowrap items-center justify-between gap-4 cursor-pointer group transition-colors ${
+                                        isExpanded
+                                            ? 'bg-gold/15'
+                                            : isViewed
+                                                ? 'hover:bg-emerald-500/10'
+                                                : 'hover:bg-gold/10'
+                                    }`}
                                     onClick={() => toggleOrder(order.id)}
                                 >
                                     <div className="flex items-center gap-4 sm:gap-6 min-w-0 flex-1">
-                                        <div className="flex flex-col items-center justify-center py-2 px-3 bg-gold/5 border border-gold/10 w-20 shrink-0">
-                                            <span className="text-[6px] uppercase font-black text-gold/40 mb-0.5">Dátum</span>
-                                            <span className="text-[11px] font-bold text-ivory/80">
+                                        <div className={`flex flex-col items-center justify-center py-2 px-3 rounded-lg border w-24 shrink-0 ${
+                                            isViewed ? 'bg-emerald-500/15 border-emerald-500/35' : 'bg-gold/10 border-gold/25'
+                                        }`}>
+                                            <span className={`text-[8px] uppercase font-black mb-0.5 ${isViewed ? 'text-emerald-300' : 'text-gold/80'}`}>Dátum</span>
+                                            <span className="text-xs font-bold text-[#fdfdf3]">
                                                 {order.date ? new Date(order.date).toLocaleDateString('hu-HU') : '-'}
                                             </span>
                                         </div>
 
-                                        <div className="flex flex-col gap-1.5 min-w-0">
-                                            <div className="flex items-center gap-3 min-w-0">
-                                                <h3 className="text-base font-serif text-ivory/90 tracking-wider group-hover:text-gold transition-colors truncate max-w-[200px] sm:max-w-[260px]">
+                                        <div className="flex flex-col gap-2 min-w-0">
+                                            <div className="flex flex-wrap items-center gap-2.5 min-w-0">
+                                                <h3 className={`text-lg font-serif tracking-wide transition-colors truncate max-w-[220px] sm:max-w-[300px] ${
+                                                    isViewed ? 'text-emerald-200 group-hover:text-emerald-100' : 'text-[#fdfdf3] group-hover:text-gold'
+                                                }`}>
                                                     {order.customerInfo?.fullName || 'Vendég'}
                                                 </h3>
-                                                <p className="hidden xl:block text-[10px] uppercase tracking-widest text-[#666666] font-bold">
-                                                    ID: <span className="text-ivory/50">{order.id}</span>
+                                                {isViewed ? (
+                                                    <span className="px-2 py-0.5 rounded-full text-[9px] uppercase font-black tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/50 flex items-center gap-1 shrink-0">
+                                                        <Check className="h-2.5 w-2.5" /> Megnyitva
+                                                    </span>
+                                                ) : (
+                                                    <span className="px-2 py-0.5 rounded-full text-[9px] uppercase font-black tracking-wider bg-amber-500/25 text-amber-200 border border-amber-400/50 shrink-0">
+                                                        Új rendelés
+                                                    </span>
+                                                )}
+                                                <p className="hidden xl:block text-[10px] uppercase tracking-widest text-ivory/50 font-bold">
+                                                    ID: <span className="text-ivory/80">{order.id}</span>
                                                 </p>
                                             </div>
                                             
@@ -299,19 +351,19 @@ export default function OrdersPage() {
                                             initial={{ height: 0, opacity: 0 }}
                                             animate={{ height: 'auto', opacity: 1 }}
                                             exit={{ height: 0, opacity: 0 }}
-                                            className="overflow-hidden border-t border-gold/10 bg-black/40"
+                                            className="overflow-hidden border-t-2 border-gold/50 bg-[#23190b]"
                                         >
-                                            <div className="p-6 md:p-10 grid grid-cols-1 lg:grid-cols-2 gap-10">
+                                            <div className="p-6 md:p-10 grid grid-cols-1 lg:grid-cols-2 gap-8">
                                                 {/* Left Column: Customer & Items */}
-                                                <div className="space-y-8">
+                                                <div className="space-y-6">
                                                     {/* Payment Status Card - PROMINENT */}
-                                                    <div className="p-6 bg-[#1a1104] border border-gold/30 rounded space-y-4">
-                                                        <div className="flex justify-between items-center border-b border-gold/10 pb-3">
+                                                    <div className="p-6 bg-[#171006] border border-gold/35 rounded-xl space-y-4 shadow-lg">
+                                                        <div className="flex justify-between items-center border-b border-gold/20 pb-3">
                                                             <h4 className="text-xs uppercase tracking-[0.3em] text-gold font-black flex items-center gap-2">
                                                                 <Banknote className="h-4 w-4" />
                                                                 Fizetési állapot
                                                             </h4>
-                                                            <span className="text-[11px] font-bold text-ivory/60">
+                                                            <span className="text-xs font-bold text-[#fdfdf3]">
                                                                 {order.paymentMethod || 'Banki átutalás'}
                                                             </span>
                                                         </div>
@@ -319,13 +371,13 @@ export default function OrdersPage() {
                                                         {isBankTransfer ? (
                                                             <div className="space-y-3">
                                                                 {isPaid ? (
-                                                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded">
+                                                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-emerald-500/15 border border-emerald-400/40 rounded-lg">
                                                                         <div className="space-y-1">
-                                                                            <p className="text-xs font-black text-emerald-400 uppercase tracking-widest flex items-center gap-1.5">
+                                                                            <p className="text-sm font-black text-emerald-300 uppercase tracking-wider flex items-center gap-1.5">
                                                                                 <Check className="h-4 w-4" /> Kifizetve (Utalás megérkezett)
                                                                             </p>
                                                                             {order.paidAt && (
-                                                                                <p className="text-[10px] text-ivory/60">
+                                                                                <p className="text-xs text-ivory/80">
                                                                                     Jóváírás ideje: {order.paidAt} {order.paidVia ? `• ${order.paidVia}` : ''}
                                                                                 </p>
                                                                             )}
@@ -333,25 +385,25 @@ export default function OrdersPage() {
                                                                         <button
                                                                             onClick={() => handleUpdatePayment(order.id, 'pending')}
                                                                             disabled={updatingPaymentId === order.id}
-                                                                            className="text-[10px] uppercase font-bold text-ivory/40 hover:text-amber-400 underline transition-colors"
+                                                                            className="text-[11px] uppercase font-bold text-ivory/60 hover:text-amber-300 underline transition-colors"
                                                                         >
                                                                             Visszaállítás: mégsem fizetve
                                                                         </button>
                                                                     </div>
                                                                 ) : (
-                                                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-amber-500/10 border border-amber-500/30 rounded">
+                                                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-amber-500/15 border border-amber-400/40 rounded-lg">
                                                                         <div className="space-y-1">
-                                                                            <p className="text-xs font-black text-amber-400 uppercase tracking-widest flex items-center gap-1.5">
+                                                                            <p className="text-sm font-black text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
                                                                                 <Clock className="h-4 w-4" /> Utalásra vár ({formatPrice(order.total)})
                                                                             </p>
-                                                                            <p className="text-[10px] text-ivory/60">
+                                                                            <p className="text-xs text-ivory/80">
                                                                                 K&H Bank: 10404089-50526774-52721009 (MARTIN'S BT.)
                                                                             </p>
                                                                         </div>
                                                                         <button
                                                                             onClick={() => handleUpdatePayment(order.id, 'paid')}
                                                                             disabled={updatingPaymentId === order.id}
-                                                                            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-black uppercase tracking-widest shadow transition-all flex items-center gap-2 whitespace-nowrap"
+                                                                            className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-black uppercase tracking-widest shadow transition-all flex items-center gap-2 whitespace-nowrap"
                                                                         >
                                                                             <Check className="h-3.5 w-3.5" />
                                                                             {updatingPaymentId === order.id ? 'Mentés...' : 'Utalás beérkezett'}
@@ -360,149 +412,149 @@ export default function OrdersPage() {
                                                                 )}
                                                             </div>
                                                         ) : (
-                                                            <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded text-xs text-blue-300">
-                                                                Utánvétes fizetés – átvételkor az üzletben fizetendő.
+                                                            <div className="p-3.5 bg-sky-500/15 border border-sky-400/35 rounded-lg text-sm text-sky-200 font-medium">
+                                                                Utánvétes fizetés – átvételkor fizetendő.
                                                             </div>
                                                         )}
                                                     </div>
 
                                                     {/* Customer Data */}
-                                                    <div className="space-y-4">
-                                                        <h4 className="text-xs uppercase tracking-[0.4em] text-gold font-black border-b border-gold/10 pb-3 flex items-center gap-2">
-                                                            <User className="h-3.5 w-3.5" />
+                                                    <div className="p-6 bg-[#171006] border border-gold/30 rounded-xl space-y-4 shadow-lg">
+                                                        <h4 className="text-xs uppercase tracking-[0.35em] text-gold font-black border-b border-gold/20 pb-3 flex items-center gap-2">
+                                                            <User className="h-4 w-4" />
                                                             Vevő adatai
                                                         </h4>
-                                                        <div className="space-y-3 text-sm">
+                                                        <div className="space-y-3 text-base">
                                                             <div className="flex items-center justify-between group">
                                                                 <div className="flex items-center gap-3">
-                                                                    <Mail className="h-4 w-4 text-gold/60" />
-                                                                    <span className="text-ivory/80">{order.customerInfo?.email || '-'}</span>
+                                                                    <Mail className="h-4 w-4 text-gold shrink-0" />
+                                                                    <span className="text-[#fdfdf3] font-medium">{order.customerInfo?.email || '-'}</span>
                                                                 </div>
-                                                                <button onClick={() => copyToClipboard(order.customerInfo?.email)} className="opacity-0 group-hover:opacity-100 p-1 text-gold/40 hover:text-gold transition-all">
-                                                                    <Copy className="h-3.5 w-3.5" />
+                                                                <button onClick={() => copyToClipboard(order.customerInfo?.email)} className="p-1.5 text-gold/60 hover:text-gold transition-all" title="E-mail másolása">
+                                                                    <Copy className="h-4 w-4" />
                                                                 </button>
                                                             </div>
                                                             <div className="flex items-center justify-between group">
                                                                 <div className="flex items-center gap-3">
-                                                                    <Phone className="h-4 w-4 text-gold/60" />
-                                                                    <span className="text-ivory/80">{order.customerInfo?.phone || '-'}</span>
+                                                                    <Phone className="h-4 w-4 text-gold shrink-0" />
+                                                                    <span className="text-[#fdfdf3] font-medium">{order.customerInfo?.phone || '-'}</span>
                                                                 </div>
-                                                                <button onClick={() => copyToClipboard(order.customerInfo?.phone)} className="opacity-0 group-hover:opacity-100 p-1 text-gold/40 hover:text-gold transition-all">
-                                                                    <Copy className="h-3.5 w-3.5" />
+                                                                <button onClick={() => copyToClipboard(order.customerInfo?.phone)} className="p-1.5 text-gold/60 hover:text-gold transition-all" title="Telefonszám másolása">
+                                                                    <Copy className="h-4 w-4" />
                                                                 </button>
                                                             </div>
                                                         </div>
                                                     </div>
 
                                                     {/* Items List */}
-                                                    <div className="space-y-4">
-                                                        <h4 className="text-xs uppercase tracking-[0.4em] text-gold font-black border-b border-gold/10 pb-3">Megrendelt termékek</h4>
+                                                    <div className="p-6 bg-[#171006] border border-gold/30 rounded-xl space-y-4 shadow-lg">
+                                                        <h4 className="text-xs uppercase tracking-[0.35em] text-gold font-black border-b border-gold/20 pb-3">Megrendelt termékek</h4>
                                                         <div className="space-y-3">
                                                             {(order.items || []).map((item: any, idx: number) => {
                                                                 const matchedProd = products.find(p => String(p.id) === String(item.id) || p.name === item.name);
                                                                 const itemSku = item.sku || matchedProd?.sku;
                                                                 return (
-                                                                    <div key={idx} className="flex items-center gap-4 p-3 bg-white/5 border border-white/5 rounded">
+                                                                    <div key={idx} className="flex items-center gap-4 p-4 bg-[#261b0d] border border-gold/25 rounded-lg">
                                                                         {item.image && (
-                                                                            <div className="h-14 w-14 bg-black relative shrink-0 rounded overflow-hidden border border-gold/20">
+                                                                            <div className="h-20 w-20 bg-black relative shrink-0 rounded-lg overflow-hidden border-2 border-gold/40">
                                                                                 <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
                                                                             </div>
                                                                         )}
-                                                                        <div className="flex-1 min-w-0">
+                                                                        <div className="flex-1 min-w-0 space-y-1">
                                                                             <div className="flex flex-wrap items-center gap-2">
-                                                                                <h5 className="text-sm font-serif text-ivory truncate">{item.name}</h5>
+                                                                                <h5 className="text-base font-serif font-bold text-[#fdfdf3]">{item.name}</h5>
                                                                                 {itemSku && (
-                                                                                    <span className="px-2 py-0.5 rounded text-[10px] font-black tracking-wider bg-gold/15 text-gold border border-gold/30 shrink-0">
+                                                                                    <span className="px-2.5 py-0.5 rounded text-[11px] font-black tracking-wider bg-gold/20 text-[#f5d593] border border-gold/45 shrink-0">
                                                                                         Cikkszám: {itemSku}
                                                                                     </span>
                                                                                 )}
                                                                             </div>
                                                                             {item.selectedCustomization && (
-                                                                                <p className="text-xs text-gold/80 italic mt-0.5">{item.selectedCustomization}</p>
+                                                                                <p className="text-sm text-[#f1d592] font-medium leading-snug">{item.selectedCustomization}</p>
                                                                             )}
                                                                         </div>
                                                                         <div className="text-right shrink-0">
-                                                                            <p className="text-xs text-ivory font-bold">{item.quantity} db</p>
-                                                                            <p className="text-xs text-gold font-bold">{formatPrice(item.price * item.quantity)}</p>
+                                                                            <p className="text-sm text-[#fdfdf3] font-black">{item.quantity} db</p>
+                                                                            <p className="text-sm text-gold font-black">{formatPrice(item.price * item.quantity)}</p>
                                                                         </div>
                                                                     </div>
                                                                 );
                                                             })}
                                                             {order.premiumBox && (
-                                                                <div className="flex items-center justify-between p-3 bg-gold/5 border border-gold/20 rounded text-xs text-gold">
+                                                                <div className="flex items-center justify-between p-3.5 bg-gold/15 border border-gold/35 rounded-lg text-sm text-[#f5d593] font-bold">
                                                                     <span>⭐ Prémium Díszdoboz</span>
-                                                                    <span className="font-bold">+{formatPrice(order.premiumBoxPrice || 1500)}</span>
+                                                                    <span>+{formatPrice(order.premiumBoxPrice || 1500)}</span>
                                                                 </div>
                                                             )}
                                                         </div>
 
                                                         {order.comment && (
-                                                            <div className="p-3 bg-orange-900/10 border border-orange-500/20 rounded">
-                                                                <p className="text-[10px] uppercase tracking-wider text-orange-400 font-bold mb-1">Megjegyzés a vevőtől:</p>
-                                                                <p className="text-xs text-ivory/80 italic">{order.comment}</p>
+                                                            <div className="p-4 bg-orange-500/15 border border-orange-400/40 rounded-lg">
+                                                                <p className="text-xs uppercase tracking-wider text-orange-300 font-black mb-1">Megjegyzés a vevőtől:</p>
+                                                                <p className="text-sm text-[#fdfdf3] italic leading-relaxed">{order.comment}</p>
                                                             </div>
                                                         )}
                                                     </div>
                                                 </div>
 
                                                 {/* Right Column: Address, Invoicing & Fulfillment Actions */}
-                                                <div className="space-y-8">
+                                                <div className="space-y-6">
                                                     {/* Total and Shipping Info */}
-                                                    <div className="bg-gold/5 border border-gold/20 p-6 rounded space-y-6">
-                                                        <div className="flex justify-between items-center border-b border-gold/10 pb-4">
-                                                            <h4 className="text-xs uppercase tracking-[0.4em] text-gold font-black flex items-center gap-2">
-                                                                {isLocalPickup ? <MapPin className="h-3.5 w-3.5" /> : <Truck className="h-3.5 w-3.5" />}
+                                                    <div className="bg-[#171006] border border-gold/35 p-6 rounded-xl space-y-6 shadow-lg">
+                                                        <div className="flex justify-between items-center border-b border-gold/20 pb-4">
+                                                            <h4 className="text-xs uppercase tracking-[0.35em] text-gold font-black flex items-center gap-2">
+                                                                {isLocalPickup ? <MapPin className="h-4 w-4" /> : <Truck className="h-4 w-4" />}
                                                                 {isLocalPickup ? 'Helybeni átvétel (Üzletben)' : 'Szállítási adatok'}
                                                             </h4>
                                                             {!isLocalPickup && (
                                                                 <button 
                                                                     onClick={() => copyToClipboard(`${order.shippingInfo?.postcode || ''} ${order.shippingInfo?.city || ''}, ${order.shippingInfo?.address || order.shipping?.address || ''}`)}
-                                                                    className="text-[10px] uppercase font-bold text-gold/60 hover:text-gold flex items-center gap-1 transition-all"
+                                                                    className="text-xs uppercase font-bold text-gold hover:text-[#f5d593] flex items-center gap-1.5 transition-all"
                                                                 >
-                                                                    <Copy className="h-3 w-3" /> Cím másolása
+                                                                    <Copy className="h-3.5 w-3.5" /> Cím másolása
                                                                 </button>
                                                             )}
                                                         </div>
-                                                        <div className="space-y-1 text-sm text-ivory/80">
-                                                            <p className="text-xs font-black uppercase tracking-wider text-gold mb-2">
+                                                        <div className="space-y-2 text-base text-[#fdfdf3]">
+                                                            <p className="text-xs font-black uppercase tracking-wider text-[#f1d592] mb-2">
                                                                 {isLocalPickup ? 'Átvétel módja: Személyes átvétel az üzletben (1056 Budapest, Molnár u. 23.)' : `Szállítás módja: ${shippingMethodName || 'Házhozszállítás'}`}
                                                             </p>
-                                                            <p className="font-bold text-ivory">{order.customerInfo?.fullName}</p>
+                                                            <p className="font-bold text-[#fdfdf3] text-lg">{order.customerInfo?.fullName}</p>
                                                             {!isLocalPickup && (
-                                                                <>
+                                                                <div className="space-y-0.5 text-ivory/90">
                                                                     <p>{order.shippingInfo?.postcode || ''} {order.shippingInfo?.city || ''}</p>
-                                                                    <p>{order.shippingInfo?.address || order.shipping?.address || '-'}</p>
-                                                                </>
+                                                                    <p className="font-medium">{order.shippingInfo?.address || order.shipping?.address || '-'}</p>
+                                                                </div>
                                                             )}
                                                         </div>
 
                                                         {/* Billing Info */}
-                                                        <div className="pt-4 border-t border-gold/10 space-y-2">
+                                                        <div className="pt-5 border-t border-gold/20 space-y-2">
                                                             <div className="flex justify-between items-center">
-                                                                <h4 className="text-xs uppercase tracking-[0.4em] text-gold font-black flex items-center gap-2">
-                                                                    <Building2 className="h-3.5 w-3.5" />
+                                                                <h4 className="text-xs uppercase tracking-[0.35em] text-gold font-black flex items-center gap-2">
+                                                                    <Building2 className="h-4 w-4" />
                                                                     Számlázás
                                                                 </h4>
                                                             </div>
-                                                            <div className="text-sm text-ivory/80 space-y-1">
-                                                                <p className="font-bold text-ivory">{order.billingInfo?.name || order.customerInfo?.fullName}</p>
+                                                            <div className="text-base text-ivory/90 space-y-1">
+                                                                <p className="font-bold text-[#fdfdf3]">{order.billingInfo?.name || order.customerInfo?.fullName}</p>
                                                                 <p>{order.billingInfo?.postcode || ''} {order.billingInfo?.city || ''} {order.billingInfo?.address || ''}</p>
                                                                 {order.billingInfo?.taxNumber && (
-                                                                    <p className="text-xs text-gold">Adószám: {order.billingInfo.taxNumber}</p>
+                                                                    <p className="text-sm text-[#f1d592] font-bold">Adószám: {order.billingInfo.taxNumber}</p>
                                                                 )}
                                                             </div>
                                                         </div>
 
-                                                        <div className="pt-4 border-t border-gold/10 flex justify-between items-center">
-                                                            <span className="text-xs uppercase tracking-widest text-gold font-bold">Végösszeg</span>
-                                                            <span className="text-2xl font-black text-gold tracking-tight">{formatPrice(order.total)}</span>
+                                                        <div className="pt-5 border-t border-gold/25 flex justify-between items-center">
+                                                            <span className="text-sm uppercase tracking-widest text-gold font-black">Végösszeg</span>
+                                                            <span className="text-2xl font-black text-[#f5d593] tracking-tight">{formatPrice(order.total)}</span>
                                                         </div>
                                                     </div>
 
                                                     {/* Fulfillment Status Actions */}
-                                                    <div className="space-y-3 pt-2">
-                                                        <h4 className="text-[11px] uppercase tracking-[0.4em] text-[#666666] font-black">Csomag / Teljesítés állapota</h4>
-                                                        <div className="grid grid-cols-3 gap-2">
+                                                    <div className="p-6 bg-[#171006] border border-gold/30 rounded-xl space-y-4 shadow-lg">
+                                                        <h4 className="text-xs uppercase tracking-[0.35em] text-gold font-black">Csomag / Teljesítés állapota</h4>
+                                                        <div className="grid grid-cols-3 gap-2.5">
                                                             {[
                                                                 { id: 'pending', label: 'Feldolgozás alatt' },
                                                                 { id: 'shipped', label: 'Elküldve / Feladva' },
@@ -511,7 +563,7 @@ export default function OrdersPage() {
                                                                 <button 
                                                                     key={s.id}
                                                                     onClick={() => handleUpdateFulfillment(order.id, s.id)}
-                                                                    className={`px-3 py-2.5 text-[10px] font-black uppercase tracking-wider border rounded transition-all text-center ${order.status === s.id ? getStatusColor(s.id) : 'border-white/5 text-[#555] hover:border-white/10 hover:text-white/60'}`}
+                                                                    className={`px-3 py-3 text-[11px] font-black uppercase tracking-wider border rounded-lg transition-all text-center ${order.status === s.id ? getStatusColor(s.id) : 'border-gold/20 text-ivory/75 hover:border-gold/50 hover:text-[#fdfdf3]'}`}
                                                                 >
                                                                     {s.label}
                                                                 </button>

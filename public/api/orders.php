@@ -59,6 +59,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $order['status'] = $data['status'];
             }
 
+            // Update viewed state if provided
+            if (isset($data['viewed'])) {
+                $order['viewed'] = (bool)$data['viewed'];
+                if ($order['viewed'] && empty($order['viewedAt'])) {
+                    $order['viewedAt'] = date('Y-m-d H:i:s');
+                }
+            }
+
             // Update payment status if provided
             if (isset($data['paymentStatus'])) {
                 $order['paymentStatus'] = $data['paymentStatus'];
