@@ -119,7 +119,7 @@ const Navbar = () => {
                                             )}
                                         </button>
                                         {coupon.expiryDate && (
-                                            <span className="text-[11px] sm:text-xs text-[#c9a56a]/80 italic hidden md:inline">
+                                            <span className="text-xs sm:text-sm text-[#f1d592] font-medium">
                                                 ({coupon.expiryDate}-ig)
                                             </span>
                                         )}
