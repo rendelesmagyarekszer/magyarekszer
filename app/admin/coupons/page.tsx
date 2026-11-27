@@ -119,11 +119,11 @@ export default function AdminCouponsPage() {
                                     isExpired(coupon.expiryDate) ? 'border-red-500/20 opacity-60' : 'border-gold/10 hover:border-gold/30 shadow-2xl hover:shadow-gold/5'
                                 }`}
                             >
-                                <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
+                                <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity pointer-events-none">
                                     <Ticket className="h-24 w-24 -mr-8 -mt-8" />
                                 </div>
 
-                                <div className="flex justify-between items-start">
+                                <div className="flex justify-between items-start relative z-10">
                                     <div className="space-y-1">
                                         <h3 className="text-xl font-black text-gold tracking-widest uppercase">{coupon.code}</h3>
                                         <p className="text-[11px] font-black text-ivory/40 uppercase tracking-[0.2em] italic">
@@ -131,8 +131,14 @@ export default function AdminCouponsPage() {
                                         </p>
                                     </div>
                                     <button 
-                                        onClick={() => deleteCoupon(coupon.code)}
-                                        className="p-2 text-red-500/40 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                                        type="button"
+                                        onClick={() => {
+                                            if (confirm(`Biztosan törlöd a "${coupon.code}" kupont?`)) {
+                                                deleteCoupon(coupon.code);
+                                            }
+                                        }}
+                                        title="Kupon törlése"
+                                        className="relative z-20 p-2.5 text-red-400/70 hover:text-red-400 hover:bg-red-500/15 border border-transparent hover:border-red-500/30 rounded-lg transition-all cursor-pointer"
                                     >
                                         <Trash2 className="h-4 w-4" />
                                     </button>
