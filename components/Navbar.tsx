@@ -16,7 +16,7 @@ import InfoTabs from './InfoTabs';
 import SearchOverlay from './SearchOverlay';
 
 const Navbar = () => {
-    const { cartItems } = useCart();
+    const { cartItems, lastAddedItem } = useCart();
     const { currency, setCurrency, language, setLanguage, t, vacationMode, coupons, formatPrice } = useConfig();
     const { setIsSearchOpen } = useSearch();
     const { user } = useAuth();
@@ -205,7 +205,13 @@ const Navbar = () => {
                             <User className="h-5 w-5" />
                         </Link>
 
-                        <Link href="/cart" className="p-1.5 sm:p-2 hover:text-gold transition-colors relative" aria-label={t('cart')}>
+                        <Link
+                            href="/cart"
+                            className={`p-1.5 sm:p-2 hover:text-gold transition-all relative rounded-full ${
+                                lastAddedItem ? 'text-gold bg-gold/20 ring-2 ring-gold/70 scale-110 shadow-[0_0_20px_rgba(201,165,106,0.6)]' : ''
+                            }`}
+                            aria-label={t('cart')}
+                        >
                             <ShoppingCart className="h-5 w-5" />
                             <AnimatePresence>
                                 {cartCount > 0 && (

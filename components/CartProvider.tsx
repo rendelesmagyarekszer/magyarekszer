@@ -9,6 +9,12 @@ interface CartItem extends Product {
     selectedCustomization?: string;
 }
 
+interface LastAddedNotification {
+    product: Product;
+    customization?: string;
+    timestamp: number;
+}
+
 interface CartContextType {
     cartItems: CartItem[];
     addToCart: (product: Product, customization?: string) => void;
@@ -20,6 +26,8 @@ interface CartContextType {
     appliedCoupon: any | null;
     applyCoupon: (code: string) => string | null; // returns error message or null if success
     removeCoupon: () => void;
+    lastAddedItem: LastAddedNotification | null;
+    dismissLastAdded: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -29,6 +37,16 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
     const [appliedCoupon, setAppliedCoupon] = useState<any | null>(null);
     const [isInitialized, setIsInitialized] = useState(false);
+    const [lastAddedItem, setLastAddedItem] = useState<LastAddedNotification | null>(null);
+    const toastTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const dismissLastAdded = () => {
+        if (toastTimerRef.current) {
+            clearTimeout(toastTimerRef.current);
+            toastTimerRef.current = null;
+        }
+        setLastAddedItem(null);
+    };
 
     // Initial Load
     useEffect(() => {
@@ -68,6 +86,13 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             }
             return [...prev, { ...product, quantity: 1, selectedCustomization: customization }];
         });
+
+        setLastAddedItem({ product, customization, timestamp: Date.now() });
+        if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+        toastTimerRef.current = setTimeout(() => {
+            setLastAddedItem(null);
+            toastTimerRef.current = null;
+        }, 5500);
     };
 
     const removeFromCart = (productId: string, customization?: string) => {
@@ -169,7 +194,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             baseTotal,
             appliedCoupon,
             applyCoupon,
-            removeCoupon
+            removeCoupon,
+            lastAddedItem,
+            dismissLastAdded
         }}>
             {children}
         </CartContext.Provider>

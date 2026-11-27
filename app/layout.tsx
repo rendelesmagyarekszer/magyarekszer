@@ -11,6 +11,7 @@ import { ConfigProvider } from "@/components/ConfigProvider";
 import { AuthProvider } from "@/components/AuthProvider";
 import LunchBreakPopup from "@/components/LunchBreakPopup";
 import VisitorTracker from "@/components/VisitorTracker";
+import AddToCartToast from "@/components/AddToCartToast";
 
 import { getProducts } from "@/lib/products-server";
 import { getSettings } from "@/lib/settings-server";
@@ -107,6 +108,7 @@ export default function RootLayout({
               <SearchProvider>
                 <div className="flex flex-col min-h-screen">
                   <Navbar />
+                  <AddToCartToast />
                   <main className="flex-grow pt-32 sm:pt-36">
                     {children}
                   </main>
