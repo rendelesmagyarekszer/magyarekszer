@@ -2,13 +2,14 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Search, ShoppingCart, Globe, Coins, User, Menu, X } from 'lucide-react';
+import { Search, ShoppingCart, Globe, Coins, User, Menu, X, Sparkles, Copy, Check } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { useSearch } from './SearchProvider';
 import { useCart } from './CartProvider';
 import { useConfig } from './ConfigProvider';
 import { useAuth } from './AuthProvider';
+import { categories as allCategories } from '@/lib/data';
 import { motion, AnimatePresence } from 'framer-motion';
 import InfoTabs from './InfoTabs';
 
@@ -16,13 +17,35 @@ import SearchOverlay from './SearchOverlay';
 
 const Navbar = () => {
     const { cartItems } = useCart();
-    const { currency, setCurrency, language, setLanguage, t, vacationMode } = useConfig();
+    const { currency, setCurrency, language, setLanguage, t, vacationMode, coupons, formatPrice } = useConfig();
     const { setIsSearchOpen } = useSearch();
     const { user } = useAuth();
     const pathname = usePathname();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+    const [copiedCode, setCopiedCode] = React.useState<string | null>(null);
     
     const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
+    // Find currently active, non-expired, already-started coupons
+    const activeCoupons = React.useMemo(() => {
+        const now = new Date();
+        return (coupons || []).filter((c) => {
+            if (!c.isActive) return false;
+            if (c.startDate && new Date(`${c.startDate}T00:00:00`) > now) return false;
+            if (c.expiryDate && new Date(`${c.expiryDate}T23:59:59`) < now) return false;
+            return true;
+        });
+    }, [coupons]);
+
+    const handleCopyCoupon = (code: string) => {
+        try {
+            navigator.clipboard.writeText(code);
+            setCopiedCode(code);
+            setTimeout(() => setCopiedCode(null), 2000);
+        } catch (e) {}
+    };
+
+    const isAdminRoute = pathname?.startsWith('/admin');
 
     return (
         <>
@@ -31,6 +54,58 @@ const Navbar = () => {
                 <div className="w-full bg-[#1c1305]/95 backdrop-blur-md text-[#d4af37] border-b border-[#c9a56a]/20 py-1.5 px-3 text-center text-[10px] sm:text-[11px] font-serif tracking-[0.15em] sm:tracking-[0.25em] flex items-center justify-center shadow-sm">
                     <span>{t('free_shipping_banner')}</span>
                 </div>
+
+                {/* Active Coupon Banner (only shown when at least one coupon is live) */}
+                {!isAdminRoute && activeCoupons.length > 0 && (
+                    <div className="w-full bg-gradient-to-r from-[#211606] via-[#34230a] to-[#211606] border-b border-[#c9a56a]/45 py-2 px-3 shadow-md">
+                        <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-[11px] sm:text-xs font-serif text-[#fdfdf3]">
+                            {activeCoupons.map((coupon) => {
+                                const discountLabel = coupon.discountType === 'percentage'
+                                    ? `${coupon.value}% kedvezmény`
+                                    : `${formatPrice(coupon.value)} kedvezmény`;
+                                const categoryNames = (coupon.categories && coupon.categories.length > 0)
+                                    ? coupon.categories
+                                        .map((slug) => allCategories.find((cat) => cat.slug === slug)?.name || slug)
+                                        .join(', ')
+                                    : null;
+                                const isCopied = copiedCode === coupon.code;
+                                return (
+                                    <div key={coupon.code} className="flex flex-wrap items-center justify-center gap-2">
+                                        <span className="inline-flex items-center gap-1.5 text-[#f1d592] tracking-[0.12em]">
+                                            <Sparkles className="h-3.5 w-3.5 text-[#c9a56a] shrink-0" />
+                                            <strong className="font-semibold text-[#fdfdf3]">{discountLabel}</strong>
+                                            {categoryNames && (
+                                                <span className="text-[#c9a56a]/90 text-[10px] sm:text-[11px]">({categoryNames})</span>
+                                            )}
+                                        </span>
+                                        <span className="text-[#c9a56a]/60 hidden sm:inline">•</span>
+                                        <span className="text-[10px] sm:text-[11px] text-ivory/80 tracking-wider">Kuponkód:</span>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleCopyCoupon(coupon.code)}
+                                            title="Kattints a kuponkód másolásához"
+                                            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#c9a56a]/20 hover:bg-[#c9a56a]/35 border border-[#c9a56a]/70 text-[#f5d593] font-sans text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] transition-all cursor-pointer"
+                                        >
+                                            <span>{coupon.code}</span>
+                                            {isCopied ? (
+                                                <span className="inline-flex items-center gap-0.5 text-emerald-300 tracking-normal font-bold normal-case">
+                                                    <Check className="h-3 w-3" /> Másolva
+                                                </span>
+                                            ) : (
+                                                <Copy className="h-3 w-3 opacity-75" />
+                                            )}
+                                        </button>
+                                        {coupon.expiryDate && (
+                                            <span className="text-[10px] text-[#c9a56a]/75 italic hidden md:inline">
+                                                ({coupon.expiryDate}-ig)
+                                            </span>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
 
                 {vacationMode?.isActive && (
                     <div className="w-full bg-red-950/90 text-ivory/90 text-center py-2 text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-black shadow-lg border-b border-red-500/20">
