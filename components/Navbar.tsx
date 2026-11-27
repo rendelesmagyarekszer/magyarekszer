@@ -51,14 +51,14 @@ const Navbar = () => {
         <>
             <header className="glass-nav fixed w-full top-0 z-50">
                 {/* Free Shipping Announcement Banner */}
-                <div className="w-full bg-[#1c1305]/95 backdrop-blur-md text-[#d4af37] border-b border-[#c9a56a]/20 py-1.5 px-3 text-center text-[10px] sm:text-[11px] font-serif tracking-[0.15em] sm:tracking-[0.25em] flex items-center justify-center shadow-sm">
+                <div className="w-full bg-[#1c1305]/95 backdrop-blur-md text-[#d4af37] border-b border-[#c9a56a]/20 py-2 px-3 text-center text-xs sm:text-[13px] font-serif tracking-[0.15em] sm:tracking-[0.22em] flex items-center justify-center shadow-sm">
                     <span>{t('free_shipping_banner')}</span>
                 </div>
 
                 {/* Active Coupon Banner (only shown when at least one coupon is live) */}
                 {!isAdminRoute && activeCoupons.length > 0 && (
-                    <div className="w-full bg-gradient-to-r from-[#211606] via-[#34230a] to-[#211606] border-b border-[#c9a56a]/45 py-2 px-3 shadow-md">
-                        <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-[11px] sm:text-xs font-serif text-[#fdfdf3]">
+                    <div className="w-full bg-gradient-to-r from-[#211606] via-[#34230a] to-[#211606] border-b border-[#c9a56a]/45 py-2.5 px-3 shadow-md">
+                        <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs sm:text-sm font-serif text-[#fdfdf3]">
                             {activeCoupons.map((coupon) => {
                                 const discountLabel = coupon.discountType === 'percentage'
                                     ? `${coupon.value}% kedvezmény`
@@ -71,32 +71,32 @@ const Navbar = () => {
                                 const isCopied = copiedCode === coupon.code;
                                 return (
                                     <div key={coupon.code} className="flex flex-wrap items-center justify-center gap-2">
-                                        <span className="inline-flex items-center gap-1.5 text-[#f1d592] tracking-[0.12em]">
-                                            <Sparkles className="h-3.5 w-3.5 text-[#c9a56a] shrink-0" />
+                                        <span className="inline-flex items-center gap-1.5 text-[#f1d592] tracking-[0.1em]">
+                                            <Sparkles className="h-4 w-4 text-[#c9a56a] shrink-0" />
                                             <strong className="font-semibold text-[#fdfdf3]">{discountLabel}</strong>
                                             {categoryNames && (
-                                                <span className="text-[#c9a56a]/90 text-[10px] sm:text-[11px]">({categoryNames})</span>
+                                                <span className="text-[#c9a56a]/90 text-[11px] sm:text-xs">({categoryNames})</span>
                                             )}
                                         </span>
                                         <span className="text-[#c9a56a]/60 hidden sm:inline">•</span>
-                                        <span className="text-[10px] sm:text-[11px] text-ivory/80 tracking-wider">Kuponkód:</span>
+                                        <span className="text-xs sm:text-[13px] text-ivory/85 tracking-wider">Kuponkód:</span>
                                         <button
                                             type="button"
                                             onClick={() => handleCopyCoupon(coupon.code)}
                                             title="Kattints a kuponkód másolásához"
-                                            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#c9a56a]/20 hover:bg-[#c9a56a]/35 border border-[#c9a56a]/70 text-[#f5d593] font-sans text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] transition-all cursor-pointer"
+                                            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#c9a56a]/20 hover:bg-[#c9a56a]/35 border border-[#c9a56a]/70 text-[#f5d593] font-sans text-xs sm:text-[13px] font-black uppercase tracking-[0.2em] transition-all cursor-pointer"
                                         >
                                             <span>{coupon.code}</span>
                                             {isCopied ? (
                                                 <span className="inline-flex items-center gap-0.5 text-emerald-300 tracking-normal font-bold normal-case">
-                                                    <Check className="h-3 w-3" /> Másolva
+                                                    <Check className="h-3.5 w-3.5" /> Másolva
                                                 </span>
                                             ) : (
-                                                <Copy className="h-3 w-3 opacity-75" />
+                                                <Copy className="h-3.5 w-3.5 opacity-75" />
                                             )}
                                         </button>
                                         {coupon.expiryDate && (
-                                            <span className="text-[10px] text-[#c9a56a]/75 italic hidden md:inline">
+                                            <span className="text-[11px] sm:text-xs text-[#c9a56a]/80 italic hidden md:inline">
                                                 ({coupon.expiryDate}-ig)
                                             </span>
                                         )}
