@@ -23,6 +23,8 @@ const Navbar = () => {
     const pathname = usePathname();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
     const [copiedCode, setCopiedCode] = React.useState<string | null>(null);
+    const couponBarRef = React.useRef<HTMLDivElement>(null);
+    const [couponBarHeight, setCouponBarHeight] = React.useState(0);
     
     const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -46,6 +48,25 @@ const Navbar = () => {
     };
 
     const isAdminRoute = pathname?.startsWith('/admin');
+    const showCouponBanner = !isAdminRoute && activeCoupons.length > 0;
+
+    // Measure coupon banner height so page content is pushed down cleanly and never overlapped
+    React.useEffect(() => {
+        if (!showCouponBanner || !couponBarRef.current) {
+            setCouponBarHeight(0);
+            return;
+        }
+        const el = couponBarRef.current;
+        const updateHeight = () => setCouponBarHeight(el.offsetHeight || 0);
+        updateHeight();
+        if (typeof ResizeObserver !== 'undefined') {
+            const ro = new ResizeObserver(updateHeight);
+            ro.observe(el);
+            return () => ro.disconnect();
+        }
+        window.addEventListener('resize', updateHeight);
+        return () => window.removeEventListener('resize', updateHeight);
+    }, [showCouponBanner, activeCoupons]);
 
     return (
         <>
@@ -56,26 +77,28 @@ const Navbar = () => {
                 </div>
 
                 {/* Active Coupon Banner (only shown when at least one coupon is live) */}
-                {!isAdminRoute && activeCoupons.length > 0 && (
-                    <div className="w-full bg-gradient-to-r from-[#211606] via-[#34230a] to-[#211606] border-b border-[#c9a56a]/45 py-2.5 px-3 shadow-md">
-                        <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs sm:text-sm font-serif text-[#fdfdf3]">
+                {showCouponBanner && (
+                    <div
+                        ref={couponBarRef}
+                        className="w-full bg-gradient-to-r from-[#211606] via-[#34230a] to-[#211606] border-b border-[#c9a56a]/45 py-2 px-3 shadow-md"
+                    >
+                        <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs sm:text-sm font-serif text-[#fdfdf3]">
                             {activeCoupons.map((coupon) => {
                                 const discountLabel = coupon.discountType === 'percentage'
                                     ? `${coupon.value}% kedvezmény`
                                     : `${formatPrice(coupon.value)} kedvezmény`;
-                                const categoryNames = (coupon.categories && coupon.categories.length > 0)
-                                    ? coupon.categories
-                                        .map((slug) => allCategories.find((cat) => cat.slug === slug)?.name || slug)
-                                        .join(', ')
+                                const catList = coupon.categories || [];
+                                const categoryLabel = catList.length > 0 && catList.length <= 2
+                                    ? catList.map((slug) => allCategories.find((cat) => cat.slug === slug)?.name || slug).join(', ')
                                     : null;
                                 const isCopied = copiedCode === coupon.code;
                                 return (
-                                    <div key={coupon.code} className="flex flex-wrap items-center justify-center gap-2">
-                                        <span className="inline-flex items-center gap-1.5 text-[#f1d592] tracking-[0.1em]">
-                                            <Sparkles className="h-4 w-4 text-[#c9a56a] shrink-0" />
+                                    <div key={coupon.code} className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">
+                                        <span className="inline-flex items-center gap-1.5 text-[#f1d592] tracking-[0.08em]">
+                                            <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#c9a56a] shrink-0" />
                                             <strong className="font-semibold text-[#fdfdf3]">{discountLabel}</strong>
-                                            {categoryNames && (
-                                                <span className="text-[#c9a56a]/90 text-[11px] sm:text-xs">({categoryNames})</span>
+                                            {categoryLabel && (
+                                                <span className="text-[#c9a56a]/90 text-[11px] sm:text-xs hidden sm:inline">({categoryLabel})</span>
                                             )}
                                         </span>
                                         <span className="text-[#c9a56a]/60 hidden sm:inline">•</span>
@@ -84,7 +107,7 @@ const Navbar = () => {
                                             type="button"
                                             onClick={() => handleCopyCoupon(coupon.code)}
                                             title="Kattints a kuponkód másolásához"
-                                            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#c9a56a]/20 hover:bg-[#c9a56a]/35 border border-[#c9a56a]/70 text-[#f5d593] font-sans text-xs sm:text-[13px] font-black uppercase tracking-[0.2em] transition-all cursor-pointer"
+                                            className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full bg-[#c9a56a]/20 hover:bg-[#c9a56a]/35 border border-[#c9a56a]/70 text-[#f5d593] font-sans text-xs sm:text-[13px] font-black uppercase tracking-[0.18em] transition-all cursor-pointer"
                                         >
                                             <span>{coupon.code}</span>
                                             {isCopied ? (
@@ -245,6 +268,9 @@ const Navbar = () => {
                     )}
                 </AnimatePresence>
             </header>
+            {couponBarHeight > 0 && (
+                <div style={{ height: couponBarHeight }} aria-hidden="true" className="w-full shrink-0" />
+            )}
             <SearchOverlay />
         </>
     );
