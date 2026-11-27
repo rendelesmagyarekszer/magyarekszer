@@ -22,7 +22,8 @@ import {
     RefreshCw,
     AlertCircle,
     Check,
-    Banknote
+    Banknote,
+    Trash2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -170,6 +171,27 @@ export default function OrdersPage() {
                 body: JSON.stringify({ orderId, status })
             });
             fetchServerOrders();
+        } catch (e) {}
+    };
+
+    // Delete Order (e.g. test orders)
+    const handleDeleteOrder = async (orderId: string) => {
+        if (!confirm('Biztosan véglegesen törlöd ezt a rendelést?')) return;
+        try {
+            const res = await fetch('/api/orders.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orderId, action: 'delete' })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                if (data.success && Array.isArray(data.orders)) {
+                    setServerOrders(data.orders);
+                    setExpandedOrder(null);
+                } else {
+                    fetchServerOrders();
+                }
+            }
         } catch (e) {}
     };
 
@@ -626,6 +648,16 @@ export default function OrdersPage() {
                                                                     {s.label}
                                                                 </button>
                                                             ))}
+                                                        </div>
+                                                        <div className="pt-4 border-t border-[#c9a56a]/25 flex justify-end">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleDeleteOrder(order.id)}
+                                                                className="px-4 py-2 rounded-lg border border-red-300 bg-red-50 hover:bg-red-600 text-red-700 hover:text-white text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer"
+                                                            >
+                                                                <Trash2 className="h-3.5 w-3.5" />
+                                                                Rendelés törlése
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 </div>

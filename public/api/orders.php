@@ -48,6 +48,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $orders = getOrders($ordersFile);
     $orderId = $data['orderId'];
+
+    // Delete order if action === 'delete'
+    if (isset($data['action']) && $data['action'] === 'delete') {
+        $beforeCount = count($orders);
+        $filtered = array_values(array_filter($orders, function($o) use ($orderId) {
+            return ($o['id'] ?? '') !== $orderId;
+        }));
+        if (count($filtered) < $beforeCount) {
+            saveOrders($ordersFile, $filtered);
+            echo json_encode(['success' => true, 'orders' => $filtered], JSON_UNESCAPED_UNICODE);
+        } else {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'error' => 'Order not found']);
+        }
+        exit;
+    }
+
     $found = false;
 
     foreach ($orders as &$order) {

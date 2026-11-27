@@ -712,7 +712,7 @@ export const ConfigProvider = ({
     }, []);
 
     useEffect(() => {
-        const SETTINGS_SYNC_VERSION = '2026-11-21-comment-fix-v3';
+        const SETTINGS_SYNC_VERSION = '2026-11-27-coupons-fix-v4';
         try {
             if (localStorage.getItem('magyarekszer_settings_version') !== SETTINGS_SYNC_VERSION) {
                 [
@@ -727,7 +727,8 @@ export const ConfigProvider = ({
                     'magyarekszer_global_enamel_colors',
                     'magyarekszer_global_leather_colors',
                     'magyarekszer_extra_services',
-                    'magyarekszer_translations'
+                    'magyarekszer_translations',
+                    'magyarekszer_coupons'
                 ].forEach(k => localStorage.removeItem(k));
                 localStorage.setItem('magyarekszer_settings_version', SETTINGS_SYNC_VERSION);
             }
