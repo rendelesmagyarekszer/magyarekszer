@@ -132,15 +132,15 @@ export default function AdminCouponsPage() {
                                     </div>
                                     <button 
                                         type="button"
-                                        onClick={() => {
-                                            if (confirm(`Biztosan törlöd a "${coupon.code}" kupont?`)) {
-                                                deleteCoupon(coupon.code);
-                                            }
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            deleteCoupon(coupon.code);
                                         }}
                                         title="Kupon törlése"
-                                        className="relative z-20 p-2.5 text-red-400/70 hover:text-red-400 hover:bg-red-500/15 border border-transparent hover:border-red-500/30 rounded-lg transition-all cursor-pointer"
+                                        className="relative z-20 px-3 py-2 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-red-400 hover:text-white hover:bg-red-600 border border-red-500/40 rounded-lg transition-all cursor-pointer"
                                     >
-                                        <Trash2 className="h-4 w-4" />
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                        <span>Törlés</span>
                                     </button>
                                 </div>
 

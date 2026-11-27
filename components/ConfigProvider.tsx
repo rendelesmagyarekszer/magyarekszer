@@ -1357,17 +1357,46 @@ export const ConfigProvider = ({
     const saveCoupon = (c: Coupon) => {
         setCoupons(prev => {
             const index = prev.findIndex(item => item.code === c.code);
-            if (index !== -1) {
-                const newCoupons = [...prev];
-                newCoupons[index] = c;
-                return newCoupons;
+            const next = index !== -1
+                ? prev.map((item, i) => (i === index ? c : item))
+                : [...prev, c];
+            try {
+                localStorage.setItem('magyarekszer_coupons', JSON.stringify(next));
+            } catch (e) {}
+            if (typeof window !== 'undefined') {
+                const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'GabMar5048';
+                fetch('/api/settings.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Admin-Password': adminPassword
+                    },
+                    body: JSON.stringify({ coupons: next })
+                }).catch(() => {});
             }
-            return [...prev, c];
+            return next;
         });
     };
 
     const deleteCoupon = (code: string) => {
-        setCoupons(prev => prev.filter(c => c.code !== code));
+        setCoupons(prev => {
+            const next = prev.filter(c => c.code !== code);
+            try {
+                localStorage.setItem('magyarekszer_coupons', JSON.stringify(next));
+            } catch (e) {}
+            if (typeof window !== 'undefined') {
+                const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'GabMar5048';
+                fetch('/api/settings.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Admin-Password': adminPassword
+                    },
+                    body: JSON.stringify({ coupons: next })
+                }).catch(() => {});
+            }
+            return next;
+        });
     };
 
     const updateShippingSettings = (settings: ShippingSettings) => {
