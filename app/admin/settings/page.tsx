@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useConfig } from '@/components/ConfigProvider';
 import { motion } from 'framer-motion';
-import { Save, RefreshCw, Link as LinkIcon, Gem, Cpu, Wrench, Star, Upload, Loader2, Image as ImageIcon, X } from 'lucide-react';
+import { Save, RefreshCw, Link as LinkIcon, Gem, Cpu, Wrench, Star, Upload, Loader2, Image as ImageIcon, X, Gift, Plus } from 'lucide-react';
 import { AdminImageUpload } from '@/components/admin/AdminImageUpload';
 import { categories as defaultCategories } from '@/lib/data';
 
@@ -16,12 +16,15 @@ export default function SettingsPage() {
         premiumBoxPrice, updatePremiumBoxPrice,
         imageSettings, updateImageSetting,
         customJewelry, updateCustomJewelry,
+        giftVouchers, updateGiftVouchers,
         isLoaded
     } = useConfig();
     
     const [localAnker, setLocalAnker] = useState(ankerPrices);
     const [localThickAnker, setLocalThickAnker] = useState(thickAnkerPrices);
     const [localBarbara, setLocalBarbara] = useState(barbaraPrices);
+    const [localGiftVouchers, setLocalGiftVouchers] = useState(giftVouchers);
+    const [newVoucherAmount, setNewVoucherAmount] = useState('');
     const [localEnamelColors, setLocalEnamelColors] = useState(globalEnamelColors);
     const [newColor, setNewColor] = useState('');
 
@@ -52,8 +55,9 @@ export default function SettingsPage() {
             setLocalBoxPrice(premiumBoxPrice);
             setLocalImageSettings(imageSettings);
             setLocalCustomJewelry(customJewelry);
+            setLocalGiftVouchers(giftVouchers);
         }
-    }, [isLoaded, ankerPrices, thickAnkerPrices, barbaraPrices, globalEnamelColors, globalLeatherColors, extraServices, premiumBoxPrice, imageSettings, customJewelry]);
+    }, [isLoaded, ankerPrices, thickAnkerPrices, barbaraPrices, globalEnamelColors, globalLeatherColors, extraServices, premiumBoxPrice, imageSettings, customJewelry, giftVouchers]);
 
     const handleSave = () => {
         setIsSaving(true);
@@ -71,6 +75,12 @@ export default function SettingsPage() {
         // Save Barbara
         Object.entries(localBarbara).forEach(([len, price]) => {
             updateChainPrice('barbara', len, price);
+        });
+
+        // Save Gift Vouchers
+        updateGiftVouchers({
+            ...localGiftVouchers,
+            amounts: [...localGiftVouchers.amounts].filter(a => a > 0).sort((a, b) => a - b)
         });
 
         // Save Enamel Colors
@@ -324,6 +334,105 @@ export default function SettingsPage() {
                             </div>
                         </div>
                     ))}
+                </div>
+            </div>
+
+            {/* Gift Vouchers Section (Checkout Upsell) */}
+            <div className="bg-[#150e03] border border-[#c9a56a]/20 p-8 rounded-2xl space-y-6">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                        <Gift className="h-5 w-5 text-[#c9a56a]" />
+                        <div>
+                            <h2 className="text-base font-serif uppercase tracking-[0.2em] text-[#fdfdf3]">Ajándékutalványok (Vásárlás végi felajánlás)</h2>
+                            <p className="text-[11px] text-[#c9a56a]/70 mt-1">A pénztárban felkínált ajándékutalvány összegek kezelése</p>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            const next = { ...localGiftVouchers, enabled: !localGiftVouchers.enabled };
+                            setLocalGiftVouchers(next);
+                            updateGiftVouchers(next);
+                            setMessage(next.enabled ? 'Ajándékutalvány felajánlás bekapcsolva!' : 'Ajándékutalvány felajánlás kikapcsolva.');
+                            setTimeout(() => setMessage(null), 3000);
+                        }}
+                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all cursor-pointer ${
+                            localGiftVouchers.enabled
+                                ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/25'
+                                : 'bg-red-500/15 border-red-500/40 text-red-400 hover:bg-red-500/25'
+                        }`}
+                    >
+                        {localGiftVouchers.enabled ? '● Aktív a pénztárban' : '○ Kikapcsolva'}
+                    </button>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="flex flex-wrap gap-3">
+                        {(localGiftVouchers.amounts || []).map((amount, idx) => (
+                            <div key={`${amount}-${idx}`} className="flex items-center gap-3 px-4 py-3 bg-[#0d0902] border border-[#c9a56a]/25 rounded-xl">
+                                <span className="text-base font-serif font-bold text-[#f1d592]">
+                                    {amount.toLocaleString('hu-HU')} Ft
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const next = {
+                                            ...localGiftVouchers,
+                                            amounts: localGiftVouchers.amounts.filter((_, i) => i !== idx)
+                                        };
+                                        setLocalGiftVouchers(next);
+                                        updateGiftVouchers(next);
+                                    }}
+                                    className="text-red-400/60 hover:text-red-400 transition-colors cursor-pointer"
+                                    title="Összeg törlése"
+                                >
+                                    <X className="h-4 w-4" />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-3 pt-2">
+                        <input
+                            type="number"
+                            min={1000}
+                            step={1000}
+                            placeholder="Új összeg (pl. 20000)"
+                            value={newVoucherAmount}
+                            onChange={(e) => setNewVoucherAmount(e.target.value)}
+                            className="bg-[#0d0902] border border-[#c9a56a]/25 px-4 py-3 rounded-xl text-sm text-[#fdfdf3] outline-none focus:border-[#c9a56a] w-56"
+                        />
+                        <button
+                            type="button"
+                            onClick={() => {
+                                const val = parseInt(newVoucherAmount, 10);
+                                if (!isNaN(val) && val > 0 && !localGiftVouchers.amounts.includes(val)) {
+                                    const next = {
+                                        ...localGiftVouchers,
+                                        amounts: [...localGiftVouchers.amounts, val].sort((a, b) => a - b)
+                                    };
+                                    setLocalGiftVouchers(next);
+                                    updateGiftVouchers(next);
+                                    setNewVoucherAmount('');
+                                }
+                            }}
+                            className="px-5 py-3 rounded-xl bg-[#c9a56a] hover:bg-[#d8b67b] text-[#150e03] text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-all cursor-pointer"
+                        >
+                            <Plus className="h-4 w-4" /> Hozzáadás
+                        </button>
+                    </div>
+
+                    <div className="pt-2">
+                        <label className="text-[11px] uppercase tracking-widest text-[#c9a56a]/70 font-black block mb-2">
+                            Megjelenő szöveg a pénztárban
+                        </label>
+                        <input
+                            type="text"
+                            value={localGiftVouchers.description || ''}
+                            onChange={(e) => setLocalGiftVouchers({ ...localGiftVouchers, description: e.target.value })}
+                            className="w-full bg-[#0d0902] border border-[#c9a56a]/20 p-4 rounded-xl text-sm text-[#fdfdf3] outline-none focus:border-[#c9a56a]"
+                        />
+                    </div>
                 </div>
             </div>
 

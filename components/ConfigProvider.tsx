@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { products as initialProductsData, Product, Collection, VacationMode, ALL_STONES, Coupon, AdminSettings } from '@/lib/data';
+import { products as initialProductsData, Product, Collection, VacationMode, ALL_STONES, Coupon, AdminSettings, GiftVoucherSettings } from '@/lib/data';
 
 export interface ExtraService {
     id: string;
@@ -100,7 +100,15 @@ interface ConfigContextType {
     updateCustomJewelry: (categories: CustomJewelryCategory[]) => void;
     shippingSettings: ShippingSettings;
     updateShippingSettings: (settings: ShippingSettings) => void;
+    giftVouchers: GiftVoucherSettings;
+    updateGiftVouchers: (settings: GiftVoucherSettings) => void;
 }
+
+const DEFAULT_GIFT_VOUCHERS: GiftVoucherSettings = {
+    enabled: true,
+    amounts: [30000, 40000, 50000],
+    description: 'Lepje meg szeretteit elegáns, bármely ékszerünkre beváltható MagyarÉkszer ajándékutalvánnyal!'
+};
 
 const DEFAULT_SHIPPING_SETTINGS: ShippingSettings = {
     foxpostEnabled: false,
@@ -660,6 +668,10 @@ export const ConfigProvider = ({
     ]);
 
     const [shippingSettings, setShippingSettings] = useState<ShippingSettings>(initialSettings?.shippingSettings || DEFAULT_SHIPPING_SETTINGS);
+    const [giftVouchers, setGiftVouchers] = useState<GiftVoucherSettings>({
+        ...DEFAULT_GIFT_VOUCHERS,
+        ...(initialSettings?.giftVouchers || {})
+    });
 
     const updateAvailableStones = (s: string[] | ((prev: string[]) => string[])) => {
         setAvailableStones(prev => {
@@ -753,6 +765,15 @@ export const ConfigProvider = ({
         const savedNotifications = localStorage.getItem('magyarekszer_notifications');
         const savedCoupons = localStorage.getItem('magyarekszer_coupons');
         const savedShippingSettings = localStorage.getItem('magyarekszer_shippingSettings');
+        const savedGiftVouchers = localStorage.getItem('magyarekszer_gift_vouchers');
+        if (savedGiftVouchers) {
+            try {
+                const parsed = JSON.parse(savedGiftVouchers);
+                if (parsed && typeof parsed === 'object') {
+                    setGiftVouchers({ ...DEFAULT_GIFT_VOUCHERS, ...parsed });
+                }
+            } catch (e) {}
+        }
         const savedAnker = localStorage.getItem('magyarekszer_prices_anker');
         const savedThickAnker = localStorage.getItem('magyarekszer_prices_thick_anker');
         const savedBarbara = localStorage.getItem('magyarekszer_prices_barbara');
@@ -860,6 +881,9 @@ export const ConfigProvider = ({
                         if (Array.isArray(live.customJewelry)) setCustomJewelry(live.customJewelry);
                         if (live.shippingSettings && typeof live.shippingSettings === 'object') {
                             setShippingSettings({ ...DEFAULT_SHIPPING_SETTINGS, ...live.shippingSettings });
+                        }
+                        if (live.giftVouchers && typeof live.giftVouchers === 'object') {
+                            setGiftVouchers({ ...DEFAULT_GIFT_VOUCHERS, ...live.giftVouchers });
                         }
                         if (live.translations && typeof live.translations === 'object') {
                             setDynamicTranslations(prev => ({
@@ -1045,6 +1069,7 @@ export const ConfigProvider = ({
             localStorage.setItem('magyarekszer_image_settings', JSON.stringify(imageSettings));
             localStorage.setItem('magyarekszer_custom_jewelry', JSON.stringify(customJewelry));
             localStorage.setItem('magyarekszer_shippingSettings', JSON.stringify(shippingSettings));
+            localStorage.setItem('magyarekszer_gift_vouchers', JSON.stringify(giftVouchers));
             localStorage.setItem('magyarekszer_prices_anker', JSON.stringify(ankerPrices));
             localStorage.setItem('magyarekszer_prices_thick_anker', JSON.stringify(thickAnkerPrices));
             localStorage.setItem('magyarekszer_prices_barbara', JSON.stringify(barbaraPrices));
@@ -1071,6 +1096,7 @@ export const ConfigProvider = ({
                         imageSettings,
                         customJewelry,
                         shippingSettings,
+                        giftVouchers,
                         translations: dynamicTranslations,
                         collections,
                         vacationMode,
@@ -1100,7 +1126,7 @@ export const ConfigProvider = ({
             }, 600);
             return () => clearTimeout(syncTimer);
         }
-    }, [products, dynamicTranslations, collections, vacationMode, availableStones, allStonesMaster, stonePrices, stoneImages, notifications, coupons, globalEnamelColors, globalLeatherColors, extraServices, premiumBoxPrice, imageSettings, customJewelry, shippingSettings, ankerPrices, thickAnkerPrices, barbaraPrices, barbaraChainEnabled, isLoaded]);
+    }, [products, dynamicTranslations, collections, vacationMode, availableStones, allStonesMaster, stonePrices, stoneImages, notifications, coupons, globalEnamelColors, globalLeatherColors, extraServices, premiumBoxPrice, imageSettings, customJewelry, shippingSettings, giftVouchers, ankerPrices, thickAnkerPrices, barbaraPrices, barbaraChainEnabled, isLoaded]);
 
     const formatPrice = (priceHuf: number | undefined | null) => {
         if (priceHuf === undefined || priceHuf === null || isNaN(priceHuf)) return '';
@@ -1404,6 +1430,24 @@ export const ConfigProvider = ({
         setShippingSettings(settings);
     };
 
+    const updateGiftVouchers = (settings: GiftVoucherSettings) => {
+        setGiftVouchers(settings);
+        try {
+            localStorage.setItem('magyarekszer_gift_vouchers', JSON.stringify(settings));
+        } catch (e) {}
+        if (typeof window !== 'undefined') {
+            const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'GabMar5048';
+            fetch('/api/settings.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Admin-Password': adminPassword
+                },
+                body: JSON.stringify({ giftVouchers: settings })
+            }).catch(() => {});
+        }
+    };
+
     return (
         <ConfigContext.Provider value={{
             currency,
@@ -1459,7 +1503,9 @@ export const ConfigProvider = ({
             customJewelry,
             updateCustomJewelry,
             shippingSettings,
-            updateShippingSettings
+            updateShippingSettings,
+            giftVouchers,
+            updateGiftVouchers
         }}>
             {children}
         </ConfigContext.Provider>

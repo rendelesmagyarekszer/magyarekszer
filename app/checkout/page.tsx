@@ -21,11 +21,13 @@ interface MplPoint {
 
 export default function CheckoutPage() {
     const { cartItems, totalAmount, baseTotal, discountAmount, clearCart, appliedCoupon, applyCoupon, removeCoupon } = useCart();
-    const { premiumBoxPrice, formatPrice, t, language, vacationMode, addNotification, imageSettings, shippingSettings } = useConfig();
+    const { premiumBoxPrice, formatPrice, t, language, vacationMode, addNotification, imageSettings, shippingSettings, giftVouchers } = useConfig();
     const { addOrder } = useAuth();
     const [couponCode, setCouponCode] = useState('');
     const [couponError, setCouponError] = useState<string | null>(null);
     const [isPremiumBoxSelected, setIsPremiumBoxSelected] = useState(false);
+    const [selectedVoucherAmount, setSelectedVoucherAmount] = useState<number | null>(null);
+    const [voucherQty, setVoucherQty] = useState<number>(1);
     const [marketingConsent, setMarketingConsent] = useState(false);
     const [termsAccepted, setTermsAccepted] = useState(false);
     const [previewModal, setPreviewModal] = useState<{ isOpen: boolean, src: string, title: string }>({
@@ -34,8 +36,9 @@ export default function CheckoutPage() {
         title: ''
     });
 
+    const voucherTotal = selectedVoucherAmount ? selectedVoucherAmount * voucherQty : 0;
     const freeShippingThreshold = shippingSettings?.freeShippingThreshold ?? 20000;
-    const isFreeShipping = (shippingSettings?.freeShippingEnabled !== false) && (totalAmount >= freeShippingThreshold);
+    const isFreeShipping = (shippingSettings?.freeShippingEnabled !== false) && ((totalAmount + voucherTotal) >= freeShippingThreshold);
 
     const baseShippingOptions = [];
 
@@ -242,9 +245,8 @@ export default function CheckoutPage() {
 
         // Prepare detailed order data
         const generatedOrderId = `ORD-${Date.now()}`;
-        const orderData = {
-            id: generatedOrderId,
-            items: cartItems.map(item => ({
+        const submittedItems = [
+            ...cartItems.map(item => ({
                 id: item.id,
                 sku: item.sku || '',
                 weight: item.weight || '',
@@ -255,6 +257,22 @@ export default function CheckoutPage() {
                 image: item.image,
                 selectedCustomization: item.selectedCustomization
             })),
+            ...(selectedVoucherAmount ? [{
+                id: `gift-voucher-${selectedVoucherAmount}`,
+                sku: `UTALVANY-${selectedVoucherAmount}`,
+                weight: '',
+                category: 'ajandekutalvany',
+                name: `Ajándékutalvány (${formatPrice(selectedVoucherAmount)})`,
+                price: selectedVoucherAmount,
+                quantity: voucherQty,
+                image: '',
+                selectedCustomization: 'MagyarÉkszer Ajándékutalvány'
+            }] : [])
+        ];
+
+        const orderData = {
+            id: generatedOrderId,
+            items: submittedItems,
             shippingCost: shipping.price,
             couponCode: appliedCoupon?.code || '',
             discountAmount: discountAmount || 0,
@@ -392,7 +410,7 @@ export default function CheckoutPage() {
         );
     }
 
-    const finalTotal = totalAmount + shipping.price + (isPremiumBoxSelected ? premiumBoxPrice : 0);
+    const finalTotal = totalAmount + shipping.price + (isPremiumBoxSelected ? premiumBoxPrice : 0) + voucherTotal;
 
     return (
         <main className="min-h-screen bg-[#150e03] text-[#fdfdf3] py-10 sm:py-20 px-4">
@@ -944,6 +962,96 @@ export default function CheckoutPage() {
                                 </label>
                             </div>
                         </section>
+
+                        {/* 7. Gift Voucher Upsell */}
+                        {giftVouchers?.enabled && Array.isArray(giftVouchers.amounts) && giftVouchers.amounts.length > 0 && (
+                            <section>
+                                <h2 className="text-xl font-serif mb-6 uppercase tracking-[0.3em] text-[#c9a56a] border-b border-[#c9a56a]/10 pb-6 italic flex items-center gap-3">
+                                    <Gift className="h-5 w-5 text-[#c9a56a]" />
+                                    7. Ajándékutalvány
+                                </h2>
+                                <p className="text-sm text-[#fdfdf3]/80 font-serif italic mb-6">
+                                    {giftVouchers.description || 'Szeretne ajándékutalványt is vásárolni szeretteinek?'}
+                                </p>
+
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSelectedVoucherAmount(null);
+                                            setVoucherQty(1);
+                                        }}
+                                        className={`p-5 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-1.5 ${
+                                            selectedVoucherAmount === null
+                                                ? 'border-[#c9a56a] bg-[#2D3419]/60 text-[#fdfdf3] shadow-lg'
+                                                : 'border-[#c9a56a]/15 bg-[#150e03]/60 text-ivory/50 hover:border-[#c9a56a]/40'
+                                        }`}
+                                    >
+                                        <span className="text-xs font-black uppercase tracking-widest">Nem kérek</span>
+                                        <span className="text-[11px] opacity-60">0 Ft</span>
+                                    </button>
+
+                                    {giftVouchers.amounts.map((amount) => {
+                                        const isSelected = selectedVoucherAmount === amount;
+                                        return (
+                                            <button
+                                                key={amount}
+                                                type="button"
+                                                onClick={() => {
+                                                    if (isSelected) {
+                                                        setSelectedVoucherAmount(null);
+                                                        setVoucherQty(1);
+                                                    } else {
+                                                        setSelectedVoucherAmount(amount);
+                                                        setVoucherQty(1);
+                                                    }
+                                                }}
+                                                className={`p-5 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-1.5 relative ${
+                                                    isSelected
+                                                        ? 'border-[#c9a56a] bg-[#c9a56a]/20 text-[#fdfdf3] ring-1 ring-[#c9a56a] shadow-[0_0_20px_rgba(201,165,106,0.2)]'
+                                                        : 'border-[#c9a56a]/20 bg-[#150e03]/70 text-[#f1d592] hover:border-[#c9a56a]/60 hover:bg-[#c9a56a]/10'
+                                                }`}
+                                            >
+                                                <Gift className={`h-4 w-4 ${isSelected ? 'text-[#c9a56a]' : 'text-[#c9a56a]/60'}`} />
+                                                <span className="text-base font-serif font-bold tracking-wide">{formatPrice(amount)}</span>
+                                                <span className="text-[10px] uppercase tracking-widest opacity-70 font-black">Utalvány</span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                {selectedVoucherAmount && (
+                                    <div className="mt-5 p-4 rounded-xl bg-[#c9a56a]/10 border border-[#c9a56a]/30 flex flex-wrap items-center justify-between gap-4">
+                                        <div className="flex items-center gap-3">
+                                            <Gift className="h-5 w-5 text-[#c9a56a]" />
+                                            <div>
+                                                <p className="text-xs font-black uppercase tracking-widest text-[#f1d592]">
+                                                    Kiválasztva: {formatPrice(selectedVoucherAmount)} ajándékutalvány
+                                                </p>
+                                                <p className="text-[11px] text-ivory/70">A rendeléshez adva ({voucherQty} db • +{formatPrice(voucherTotal)})</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => setVoucherQty(q => Math.max(1, q - 1))}
+                                                className="w-8 h-8 rounded-lg border border-[#c9a56a]/40 bg-[#150e03] text-[#c9a56a] font-black hover:bg-[#c9a56a] hover:text-[#150e03] transition-all cursor-pointer"
+                                            >
+                                                −
+                                            </button>
+                                            <span className="w-8 text-center text-sm font-black text-[#fdfdf3]">{voucherQty}</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => setVoucherQty(q => q + 1)}
+                                                className="w-8 h-8 rounded-lg border border-[#c9a56a]/40 bg-[#150e03] text-[#c9a56a] font-black hover:bg-[#c9a56a] hover:text-[#150e03] transition-all cursor-pointer"
+                                            >
+                                                +
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </section>
+                        )}
                     </div>
 
                     {/* Summary Section */}
@@ -973,6 +1081,18 @@ export default function CheckoutPage() {
                                             <span className="font-black">Prémium Díszdoboz</span>
                                         </div>
                                         <span className="font-bold">{formatPrice(premiumBoxPrice)}</span>
+                                    </div>
+                                )}
+
+                                {selectedVoucherAmount && (
+                                    <div className="flex justify-between items-center text-sm uppercase tracking-widest text-[#f1d592] bg-[#c9a56a]/15 p-4 border border-[#c9a56a]/35 rounded-xl">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-6 h-6 rounded-full bg-[#150e03] flex items-center justify-center border border-[#c9a56a]/30 shrink-0">
+                                                <Gift className="h-3 w-3" />
+                                            </div>
+                                            <span className="font-black">Ajándékutalvány ({formatPrice(selectedVoucherAmount)}) x {voucherQty}</span>
+                                        </div>
+                                        <span className="font-bold shrink-0">{formatPrice(voucherTotal)}</span>
                                     </div>
                                 )}
 

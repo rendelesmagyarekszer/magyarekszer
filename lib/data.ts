@@ -50,6 +50,12 @@ export interface LeatherColorOption {
     imageUrl?: string;
 }
 
+export interface GiftVoucherSettings {
+    enabled: boolean;
+    amounts: number[];
+    description?: string;
+}
+
 export interface AdminSettings {
     categories?: any[];
     availableStones?: string[];
@@ -60,6 +66,7 @@ export interface AdminSettings {
     thickAnkerPrices?: Record<string, number>;
     barbaraPrices?: Record<string, number>;
     barbaraChainEnabled?: boolean;
+    giftVouchers?: GiftVoucherSettings;
     extraServices?: any[];
     premiumBoxPrice?: number;
     imageSettings?: Record<string, string>;
